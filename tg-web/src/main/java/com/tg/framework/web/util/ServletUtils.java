@@ -1,5 +1,6 @@
 package com.tg.framework.web.util;
 
+import com.tg.framework.commons.lang.StringOptional;
 import eu.bitwalker.useragentutils.DeviceType;
 import eu.bitwalker.useragentutils.OperatingSystem;
 import eu.bitwalker.useragentutils.UserAgent;
@@ -23,7 +24,7 @@ public class ServletUtils {
   private static final String HEADER_WL_PROXY_CLIENT_IP = "WL-Proxy-Client-IP";
   private static final String HEADER_USER_AGENT = "user-agent";
   private static final String HEADER_X_REQUESTED_WITH = "x-requested-with";
-  private static final String HEADER_ACCPET = "Accept";
+  private static final String HEADER_ACCEPT = "Accept";
 
   private static final int HTTP_PORT = 80;
   private static final String FORMATTER_SERVER_PATH_WITH_HTTP_PORT = "%s://%s";
@@ -35,33 +36,65 @@ public class ServletUtils {
   private ServletUtils() {
   }
 
-  public static String getRemoteAddress(HttpServletRequest request) {
-    return Optional.ofNullable(request).map(req -> {
-      String remoteAddress = req.getHeader(HEADER_X_REAL_IP);
-      if (StringUtils.isNotBlank(remoteAddress) && !UNKNOWN.equalsIgnoreCase(remoteAddress)) {
-        return remoteAddress;
-      }
-      remoteAddress = req.getHeader(HEADER_X_FORWARDED_FOR);
-      if (StringUtils.isNotBlank(remoteAddress) && !UNKNOWN.equalsIgnoreCase(remoteAddress)) {
-        int index = remoteAddress.indexOf(SEPARATOR_REVERSE_PROXY_IP);
-        return index != -1 ? remoteAddress.substring(0, index) : remoteAddress;
-      }
-      remoteAddress = req.getHeader(HEADER_PROXY_CLIENT_IP);
-      if (StringUtils.isNotBlank(remoteAddress) && !UNKNOWN.equalsIgnoreCase(remoteAddress)) {
-        return remoteAddress;
-      }
-      remoteAddress = req.getHeader(HEADER_WL_PROXY_CLIENT_IP);
-      if (StringUtils.isNotBlank(remoteAddress) && !UNKNOWN.equalsIgnoreCase(remoteAddress)) {
-        return remoteAddress;
-      }
-      remoteAddress = req.getRemoteAddr();
+  public static String getRemoteAddr(HttpServletRequest request) {
+    String remoteAddr = Optional.ofNullable(request).map(HttpServletRequest::getRemoteAddr)
+        .filter(ip -> StringUtils.isNotBlank(ip) && !LOCALHOST_REMOTE_ADDRESS.equals(ip))
+        .orElse(null);
+    return StringOptional.ofNullable(remoteAddr).orElseGet(() -> {
       try {
-        return StringUtils.equals(LOCALHOST_REMOTE_ADDRESS, remoteAddress) ? InetAddress
-            .getLocalHost().getHostAddress() : remoteAddress;
+        return StringOptional.ofNullable(InetAddress.getLocalHost().getHostAddress()).orElse(null);
       } catch (UnknownHostException e) {
-        return remoteAddress;
+        return remoteAddr;
       }
-    }).orElse(StringUtils.EMPTY);
+    });
+  }
+
+  public static String getXRealIp(HttpServletRequest request) {
+    return Optional.ofNullable(request).map(req -> req.getHeader(HEADER_X_REAL_IP))
+        .filter(StringUtils::isNotBlank).orElse(null);
+  }
+
+  public static String getXForwardedFor(HttpServletRequest request) {
+    return Optional.ofNullable(request).map(req -> req.getHeader(HEADER_X_FORWARDED_FOR))
+        .filter(StringUtils::isNotBlank).map(ip -> ip.indexOf(SEPARATOR_REVERSE_PROXY_IP) == -1 ? ip
+            : ip.split(SEPARATOR_REVERSE_PROXY_IP)[0]).orElse(null);
+  }
+
+  public static String getProxyClientIp(HttpServletRequest request) {
+    return Optional.ofNullable(request).map(req -> req.getHeader(HEADER_PROXY_CLIENT_IP))
+        .filter(StringUtils::isNotBlank).orElse(null);
+  }
+
+  public static String getWlProxyClientIp(HttpServletRequest request) {
+    return Optional.ofNullable(request).map(req -> req.getHeader(HEADER_WL_PROXY_CLIENT_IP))
+        .filter(StringUtils::isNotBlank).orElse(null);
+  }
+
+  public static String getRemoteAddrPreferXRealIp(HttpServletRequest request) {
+    Optional<String> optional = Optional.ofNullable(getXRealIp(request))
+        .filter(ip -> !UNKNOWN.equalsIgnoreCase(ip));
+    if (optional.isPresent()) {
+      return optional.get();
+    }
+    optional = Optional.ofNullable(getXForwardedFor(request))
+        .filter(ip -> !UNKNOWN.equalsIgnoreCase(ip));
+    if (optional.isPresent()) {
+      return optional.get();
+    }
+    return getRemoteAddr(request);
+  }
+
+  public static String getRemoteAddrPreferXForwardedFor(HttpServletRequest request) {
+    Optional<String> optional = Optional.ofNullable(getXForwardedFor(request))
+        .filter(ip -> !UNKNOWN.equalsIgnoreCase(ip));
+    if (optional.isPresent()) {
+      return optional.get();
+    }
+    optional = Optional.ofNullable(getXRealIp(request)).filter(ip -> !UNKNOWN.equalsIgnoreCase(ip));
+    if (optional.isPresent()) {
+      return optional.get();
+    }
+    return getRemoteAddr(request);
   }
 
   public static String getUserAgentString(HttpServletRequest request) {
@@ -115,7 +148,7 @@ public class ServletUtils {
 
   public static boolean isAcceptApplicationJSON(HttpServletRequest request) {
     return Optional.ofNullable(request).map(req -> {
-      Enumeration<String> accepts = req.getHeaders(HEADER_ACCPET);
+      Enumeration<String> accepts = req.getHeaders(HEADER_ACCEPT);
       while (accepts.hasMoreElements()) {
         if (StringUtils.equalsIgnoreCase(APPLICATION_JSON, accepts.nextElement())) {
           return true;
