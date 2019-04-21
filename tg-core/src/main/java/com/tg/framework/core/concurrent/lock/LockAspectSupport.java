@@ -1,19 +1,16 @@
 package com.tg.framework.core.concurrent.lock;
 
+import com.tg.framework.core.AbstractExpressionAspect;
 import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.springframework.context.expression.MethodBasedEvaluationContext;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
 import org.springframework.expression.Expression;
-import org.springframework.expression.ExpressionParser;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.Assert;
 
-public abstract class LockAspectSupport<T extends LockService> {
+public abstract class LockAspectSupport<T extends LockService> extends AbstractExpressionAspect {
 
   protected T lockService;
   protected final Map<Method, Expression> expressionCache = new ConcurrentHashMap<>();
@@ -37,17 +34,6 @@ public abstract class LockAspectSupport<T extends LockService> {
   }
 
   protected abstract LockContext getLockContext(ProceedingJoinPoint proceedingJoinPoint);
-
-  protected String getExpressionKey(String key, Method method, Object[] args) {
-    Expression expression = Optional.ofNullable(expressionCache.get(method)).orElseGet(() -> {
-      ExpressionParser parser = new SpelExpressionParser();
-      Expression exp = parser.parseExpression(key);
-      expressionCache.put(method, exp);
-      return exp;
-    });
-    return expression
-        .getValue(new MethodBasedEvaluationContext(null, method, args, discoverer), String.class);
-  }
 
   public T getLockService() {
     return lockService;

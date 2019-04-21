@@ -7,6 +7,8 @@ import eu.bitwalker.useragentutils.UserAgent;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -139,6 +141,22 @@ public class ServletUtils {
   public static String getUrl(HttpServletRequest request) {
     return Optional.ofNullable(request).map(req -> getServerPath(req) + getRequestURI(req))
         .orElse(StringUtils.EMPTY);
+  }
+
+  public static String getHeader(HttpServletRequest request, String name) {
+    return Optional.ofNullable(request).map(req -> req.getHeader(name)).orElse(null);
+  }
+
+  public static Map<String, String> getHeaderMap(HttpServletRequest request) {
+    return Optional.ofNullable(request).map(req -> {
+      Enumeration<String> headerNames = req.getHeaderNames();
+      Map<String, String> map = new HashMap<>();
+      while (headerNames.hasMoreElements()) {
+        String headerName = headerNames.nextElement();
+        map.put(headerName, req.getHeader(headerName));
+      }
+      return map;
+    }).orElse(new HashMap<>());
   }
 
   public static boolean isXMLHttpRequest(HttpServletRequest request) {
