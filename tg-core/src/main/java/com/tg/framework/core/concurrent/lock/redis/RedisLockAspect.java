@@ -47,9 +47,8 @@ public class RedisLockAspect extends LockAspectSupport<RedisLockService> {
     Method method = ((MethodSignature) proceedingJoinPoint.getSignature()).getMethod();
     RedisLock lock = method.getAnnotation(RedisLock.class);
     String key = Optional.ofNullable(keyPrefix).map(p -> p + lock.key()).orElse(lock.key());
-    if (lock.useExpression()) {
-      key = getExpressionKey(lock.key(), method, proceedingJoinPoint.getArgs());
-    }
+    key = lock.useExpression() ? getExpressionValue(key, method, proceedingJoinPoint.getArgs(),
+        String.class) : key;
     long timeoutMillis =
         lock.timeout() == -1L ? defaultTimeoutMillis : lock.timeUnit().toMillis(lock.timeout());
     return new LockContext(key, timeoutMillis, lock.strategy(), lock.exceptionClass(),

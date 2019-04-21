@@ -41,9 +41,8 @@ public class LockAspect extends LockAspectSupport<LockService> {
   protected LockContext getLockContext(ProceedingJoinPoint proceedingJoinPoint) {
     Method method = ((MethodSignature) proceedingJoinPoint.getSignature()).getMethod();
     Lock lock = method.getAnnotation(Lock.class);
-    String key =
-        lock.useExpression() ? getExpressionKey(lock.key(), method, proceedingJoinPoint.getArgs())
-            : lock.key();
+    String key = lock.useExpression() ? getExpressionValue(lock.key(), method,
+        proceedingJoinPoint.getArgs(), String.class) : lock.key();
     long timeoutMillis =
         lock.timeout() == -1L ? defaultTimeoutMillis : lock.timeUnit().toMillis(lock.timeout());
     return new LockContext(key, timeoutMillis, lock.strategy(), lock.exceptionClass(),
