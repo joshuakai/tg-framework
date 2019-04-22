@@ -7,6 +7,7 @@ import com.tg.framework.core.data.jdbc.UseMaster;
 import com.tg.framework.core.data.jdbc.UseMasterAspect;
 import com.tg.framework.core.data.jdbc.UseSlave;
 import com.tg.framework.core.data.jdbc.UseSlaveAspect;
+import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import javax.sql.DataSource;
 import org.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor;
@@ -25,17 +26,17 @@ public class DynamicDataSourceConfig {
 
   private String masterPointcut;
   private String slavePointcut;
+  private HikariConfig master;
+  private HikariConfig slave;
 
   @Bean("masterDataSource")
-  @ConfigurationProperties("tg.datasource.master")
   public DataSource masterDataSource() {
-    return new HikariDataSource();
+    return new HikariDataSource(master);
   }
 
   @Bean("slaveDataSource")
-  @ConfigurationProperties("tg.datasource.slave")
   public DataSource slaveDataSource() {
-    return new HikariDataSource();
+    return new HikariDataSource(slave);
   }
 
   @Bean
@@ -77,5 +78,21 @@ public class DynamicDataSourceConfig {
 
   public void setSlavePointcut(String slavePointcut) {
     this.slavePointcut = slavePointcut;
+  }
+
+  public HikariConfig getMaster() {
+    return master;
+  }
+
+  public void setMaster(HikariConfig master) {
+    this.master = master;
+  }
+
+  public HikariConfig getSlave() {
+    return slave;
+  }
+
+  public void setSlave(HikariConfig slave) {
+    this.slave = slave;
   }
 }

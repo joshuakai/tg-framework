@@ -1,4 +1,4 @@
-package com.tg.framework.cloud.feign.boot;
+package com.tg.framework.cloud.boot.oauth2;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Import;
 
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@Import(DefaultFeignConfig.class)
-public @interface EnableDefaultFeign {
+@Import(DefaultOauth2ClientConfig.class)
+public @interface EnableDefaultOauth2Client {
 
 }

@@ -35,11 +35,6 @@
         <artifactId>tg-cloud</artifactId>
         <version>${project.version}</version>
       </dependency>
-      <dependency>
-        <groupId>com.tg.framework</groupId>
-        <artifactId>tg-cloud-feign</artifactId>
-        <version>${project.version}</version>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 </project>

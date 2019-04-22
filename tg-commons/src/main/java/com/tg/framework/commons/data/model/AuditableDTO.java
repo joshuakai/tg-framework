@@ -1,4 +1,4 @@
-package com.tg.framework.core.data.model;
+package com.tg.framework.commons.data.model;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
