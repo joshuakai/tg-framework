@@ -1,4 +1,4 @@
-package com.tg.framework.web.boot.webapp;
+package com.tg.framework.web.boot;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -1,4 +1,4 @@
-package com.tg.framework.core.constant;
+package com.tg.framework.commons.data.constant;
 
 import com.tg.framework.commons.validation.Matchable;
 

@@ -2,6 +2,7 @@ package com.tg.framework.cloud.boot.oauth2;
 
 import com.tg.framework.web.util.WebSecurityUtils;
 import javax.annotation.Resource;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -17,6 +18,9 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 public abstract class AbstractResourceServerConfig extends ResourceServerConfigurerAdapter {
+
+  @Value("${spring.application.name}")
+  private String resourceId;
 
   @Resource
   protected WebEndpointProperties webEndpointProperties;
@@ -49,7 +53,9 @@ public abstract class AbstractResourceServerConfig extends ResourceServerConfigu
     resources.resourceId(resourceId()).tokenServices(tokenServices());
   }
 
-  protected abstract String resourceId();
+  protected String resourceId() {
+    return resourceId;
+  }
 
   protected RequestMatcher[] ignoringRequestMatchers() throws Exception {
     return new RequestMatcher[]{new AntPathRequestMatcher(

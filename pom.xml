@@ -22,7 +22,6 @@
     <module>tg-core</module>
     <module>tg-web</module>
     <module>tg-cloud</module>
-    <module>tg-cloud-feign</module>
   </modules>
 
   <properties>

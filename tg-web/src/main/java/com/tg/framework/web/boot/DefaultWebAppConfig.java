@@ -1,4 +1,4 @@
-package com.tg.framework.web.boot.webapp;
+package com.tg.framework.web.boot;
 
 import com.tg.framework.web.boot.auditing.EnableDefaultAuditing;
 import com.tg.framework.web.boot.cache.EnableDefaultCaching;
