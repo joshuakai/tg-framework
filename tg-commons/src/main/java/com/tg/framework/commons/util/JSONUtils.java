@@ -1,5 +1,9 @@
 package com.tg.framework.commons.util;
 
+import static com.tg.framework.commons.util.JavaTimeUtils.PATTERN_H_MI_S;
+import static com.tg.framework.commons.util.JavaTimeUtils.PATTERN_Y_M_D;
+import static com.tg.framework.commons.util.JavaTimeUtils.PATTERN_Y_M_D_H_MI_S;
+
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -20,8 +24,6 @@ import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.tg.framework.commons.jackson.SensitivePropertySerializerModifier;
 import com.tg.framework.commons.lang.StringOptional;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -32,10 +34,6 @@ import java.util.Optional;
 import java.util.TimeZone;
 
 public class JSONUtils {
-
-  private static final String PATTERN_Y_M_D_H_MI_S = "yyyy-MM-dd HH:mm:ss";
-  private static final String PATTERN_Y_M_D = "yyyy-MM-dd";
-  private static final String PATTERN_H_MI_S = "HH:mm:ss";
 
   private static final ObjectMapper TRANSFER_OBJECT_MAPPER = new ObjectMapper()
       .setSerializerFactory(BeanSerializerFactory.instance
@@ -49,7 +47,7 @@ public class JSONUtils {
       .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
       .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
       .setTimeZone(TimeZone.getDefault())
-      .setDateFormat(buildDateFormat());
+      .setDateFormat(JavaTimeUtils.dateTimeFormat());
 
   private static final ObjectMapper SERIALIZATION_OBJECT_MAPPER = new ObjectMapper()
       .registerModule(new ParameterNamesModule())
@@ -74,13 +72,6 @@ public class JSONUtils {
     module.addDeserializer(LocalDate.class, new LocalDateDeserializer(dFormatter));
     module.addDeserializer(LocalTime.class, new LocalTimeDeserializer(tFormatter));
     return module;
-  }
-
-  private static DateFormat buildDateFormat() {
-    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(PATTERN_Y_M_D_H_MI_S,
-        Locale.getDefault());
-    simpleDateFormat.setLenient(true);
-    return simpleDateFormat;
   }
 
   public static ObjectMapper transferObjectMapper() {

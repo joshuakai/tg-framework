@@ -1,6 +1,14 @@
 package com.tg.framework.web.boot.mvc;
 
 import com.tg.framework.commons.util.JSONUtils;
+import com.tg.framework.web.boot.mvc.formatter.CompositeDateFormatter;
+import com.tg.framework.web.boot.mvc.formatter.LocalDateFormatter;
+import com.tg.framework.web.boot.mvc.formatter.LocalDateTimeFormatter;
+import com.tg.framework.web.boot.mvc.formatter.LocalTimeFormatter;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Date;
 import java.util.List;
 import org.hibernate.validator.HibernateValidator;
 import org.springframework.context.MessageSource;
@@ -9,6 +17,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
+import org.springframework.format.FormatterRegistry;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.validation.Validator;
@@ -44,6 +53,14 @@ public class DefaultWebMvcConfig implements WebMvcConfigurer {
   @Override
   public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
     converters.add(mappingJackson2HttpMessageConverter());
+  }
+
+  @Override
+  public void addFormatters(FormatterRegistry registry) {
+    registry.addFormatterForFieldType(Date.class, new CompositeDateFormatter());
+    registry.addFormatterForFieldType(LocalDateTime.class, new LocalDateTimeFormatter());
+    registry.addFormatterForFieldType(LocalDate.class, new LocalDateFormatter());
+    registry.addFormatterForFieldType(LocalTime.class, new LocalTimeFormatter());
   }
 
   @Override
