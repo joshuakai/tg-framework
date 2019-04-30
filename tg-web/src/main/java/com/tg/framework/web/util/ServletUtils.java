@@ -1,5 +1,6 @@
 package com.tg.framework.web.util;
 
+import com.tg.framework.commons.http.RequestDetails;
 import com.tg.framework.commons.lang.StringOptional;
 import eu.bitwalker.useragentutils.DeviceType;
 import eu.bitwalker.useragentutils.OperatingSystem;
@@ -13,6 +14,7 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -22,8 +24,8 @@ public class ServletUtils {
   private static final String HEADER_X_REAL_IP = "X-Real-IP";
   private static final String HEADER_X_FORWARDED_FOR = "x-forwarded-for";
   private static final String SEPARATOR_REVERSE_PROXY_IP = ",";
-  private static final String HEADER_PROXY_CLIENT_IP = "Proxy-Client-IP";
-  private static final String HEADER_WL_PROXY_CLIENT_IP = "WL-Proxy-Client-IP";
+  private static final String HEADER_PROXY_CLIENT_IP = "Proxy-RequestDetails-IP";
+  private static final String HEADER_WL_PROXY_CLIENT_IP = "WL-Proxy-RequestDetails-IP";
   private static final String HEADER_USER_AGENT = "user-agent";
   private static final String HEADER_X_REQUESTED_WITH = "x-requested-with";
   private static final String HEADER_ACCEPT = "Accept";
@@ -36,6 +38,11 @@ public class ServletUtils {
   private static final String APPLICATION_JSON = "application/json";
 
   private ServletUtils() {
+  }
+
+  public static String getSessionId(HttpServletRequest request, boolean create) {
+    return Optional.ofNullable(request).map(req -> req.getSession(create)).map(HttpSession::getId)
+        .orElse(null);
   }
 
   public static String getRemoteAddr(HttpServletRequest request) {
@@ -192,6 +199,13 @@ public class ServletUtils {
     return Optional
         .ofNullable((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
         .map(ServletRequestAttributes::getRequest).map(HttpServletRequest::getSession).orElse(null);
+  }
+
+  public static RequestDetails getRequestDetails(HttpServletRequest request) {
+    return Optional.ofNullable(request).map(
+        req -> new RequestDetails(getSessionId(request, false), getUrl(req), getRemoteAddr(req),
+            getRemoteAddrPreferXForwardedFor(req), getRemoteAddrPreferXRealIp(req),
+            UserAgent.parseUserAgentString(req.getHeader(HttpHeaders.USER_AGENT)))).orElse(null);
   }
 
 }

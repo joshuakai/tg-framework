@@ -1,6 +1,6 @@
 package com.tg.framework.core.exception;
 
-public class NestedException extends Exception {
+public abstract class NestedException extends Exception {
 
   private static final long serialVersionUID = 8738716899287151836L;
 
@@ -59,6 +59,22 @@ public class NestedException extends Exception {
       boolean enableSuppression, boolean writableStackTrace) {
     super(message, cause, enableSuppression, writableStackTrace);
     this.code = code;
+    this.args = args;
+  }
+
+  public String getCode() {
+    return code;
+  }
+
+  public void setCode(String code) {
+    this.code = code;
+  }
+
+  public Object[] getArgs() {
+    return args;
+  }
+
+  public void setArgs(Object[] args) {
     this.args = args;
   }
 }

@@ -29,20 +29,10 @@ public class DynamicDataSourceConfig {
   private HikariConfig master;
   private HikariConfig slave;
 
-  @Bean("masterDataSource")
-  public DataSource masterDataSource() {
-    return new HikariDataSource(master);
-  }
-
-  @Bean("slaveDataSource")
-  public DataSource slaveDataSource() {
-    return new HikariDataSource(slave);
-  }
-
   @Bean
   @Primary
   public DataSource dataSource() {
-    return new DynamicDataSource(masterDataSource(), slaveDataSource());
+    return new DynamicDataSource(new HikariDataSource(master), new HikariDataSource(slave));
   }
 
   @Bean

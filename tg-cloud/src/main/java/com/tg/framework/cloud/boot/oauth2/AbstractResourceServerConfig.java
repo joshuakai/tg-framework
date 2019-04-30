@@ -2,44 +2,49 @@ package com.tg.framework.cloud.boot.oauth2;
 
 import com.tg.framework.web.util.WebSecurityUtils;
 import javax.annotation.Resource;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
+import org.springframework.boot.autoconfigure.security.oauth2.OAuth2ClientProperties;
+import org.springframework.boot.autoconfigure.security.oauth2.authserver.AuthorizationServerProperties;
+import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
-import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
-import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.redis.RedisTokenStore;
+import org.springframework.security.oauth2.provider.token.RemoteTokenServices;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
+import org.springframework.web.client.RestTemplate;
 
+@EnableConfigurationProperties(AuthorizationServerProperties.class)
 public abstract class AbstractResourceServerConfig extends ResourceServerConfigurerAdapter {
 
-  @Value("${spring.application.name}")
-  private String resourceId;
-
+  @Resource
+  private ResourceServerProperties resource;
+  @Resource
+  private OAuth2ClientProperties oAuth2ClientProperties;
+  @Resource
+  private AuthorizationServerProperties authorizationServerProperties;
   @Resource
   protected WebEndpointProperties webEndpointProperties;
 
-  @Resource
-  protected RedisConnectionFactory redisConnectionFactory;
-
   @Bean
-  @Primary
-  public TokenStore tokenStore() {
-    return new RedisTokenStore(redisConnectionFactory);
+  @LoadBalanced
+  public RestTemplate restTemplate() {
+    return new RestTemplate();
   }
 
   @Bean
-  @Primary
-  public DefaultTokenServices tokenServices() {
-    DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
-    defaultTokenServices.setTokenStore(tokenStore());
-    return defaultTokenServices;
+  public RemoteTokenServices remoteTokenServices() {
+    RemoteTokenServices remoteTokenServices = new RemoteTokenServices();
+    remoteTokenServices.setRestTemplate(restTemplate());
+    remoteTokenServices.setClientId(oAuth2ClientProperties.getClientId());
+    remoteTokenServices.setClientSecret(oAuth2ClientProperties.getClientSecret());
+    remoteTokenServices
+        .setCheckTokenEndpointUrl(authorizationServerProperties.getCheckTokenAccess());
+    return remoteTokenServices;
   }
 
   @Override
@@ -49,18 +54,18 @@ public abstract class AbstractResourceServerConfig extends ResourceServerConfigu
   }
 
   @Override
-  public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
-    resources.resourceId(resourceId()).tokenServices(tokenServices());
+  public void configure(ResourceServerSecurityConfigurer resources) {
+    resources.resourceId(resource.getResourceId()).tokenServices(remoteTokenServices());
   }
 
-  protected String resourceId() {
-    return resourceId;
+  protected RequestMatcher actuatorRequestMatcher() {
+    return new AntPathRequestMatcher(
+        WebSecurityUtils.antPatternOfBasePath(webEndpointProperties.getBasePath()),
+        HttpMethod.GET.toString());
   }
 
   protected RequestMatcher[] ignoringRequestMatchers() throws Exception {
-    return new RequestMatcher[]{new AntPathRequestMatcher(
-        WebSecurityUtils.antPatternOfBasePath(webEndpointProperties.getBasePath()),
-        HttpMethod.GET.toString())};
+    return new RequestMatcher[]{actuatorRequestMatcher()};
   }
 
 }

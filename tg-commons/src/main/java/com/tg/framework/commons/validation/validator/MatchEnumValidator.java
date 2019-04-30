@@ -37,7 +37,7 @@ public class MatchEnumValidator implements ConstraintValidator<MatchEnum, Object
   public void initialize(MatchEnum constraintAnnotation) {
     enumClass = constraintAnnotation.enumClass();
     isInteger = ReflectionUtils.getGenericType(enumClass)
-        .filter(t -> t.isAssignableFrom(Integer.class)).isPresent();
+        .filter(t -> Integer.class.isAssignableFrom(t)).isPresent();
     multiple = constraintAnnotation.multiple();
     separator = constraintAnnotation.separator();
   }

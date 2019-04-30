@@ -2,6 +2,7 @@ package com.tg.framework.cloud.boot.oauth2;
 
 import javax.annotation.Resource;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
@@ -20,11 +21,13 @@ public abstract class AbstractAuthorizationServerConfig extends
   protected AuthenticationManager authenticationManager;
 
   @Bean
+  @Primary
   public TokenStore tokenStore() {
     return new RedisTokenStore(connectionFactory);
   }
 
   @Bean
+  @Primary
   public DefaultTokenServices tokenServices() {
     DefaultTokenServices defaultTokenServices = new DefaultTokenServices();
     defaultTokenServices.setTokenStore(tokenStore());

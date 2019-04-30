@@ -47,7 +47,6 @@ public class DefaultCachingConfig extends CachingConfigurerSupport {
             RedisSerializationContext.SerializationPair.fromSerializer(keySerializer()))
         .serializeValuesWith(
             RedisSerializationContext.SerializationPair.fromSerializer(valueSerializer()))
-        .disableCachingNullValues()
         .entryTtl(Duration.ofNanos(-1));
     return RedisCacheManagerBuilder.fromConnectionFactory(lettuceConnectionFactory)
         .cacheDefaults(redisCacheConfiguration).build();
