@@ -4,7 +4,7 @@ import com.tg.framework.commons.validation.Matchable;
 
 public enum CaptchaType implements Matchable<String> {
 
-  NOOP, TENCENT, GOOGLE_AUTHENTICATOR;
+  NOOP;
 
   @Override
   public String getValue() {

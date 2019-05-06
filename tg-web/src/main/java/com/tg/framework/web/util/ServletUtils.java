@@ -45,6 +45,10 @@ public class ServletUtils {
         .orElse(null);
   }
 
+  public static String getSessionId(HttpServletRequest request) {
+    return getSessionId(request, false);
+  }
+
   public static String getRemoteAddr(HttpServletRequest request) {
     String remoteAddr = Optional.ofNullable(request).map(HttpServletRequest::getRemoteAddr)
         .filter(ip -> StringUtils.isNotBlank(ip) && !LOCALHOST_REMOTE_ADDRESS.equals(ip))

@@ -1,11 +1,9 @@
-package com.tg.framework.web.filter;
+package com.tg.framework.web.captcha.filter;
 
-import com.tg.framework.commons.captcha.CaptchaProvider;
 import com.tg.framework.web.captcha.CaptchaArgumentResolver;
 import com.tg.framework.web.captcha.CaptchaFailureHandler;
-import com.tg.framework.web.captcha.exception.InvalidCaptchaException;
+import com.tg.framework.web.captcha.CaptchaProvider;
 import com.tg.framework.web.captcha.support.DefaultCaptchaFailureHandler;
-import com.tg.framework.web.util.ServletUtils;
 import java.io.IOException;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -32,10 +30,9 @@ public class CaptchaFilter extends OncePerRequestFilter {
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
-    if (!captchaProvider.getCaptchaValidator(ServletUtils.getRequestDetails(request))
+    if (!captchaProvider.provide(request)
         .validate(captchaArgumentResolver.resolveArgument(request))) {
-      captchaFailureHandler
-          .onCaptchaFailure(request, response, new InvalidCaptchaException("Invalid CAPTCHA."));
+      captchaFailureHandler.onCaptchaFailure(request, response, null);
     }
     filterChain.doFilter(request, response);
   }

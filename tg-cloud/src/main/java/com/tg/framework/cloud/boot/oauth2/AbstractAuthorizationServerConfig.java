@@ -37,9 +37,7 @@ public abstract class AbstractAuthorizationServerConfig extends
 
   @Override
   public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
-    security.allowFormAuthenticationForClients()
-        .checkTokenAccess("isAuthenticated()")
-        .tokenKeyAccess("permitAll()");
+    security.checkTokenAccess("isAuthenticated()").tokenKeyAccess("permitAll()");
   }
 
   @Override

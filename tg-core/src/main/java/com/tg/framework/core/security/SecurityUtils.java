@@ -19,4 +19,20 @@ public class SecurityUtils {
     return getAuthentication().map(Authentication::getPrincipal);
   }
 
+  public static Optional<Object> getPrincipal(Authentication authentication) {
+    return Optional.ofNullable(authentication).map(Authentication::getPrincipal);
+  }
+
+  public static <T> Optional<T> getPrincipal(Class<T> clazz) {
+    return safetyMap(getPrincipal(), clazz);
+  }
+
+  public static <T> Optional<T> getPrincipal(Authentication authentication, Class<T> clazz) {
+    return safetyMap(getPrincipal(authentication), clazz);
+  }
+
+  private static <T> Optional<T> safetyMap(Optional<Object> optional, Class<T> clazz) {
+    return optional.filter(p -> clazz.isAssignableFrom(p.getClass())).map(p -> (T) p);
+  }
+
 }
