@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -38,15 +37,6 @@ public class ServletUtils {
   private static final String APPLICATION_JSON = "application/json";
 
   private ServletUtils() {
-  }
-
-  public static String getSessionId(HttpServletRequest request, boolean create) {
-    return Optional.ofNullable(request).map(req -> req.getSession(create)).map(HttpSession::getId)
-        .orElse(null);
-  }
-
-  public static String getSessionId(HttpServletRequest request) {
-    return getSessionId(request, false);
   }
 
   public static String getRemoteAddr(HttpServletRequest request) {
@@ -85,12 +75,12 @@ public class ServletUtils {
 
   public static String getRemoteAddrPreferXRealIp(HttpServletRequest request) {
     Optional<String> optional = Optional.ofNullable(getXRealIp(request))
-        .filter(ip -> !UNKNOWN.equalsIgnoreCase(ip));
+        .filter(ip -> !UNKNOWN.equalsIgnoreCase(ip) && !LOCALHOST_REMOTE_ADDRESS.equals(ip));
     if (optional.isPresent()) {
       return optional.get();
     }
     optional = Optional.ofNullable(getXForwardedFor(request))
-        .filter(ip -> !UNKNOWN.equalsIgnoreCase(ip));
+        .filter(ip -> !UNKNOWN.equalsIgnoreCase(ip) && !LOCALHOST_REMOTE_ADDRESS.equals(ip));
     if (optional.isPresent()) {
       return optional.get();
     }
@@ -99,11 +89,13 @@ public class ServletUtils {
 
   public static String getRemoteAddrPreferXForwardedFor(HttpServletRequest request) {
     Optional<String> optional = Optional.ofNullable(getXForwardedFor(request))
-        .filter(ip -> !UNKNOWN.equalsIgnoreCase(ip));
+        .filter(ip -> !UNKNOWN.equalsIgnoreCase(ip) && !LOCALHOST_REMOTE_ADDRESS
+            .equals(ip));
     if (optional.isPresent()) {
       return optional.get();
     }
-    optional = Optional.ofNullable(getXRealIp(request)).filter(ip -> !UNKNOWN.equalsIgnoreCase(ip));
+    optional = Optional.ofNullable(getXRealIp(request))
+        .filter(ip -> !UNKNOWN.equalsIgnoreCase(ip) && !LOCALHOST_REMOTE_ADDRESS.equals(ip));
     if (optional.isPresent()) {
       return optional.get();
     }
@@ -199,15 +191,9 @@ public class ServletUtils {
         .map(ServletRequestAttributes::getRequest).orElse(null);
   }
 
-  public static HttpSession getCurrentSession() {
-    return Optional
-        .ofNullable((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
-        .map(ServletRequestAttributes::getRequest).map(HttpServletRequest::getSession).orElse(null);
-  }
-
   public static RequestDetails getRequestDetails(HttpServletRequest request) {
     return Optional.ofNullable(request).map(
-        req -> new RequestDetails(getSessionId(request, false), getUrl(req), getRemoteAddr(req),
+        req -> new RequestDetails(getUrl(req), getRemoteAddr(req),
             getRemoteAddrPreferXForwardedFor(req), getRemoteAddrPreferXRealIp(req),
             UserAgent.parseUserAgentString(req.getHeader(HttpHeaders.USER_AGENT)))).orElse(null);
   }

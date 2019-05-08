@@ -6,7 +6,6 @@ import java.io.Serializable;
 
 public class RequestDetails implements Serializable {
 
-  private String sessionId;
   private String url;
   private String remoteAddress;
   private String xRealIp;
@@ -16,22 +15,13 @@ public class RequestDetails implements Serializable {
   public RequestDetails() {
   }
 
-  public RequestDetails(String sessionId, String url, String remoteAddress, String xRealIp,
-      String xForwardedFor, UserAgent userAgent) {
-    this.sessionId = sessionId;
+  public RequestDetails(String url, String remoteAddress, String xRealIp, String xForwardedFor,
+      UserAgent userAgent) {
     this.url = url;
     this.remoteAddress = remoteAddress;
     this.xRealIp = xRealIp;
     this.xForwardedFor = xForwardedFor;
     this.userAgent = userAgent;
-  }
-
-  public String getSessionId() {
-    return sessionId;
-  }
-
-  public void setSessionId(String sessionId) {
-    this.sessionId = sessionId;
   }
 
   public String getUrl() {
@@ -77,7 +67,6 @@ public class RequestDetails implements Serializable {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(this)
-        .add("sessionId", sessionId)
         .add("url", url)
         .add("remoteAddress", remoteAddress)
         .add("xRealIp", xRealIp)
