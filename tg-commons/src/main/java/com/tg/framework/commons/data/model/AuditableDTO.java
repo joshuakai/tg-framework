@@ -5,21 +5,21 @@ import com.google.common.base.Objects;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public abstract class AuditableDTO implements Serializable {
+public abstract class AuditableDTO<ID extends Serializable> implements Serializable {
 
   private static final long serialVersionUID = -5388306031879399375L;
 
-  private Long id;
+  private ID id;
   private LocalDateTime createdAt;
   private String createdBy;
   private LocalDateTime lastModifiedAt;
   private String lastModifiedBy;
 
-  public Long getId() {
+  public ID getId() {
     return id;
   }
 
-  public void setId(Long id) {
+  public void setId(ID id) {
     this.id = id;
   }
 
