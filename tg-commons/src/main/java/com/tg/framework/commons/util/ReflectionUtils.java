@@ -2,12 +2,23 @@ package com.tg.framework.commons.util;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.util.Optional;
 
 public class ReflectionUtils {
 
   private ReflectionUtils() {
+  }
+
+  public static Optional<Method> getMethod(Class<?> clazz, String name,
+      Class<?>... parameterTypes) {
+    Method method = null;
+    try {
+      method = clazz.getDeclaredMethod(name, parameterTypes);
+    } catch (NoSuchMethodException e) {
+    }
+    return Optional.ofNullable(method);
   }
 
   public static <T> Optional<Class<T>> getGenericType(Class<?> clazz, int position) {

@@ -7,7 +7,6 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-import com.tg.framework.commons.validation.Matchable;
 import com.tg.framework.commons.validation.validator.MatchEnumValidator;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -27,7 +26,9 @@ public @interface MatchEnum {
 
   Class<? extends Payload>[] payload() default {};
 
-  Class<? extends Matchable> enumClass();
+  Class<?> enumClass();
+
+  String valueAccessor() default "getValue";
 
   boolean multiple() default false;
 

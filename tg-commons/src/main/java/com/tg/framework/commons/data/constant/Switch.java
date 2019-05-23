@@ -1,8 +1,6 @@
 package com.tg.framework.commons.data.constant;
 
-import com.tg.framework.commons.validation.Matchable;
-
-public enum Switch implements Matchable<Integer> {
+public enum Switch {
 
   CLOSE(0), OPEN(1);
   private int value;
@@ -11,7 +9,6 @@ public enum Switch implements Matchable<Integer> {
     this.value = value;
   }
 
-  @Override
   public Integer getValue() {
     return value;
   }

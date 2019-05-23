@@ -16,6 +16,6 @@ public class DefaultCaptchaFailureHandler implements CaptchaFailureHandler {
   public void onCaptchaFailure(HttpServletRequest request, HttpServletResponse response,
       CaptchaType captchaType) throws IOException, ServletException {
     throw new InvalidCaptchaException(
-        Optional.ofNullable(captchaType).map(CaptchaType::getValue).orElse(StringUtils.EMPTY));
+        Optional.ofNullable(captchaType).map(CaptchaType::name).orElse(StringUtils.EMPTY));
   }
 }

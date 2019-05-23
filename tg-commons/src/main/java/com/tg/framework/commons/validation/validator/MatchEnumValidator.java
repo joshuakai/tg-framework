@@ -1,8 +1,8 @@
 package com.tg.framework.commons.validation.validator;
 
 import com.tg.framework.commons.util.ReflectionUtils;
-import com.tg.framework.commons.validation.Matchable;
 import com.tg.framework.commons.validation.constraint.MatchEnum;
+import java.lang.reflect.Method;
 import java.util.stream.Stream;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
@@ -10,8 +10,8 @@ import org.apache.commons.lang3.StringUtils;
 
 public class MatchEnumValidator implements ConstraintValidator<MatchEnum, Object> {
 
-  private Class<? extends Matchable> enumClass;
-  private boolean isInteger;
+  private Class<?> enumClass;
+  private Method valueAccessor;
   private boolean multiple;
   private String separator;
 
@@ -21,25 +21,37 @@ public class MatchEnumValidator implements ConstraintValidator<MatchEnum, Object
       return true;
     } else if (value instanceof String && multiple) {
       String str = (String) value;
-      if (isInteger) {
-        return Stream.of(StringUtils.split(str, separator))
-            .map(s -> Integer.parseInt(s))
-            .allMatch(v -> Stream.of(enumClass.getEnumConstants()).anyMatch(e -> e.matches(v)));
-      }
-      return Stream.of(StringUtils.split(str, separator))
-          .allMatch(v -> Stream.of(enumClass.getEnumConstants()).anyMatch(e -> e.matches(v)));
+      return Stream.of(StringUtils.split(str, separator)).allMatch(
+          v -> Stream.of(enumClass.getEnumConstants()).map(this::accessEnumValue)
+              .anyMatch(ev -> equals(v, ev)));
     } else {
-      return Stream.of(enumClass.getEnumConstants()).anyMatch(e -> e.matches(value));
+      return Stream.of(enumClass.getEnumConstants()).map(this::accessEnumValue)
+          .anyMatch(ev -> equals(value, ev));
     }
   }
 
   @Override
   public void initialize(MatchEnum constraintAnnotation) {
     enumClass = constraintAnnotation.enumClass();
-    isInteger = ReflectionUtils.getGenericType(enumClass)
-        .filter(t -> Integer.class.isAssignableFrom(t)).isPresent();
+    valueAccessor = ReflectionUtils.getMethod(enumClass, constraintAnnotation.valueAccessor())
+        .orElseThrow(() -> new IllegalArgumentException("Invalid valueAccessor."));
     multiple = constraintAnnotation.multiple();
     separator = constraintAnnotation.separator();
+  }
+
+  private Object accessEnumValue(Object object) {
+    try {
+      return valueAccessor.invoke(object);
+    } catch (Exception e) {
+      throw new IllegalArgumentException("Invalid valueAccessor.");
+    }
+  }
+
+  private static boolean equals(Object value, Object enumValue) {
+    if (value.getClass() == enumValue.getClass()) {
+      return value.equals(enumValue);
+    }
+    return StringUtils.equals(value.toString(), enumValue.toString());
   }
 
 }
