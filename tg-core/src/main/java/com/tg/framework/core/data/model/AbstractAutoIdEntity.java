@@ -1,6 +1,8 @@
 package com.tg.framework.core.data.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 import java.io.Serializable;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -22,8 +24,13 @@ public abstract class AbstractAutoIdEntity<ID extends Serializable> implements P
   protected transient boolean persisted = true;
 
   @Override
+  @JsonIgnore
   public boolean isNew() {
     return !persisted;
+  }
+
+  public void setPersisted(boolean persisted) {
+    this.persisted = persisted;
   }
 
   @Override
@@ -33,14 +40,6 @@ public abstract class AbstractAutoIdEntity<ID extends Serializable> implements P
 
   public void setId(ID id) {
     this.id = id;
-  }
-
-  public boolean isPersisted() {
-    return persisted;
-  }
-
-  public void setPersisted(boolean persisted) {
-    this.persisted = persisted;
   }
 
   @Override
@@ -57,12 +56,12 @@ public abstract class AbstractAutoIdEntity<ID extends Serializable> implements P
 
   @Override
   public int hashCode() {
-    return com.google.common.base.Objects.hashCode(id);
+    return Objects.hashCode(id);
   }
 
   @Override
   public String toString() {
-    return com.google.common.base.MoreObjects.toStringHelper(this)
+    return MoreObjects.toStringHelper(this)
         .add("id", id)
         .toString();
   }

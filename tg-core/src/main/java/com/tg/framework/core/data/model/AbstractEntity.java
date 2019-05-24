@@ -1,5 +1,8 @@
 package com.tg.framework.core.data.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 import java.io.Serializable;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -17,6 +20,7 @@ public abstract class AbstractEntity implements Persistable<Long>, Serializable 
   protected Long id;
 
   @Override
+  @JsonIgnore
   public boolean isNew() {
     return id == null;
   }
@@ -44,12 +48,12 @@ public abstract class AbstractEntity implements Persistable<Long>, Serializable 
 
   @Override
   public int hashCode() {
-    return com.google.common.base.Objects.hashCode(id);
+    return Objects.hashCode(id);
   }
 
   @Override
   public String toString() {
-    return com.google.common.base.MoreObjects.toStringHelper(this)
+    return MoreObjects.toStringHelper(this)
         .add("id", id)
         .toString();
   }
