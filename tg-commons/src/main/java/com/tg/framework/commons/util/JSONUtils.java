@@ -7,6 +7,7 @@ import static com.tg.framework.commons.util.JavaTimeUtils.PATTERN_Y_M_D_H_MI_S;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -131,7 +132,7 @@ public class JSONUtils {
     return optional.orElse(defaultValue);
   }
 
-  public static <T> T readValueAs(String json, Class<T> clazz) {
+  private static <T> T readValueAs(String json, Class<T> clazz) {
     try {
       return transferObjectMapper().readerFor(clazz).readValue(json);
     } catch (Exception e) {
@@ -139,9 +140,29 @@ public class JSONUtils {
     }
   }
 
-  public static <T> T toObject(String json, Class<T> clazz, T defaultValue) {
+  private static <T> T readValueAs(String json, TypeReference<T> typeReference) {
+    try {
+      return transferObjectMapper().readValue(json, typeReference);
+    } catch (Exception e) {
+      return null;
+    }
+  }
+
+  public static <T> Optional<T> toObject(String json, Class<T> clazz) {
     return StringOptional.ofNullable(json)
-        .map(j -> Optional.ofNullable(clazz).map(c -> readValueAs(j, c))).get()
-        .orElse(defaultValue);
+        .map(j -> Optional.ofNullable(clazz).map(c -> readValueAs(j, c)).orElse(null));
+  }
+
+  public static <T> T toObject(String json, Class<T> clazz, T defaultValue) {
+    return toObject(json, clazz).orElse(defaultValue);
+  }
+
+  public static <T> Optional<T> toObject(String json, TypeReference<T> typeReference) {
+    return StringOptional.ofNullable(json)
+        .map(j -> Optional.ofNullable(typeReference).map(t -> readValueAs(j, t)).orElse(null));
+  }
+
+  public static <T> T toObject(String json, TypeReference<T> typeReference, T defaultValue) {
+    return toObject(json, typeReference).orElse(defaultValue);
   }
 }

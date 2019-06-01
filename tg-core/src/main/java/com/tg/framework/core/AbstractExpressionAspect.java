@@ -31,7 +31,9 @@ public abstract class AbstractExpressionAspect {
     return Optional.ofNullable(expressionCache.get(method)).orElseGet(() -> {
       ExpressionParser parser = new SpelExpressionParser();
       Expression exp = parser.parseExpression(expressionString);
-      expressionCache.put(method, exp);
+      if (expressionCache.putIfAbsent(method, exp) != null) {
+        return expressionCache.get(method);
+      }
       return exp;
     });
   }

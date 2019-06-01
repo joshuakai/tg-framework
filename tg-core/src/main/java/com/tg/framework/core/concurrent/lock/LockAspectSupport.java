@@ -1,20 +1,12 @@
 package com.tg.framework.core.concurrent.lock;
 
 import com.tg.framework.core.AbstractExpressionAspect;
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.springframework.core.DefaultParameterNameDiscoverer;
-import org.springframework.core.ParameterNameDiscoverer;
-import org.springframework.expression.Expression;
 import org.springframework.util.Assert;
 
 public abstract class LockAspectSupport<T extends LockService> extends AbstractExpressionAspect {
 
   protected T lockService;
-  protected final Map<Method, Expression> expressionCache = new ConcurrentHashMap<>();
-  protected final ParameterNameDiscoverer discoverer = new DefaultParameterNameDiscoverer();
 
   public LockAspectSupport(T lockService) {
     Assert.notNull(lockService, "LockService must not be null.");

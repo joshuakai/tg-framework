@@ -29,16 +29,16 @@ public abstract class AbstractResourceServerConfig extends ResourceServerConfigu
   @Resource
   private AuthorizationServerProperties authorizationServerProperties;
 
-  @Bean
+  @Bean("remoteTokenRestTemplate")
   @LoadBalanced
-  public RestTemplate restTemplate() {
+  public RestTemplate remoteTokenRestTemplate() {
     return new RestTemplate();
   }
 
   @Bean
   public RemoteTokenServices remoteTokenServices() {
     RemoteTokenServices remoteTokenServices = new RemoteTokenServices();
-    remoteTokenServices.setRestTemplate(restTemplate());
+    remoteTokenServices.setRestTemplate(remoteTokenRestTemplate());
     remoteTokenServices.setClientId(oAuth2ClientProperties.getClientId());
     remoteTokenServices.setClientSecret(oAuth2ClientProperties.getClientSecret());
     remoteTokenServices

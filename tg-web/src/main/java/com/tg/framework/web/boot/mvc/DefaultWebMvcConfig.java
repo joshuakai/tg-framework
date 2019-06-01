@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -128,6 +129,18 @@ public class DefaultWebMvcConfig implements WebMvcConfigurer {
     validator.setProviderClass(HibernateValidator.class);
     validator.setValidationMessageSource(messageSource());
     return validator;
+  }
+
+  @Bean("defaultRestTemplate")
+  public RestTemplate defaultRestTemplate() {
+    RestTemplate restTemplate = new RestTemplate();
+    List<HttpMessageConverter<?>> messageConverters = restTemplate.getMessageConverters();
+    for (int i = 0; i < messageConverters.size(); i++) {
+      if (MappingJackson2HttpMessageConverter.class == messageConverters.get(i).getClass()) {
+        messageConverters.set(i, mappingJackson2HttpMessageConverter());
+      }
+    }
+    return restTemplate;
   }
 
   @Override
