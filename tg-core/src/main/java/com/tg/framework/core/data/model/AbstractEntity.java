@@ -1,6 +1,5 @@
 package com.tg.framework.core.data.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import java.io.Serializable;
@@ -8,10 +7,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
-import org.springframework.data.domain.Persistable;
 
 @MappedSuperclass
-public abstract class AbstractEntity implements Persistable<Long>, Serializable {
+public abstract class AbstractEntity implements Serializable {
 
   private static final long serialVersionUID = -4310185734158672574L;
 
@@ -19,13 +17,6 @@ public abstract class AbstractEntity implements Persistable<Long>, Serializable 
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   protected Long id;
 
-  @Override
-  @JsonIgnore
-  public boolean isNew() {
-    return id == null;
-  }
-
-  @Override
   public Long getId() {
     return this.id;
   }

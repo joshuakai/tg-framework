@@ -4,7 +4,7 @@ public class HttpClientException extends BusinessException {
 
   private static final long serialVersionUID = -961770641625806479L;
 
-  public static final String PRESENT_CODE = "DomainObject#HttpClientError";
+  public static final String PRESENT_CODE = "HttpClient#HttpClientError";
 
   public HttpClientException() {
     super(PRESENT_CODE);
