@@ -1,5 +1,6 @@
 package com.tg.framework.cloud.boot.oauth2;
 
+import java.io.IOException;
 import javax.annotation.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties;
@@ -9,12 +10,14 @@ import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceS
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.RemoteTokenServices;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
+import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
 
 @EnableConfigurationProperties(AuthorizationServerProperties.class)
@@ -32,7 +35,17 @@ public abstract class AbstractResourceServerConfig extends ResourceServerConfigu
   @Bean("remoteTokenRestTemplate")
   @LoadBalanced
   public RestTemplate remoteTokenRestTemplate() {
-    return new RestTemplate();
+    RestTemplate restTemplate = new RestTemplate();
+    restTemplate.setErrorHandler(new DefaultResponseErrorHandler() {
+      @Override
+      // Ignore 400
+      public void handleError(ClientHttpResponse response) throws IOException {
+        if (response.getRawStatusCode() != 400) {
+          super.handleError(response);
+        }
+      }
+    });
+    return restTemplate;
   }
 
   @Bean
