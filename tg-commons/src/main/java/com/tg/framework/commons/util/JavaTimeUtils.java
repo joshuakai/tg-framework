@@ -325,11 +325,11 @@ public class JavaTimeUtils {
   }
 
   public static LocalDateTime parseLocalDateTime(String str, Locale locale) {
-    return parseLocalDateTime(str, localTimeFormatter(locale));
+    return parseLocalDateTime(str, localDateTimeFormatter(locale));
   }
 
   public static LocalDateTime parseLocalDateTime(String str) {
-    return parseLocalDateTime(str, localTimeFormatter());
+    return parseLocalDateTime(str, localDateTimeFormatter());
   }
 
 
