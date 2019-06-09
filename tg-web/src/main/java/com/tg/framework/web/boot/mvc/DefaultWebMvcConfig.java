@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import org.hibernate.validator.HibernateValidator;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,6 +27,7 @@ import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.validation.Validator;
@@ -133,7 +135,11 @@ public class DefaultWebMvcConfig implements WebMvcConfigurer {
 
   @Bean("defaultRestTemplate")
   public RestTemplate defaultRestTemplate() {
-    RestTemplate restTemplate = new RestTemplate();
+    HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
+    httpRequestFactory.setConnectionRequestTimeout(2000);
+    httpRequestFactory.setConnectTimeout(3000);
+    httpRequestFactory.setReadTimeout(5000);
+    RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
     List<HttpMessageConverter<?>> messageConverters = restTemplate.getMessageConverters();
     for (int i = 0; i < messageConverters.size(); i++) {
       if (MappingJackson2HttpMessageConverter.class == messageConverters.get(i).getClass()) {
