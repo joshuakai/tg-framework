@@ -7,8 +7,11 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.TemporalAccessor;
+import java.time.temporal.WeekFields;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Optional;
@@ -17,6 +20,8 @@ public class JavaTimeUtils {
 
   public static final String PATTERN_Y_M_D_H_MI_S = "yyyy-MM-dd HH:mm:ss";
   public static final String PATTERN_Y_M_D = "yyyy-MM-dd";
+  public static final String PATTERN_Y_M = "yyyy-MM";
+  public static final String PATTERN_Y_W = "YYYY-ww";
   public static final String PATTERN_H_MI_S = "HH:mm:ss";
 
   private JavaTimeUtils() {
@@ -271,6 +276,47 @@ public class JavaTimeUtils {
     return localTimeFormatter(Locale.getDefault());
   }
 
+  public static DateTimeFormatter yearMonthFormatter(Locale locale) {
+    return dateTimeFormatter(PATTERN_Y_M, locale);
+  }
+
+  public static DateTimeFormatter yearMonthFormatter() {
+    return yearMonthFormatter(Locale.getDefault());
+  }
+
+  public static DateTimeFormatter yearWeekFormatter(String pattern, int dayOfWeek, Locale locale) {
+    return new DateTimeFormatterBuilder().appendPattern(pattern)
+        .parseDefaulting(WeekFields.ISO.dayOfWeek(), dayOfWeek).toFormatter(locale);
+  }
+
+  public static DateTimeFormatter yearWeekFormatter(String pattern, int dayOfWeek) {
+    return yearWeekFormatter(pattern, dayOfWeek, Locale.getDefault());
+  }
+
+  public static DateTimeFormatter yearWeekFormatter(String pattern) {
+    return yearWeekFormatter(pattern, 1);
+  }
+
+  public static DateTimeFormatter yearWeekFormatter() {
+    return yearWeekFormatter(PATTERN_Y_W);
+  }
+
+  public static DateTimeFormatter yearWeekFormatter(String pattern, Locale locale) {
+    return yearWeekFormatter(pattern, 1, Locale.getDefault());
+  }
+
+  public static DateTimeFormatter yearWeekFormatter(int dayOfWeek, Locale locale) {
+    return yearWeekFormatter(PATTERN_Y_W, dayOfWeek, locale);
+  }
+
+  public static DateTimeFormatter yearWeekFormatter(int dayOfWeek) {
+    return yearWeekFormatter(dayOfWeek, Locale.getDefault());
+  }
+
+  public static DateTimeFormatter yearWeekFormatter(Locale locale) {
+    return yearWeekFormatter(1, Locale.getDefault());
+  }
+
   public static String format(TemporalAccessor temporalAccessor,
       DateTimeFormatter dateTimeFormatter) {
     return Optional.ofNullable(temporalAccessor)
@@ -308,6 +354,22 @@ public class JavaTimeUtils {
 
   public static String format(LocalTime localTime) {
     return format(localTime, Locale.getDefault());
+  }
+
+  public static String format(YearMonth yearMonth, Locale locale) {
+    return format(yearMonth, yearMonthFormatter(locale));
+  }
+
+  public static String format(YearMonth yearMonth) {
+    return format(yearMonth, Locale.getDefault());
+  }
+
+  public static String formatYearWeek(LocalDate localDate, Locale locale) {
+    return format(localDate, dateTimeFormatter(PATTERN_Y_W, locale));
+  }
+
+  public static String formatYearWeek(LocalDate localDate) {
+    return formatYearWeek(localDate, Locale.getDefault());
   }
 
   public static LocalDateTime parseLocalDateTime(String str, DateTimeFormatter dateTimeFormatter) {
@@ -376,6 +438,68 @@ public class JavaTimeUtils {
 
   public static LocalTime parseLocalTime(String str) {
     return parseLocalTime(str, localTimeFormatter());
+  }
+
+
+  public static YearMonth parseYearMonth(String str, DateTimeFormatter dateTimeFormatter) {
+    return StringOptional.ofNullable(str).map(
+        s -> Optional.ofNullable(dateTimeFormatter).map(df -> YearMonth.parse(str, df))
+            .orElse(null)).orElse(null);
+  }
+
+  public static YearMonth parseYearMonth(String str, String pattern, Locale locale) {
+    return parseYearMonth(str, dateTimeFormatter(pattern, locale));
+  }
+
+  public static YearMonth parseYearMonth(String str, String pattern) {
+    return parseYearMonth(str, dateTimeFormatter(pattern));
+  }
+
+  public static YearMonth parseYearMonth(String str, Locale locale) {
+    return parseYearMonth(str, yearMonthFormatter(locale));
+  }
+
+  public static YearMonth parseYearMonth(String str) {
+    return parseYearMonth(str, yearMonthFormatter());
+  }
+
+
+  public static LocalDate parseYearWeek(String str, DateTimeFormatter dateTimeFormatter) {
+    return StringOptional.ofNullable(str).map(
+        s -> Optional.ofNullable(dateTimeFormatter).map(df -> LocalDate.parse(str, df))
+            .orElse(null)).orElse(null);
+  }
+
+  public static LocalDate parseYearWeek(String str, String pattern, int dayOfWeek, Locale locale) {
+    return parseYearWeek(str, yearWeekFormatter(pattern, dayOfWeek, locale));
+  }
+
+  public static LocalDate parseYearWeek(String str, String pattern, int dayOfWeek) {
+    return parseYearWeek(str, yearWeekFormatter(pattern, dayOfWeek));
+  }
+
+  public static LocalDate parseYearWeek(String str, String pattern) {
+    return parseYearWeek(str, yearWeekFormatter(pattern));
+  }
+
+  public static LocalDate parseYearWeek(String str) {
+    return parseYearWeek(str, yearWeekFormatter());
+  }
+
+  public static LocalDate parseYearWeek(String str, String pattern, Locale locale) {
+    return parseYearWeek(str, yearWeekFormatter(pattern, locale));
+  }
+
+  public static LocalDate parseYearWeek(String str, int dayOfWeek, Locale locale) {
+    return parseYearWeek(str, yearWeekFormatter(dayOfWeek, locale));
+  }
+
+  public static LocalDate parseYearWeek(String str, int dayOfWeek) {
+    return parseYearWeek(str, yearWeekFormatter(dayOfWeek));
+  }
+
+  public static LocalDate parseYearWeek(String str, Locale locale) {
+    return parseYearWeek(str, yearWeekFormatter(locale));
   }
 
 }
