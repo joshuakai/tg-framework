@@ -50,6 +50,7 @@
     <spring-cloud-starter-oauth2.version>2.1.2.RELEASE</spring-cloud-starter-oauth2.version>
     <spring-cloud-starter-feign.version>1.4.6.RELEASE</spring-cloud-starter-feign.version>
     <spring-cloud-starter-hystrix.version>1.4.6.RELEASE</spring-cloud-starter-hystrix.version>
+    <easypoi.version>4.0.0</easypoi.version>
   </properties>
 
   <build>
@@ -198,6 +199,13 @@
         <artifactId>spring-cloud-starter-hystrix</artifactId>
         <version>${spring-cloud-starter-hystrix.version}</version>
       </dependency>
+      <!--https://opensource.afterturn.cn/doc/easypoi.html -->
+      <dependency>
+        <groupId>cn.afterturn</groupId>
+        <artifactId>easypoi-spring-boot-starter</artifactId>
+        <version>${easypoi.version}</version>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
 
