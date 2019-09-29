@@ -18,7 +18,8 @@ import java.util.Date;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import org.hibernate.validator.HibernateValidator;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,10 +33,9 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -80,34 +80,36 @@ public class DefaultWebMvcConfig implements WebMvcConfigurer {
     }
   }
 
-  @ControllerAdvice
+  @RestControllerAdvice
   static class DefaultExceptionHandler {
+
+    private static Logger logger = LoggerFactory.getLogger(DefaultExceptionHandler.class);
 
     @ExceptionHandler(NestedException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    @ResponseBody
     public ErrorDTO handleException(NestedException ex) {
+      logger.error("系统请求异常: ex={}",ex.getMessage(),ex);
       return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
     }
 
     @ExceptionHandler(NestedRuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    @ResponseBody
     public ErrorDTO handleException(NestedRuntimeException ex) {
+      logger.error("系统请求异常: ex={}",ex.getMessage(),ex);
       return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
     }
 
     @ExceptionHandler(TransactionalException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    @ResponseBody
     public ErrorDTO handleException(TransactionalException ex) {
+      logger.error("系统请求异常: ex={}",ex.getMessage(),ex);
       return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
     }
 
     @ExceptionHandler(BusinessException.class)
-    @ResponseBody
     public ErrorDTO handleException(HttpServletResponse response, BusinessException ex) {
       response.setStatus(456);
+      logger.error("业务请求异常: ex={}",ex.getMessage(),ex);
       return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
     }
 
