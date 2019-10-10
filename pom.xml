@@ -12,10 +12,21 @@
   <groupId>com.tg.framework</groupId>
   <artifactId>tg-framework</artifactId>
   <packaging>pom</packaging>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.9</version>
   <name>tg-framework</name>
   <description>TG Framework</description>
-
+  <distributionManagement>
+    <repository>
+      <id>yibo-nexus</id>
+      <name>yibo nexus</name>
+      <url>http://nexus.yibofafa666.com/repository/yibo/releases</url>
+    </repository>
+    <snapshotRepository>
+      <id>yibo-nexus</id>
+      <name>yibo nexus</name>
+      <url>http://nexus.yibofafa666.com/repository/yibo/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
   <modules>
     <module>tg-parent</module>
     <module>tg-commons</module>
