@@ -17,6 +17,9 @@ public class ReflectionUtils {
     try {
       method = clazz.getDeclaredMethod(name, parameterTypes);
     } catch (NoSuchMethodException e) {
+      if (clazz != Object.class && clazz.getSuperclass() != null) {
+        return getMethod(clazz.getSuperclass(), name);
+      }
     }
     return Optional.ofNullable(method);
   }
