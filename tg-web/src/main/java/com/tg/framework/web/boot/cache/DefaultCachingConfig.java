@@ -17,6 +17,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
@@ -73,6 +74,25 @@ public class DefaultCachingConfig extends CachingConfigurerSupport {
   @Bean
   public RedisSerializer valueSerializer() {
     return new GenericJackson2JsonRedisSerializer(JSONUtils.serializationObjectMapper());
+  }
+
+  @Bean("jdkSerializationRedisTemplate")
+  public RedisTemplate jdkSerializationRedisTemplate(
+      LettuceConnectionFactory redisConnectionFactory) {
+    StringRedisTemplate redisTemplate = new StringRedisTemplate(redisConnectionFactory);
+    RedisSerializer keySerializer = keySerializer();
+    redisTemplate.setKeySerializer(keySerializer);
+    redisTemplate.setHashKeySerializer(keySerializer);
+    RedisSerializer valueSerializer = jdkSerializationValueSerializer();
+    redisTemplate.setValueSerializer(valueSerializer);
+    redisTemplate.setHashValueSerializer(valueSerializer);
+    redisTemplate.afterPropertiesSet();
+    return redisTemplate;
+  }
+
+  @Bean("jdkSerializationValueSerializer")
+  public RedisSerializer jdkSerializationValueSerializer() {
+    return new JdkSerializationRedisSerializer();
   }
 
 }
