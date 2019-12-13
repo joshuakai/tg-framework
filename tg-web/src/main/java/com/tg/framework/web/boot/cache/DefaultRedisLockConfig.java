@@ -11,8 +11,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 @ConfigurationProperties("tg.redis.lock")
 public class DefaultRedisLockConfig {
 
-  private String keyPrefix = "lock_";
-  private long defaultTimeoutMillis = 5000L;
+  private String keyPrefix = "locks:";
+  private long defaultTimeoutMillis = -1L;
 
   @Bean
   public RedisLockService redisLockService(RedisTemplate<String, Long> redisTemplate) {
@@ -20,7 +20,6 @@ public class DefaultRedisLockConfig {
   }
 
   @Bean
-  @ConfigurationProperties("tg.redis.lock")
   public RedisLockAspect redisLockAspect(RedisLockService redisLockService) {
     return new RedisLockAspect(redisLockService, keyPrefix, defaultTimeoutMillis);
   }

@@ -12,7 +12,7 @@ import org.aspectj.lang.reflect.MethodSignature;
 @Aspect
 public class RedisLockAspect extends LockAspectSupport<RedisLockService> {
 
-  private static final String DEFAULT_KEY_PREFIX = "redis_lock_";
+  private static final String DEFAULT_KEY_PREFIX = "locks:";
   private static final long DEFAULT_TIMEOUT_MILLIS = -1L;
 
   private String keyPrefix;
@@ -51,8 +51,8 @@ public class RedisLockAspect extends LockAspectSupport<RedisLockService> {
         String.class) : key;
     long timeoutMillis =
         lock.timeout() == -1L ? defaultTimeoutMillis : lock.timeUnit().toMillis(lock.timeout());
-    return new LockContext(key, timeoutMillis, lock.strategy(), lock.exceptionClass(),
-        lock.sleepMillis());
+    return new LockContext(key, lock.mutex(), lock.mutexException(), timeoutMillis,
+        lock.timeoutStrategy(), lock.timeoutException(), lock.sleepMillis());
   }
 
   public String getKeyPrefix() {

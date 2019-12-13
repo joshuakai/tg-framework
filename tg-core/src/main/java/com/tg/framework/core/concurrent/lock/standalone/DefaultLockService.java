@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 
 public class DefaultLockService implements LockService {
 
+  private static final long ENDLESS_TIMEOUT_MILLIS = -1L;
+
   private static final long DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS = 5000L;
 
   private static Logger logger = LoggerFactory.getLogger(DefaultLockService.class);
@@ -35,7 +37,7 @@ public class DefaultLockService implements LockService {
   @Override
   public boolean tryLock(LockContext lockContext) throws Throwable {
     logger.debug("Try lock {}.", lockContext);
-    return tryLock(lockContext, lockContext.getTimeoutMillis() == -1L, System.currentTimeMillis());
+    return tryLock(lockContext, System.currentTimeMillis());
   }
 
   @Override
@@ -57,7 +59,7 @@ public class DefaultLockService implements LockService {
               });
         }
         try {
-          Thread.sleep(DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MILLIS);
+          Thread.sleep(timeBetweenEvictionRunsMillis);
         } catch (InterruptedException e) {
           logger.error("Expire thread was interrupted.", e);
         }
@@ -65,13 +67,28 @@ public class DefaultLockService implements LockService {
     }).start();
   }
 
-  private boolean tryLock(LockContext lockContext, boolean timeoutDisabled, long enterTime)
-      throws Throwable {
+  private boolean tryLock(LockContext lockContext, long enterTime) throws Throwable {
     String key = lockContext.getKey();
     LockBean lockBean = new LockBean(lockContext.getTimeoutMillis());
-    long timeoutAt = enterTime + lockBean.getTimeout();
+    if (lockContext.isMutex()) {
+      lockBean.setTimestamp(System.currentTimeMillis());
+      LockBean previous = lockHolder.putIfAbsent(key, lockBean);
+      if (previous == null) {
+        logger.debug("Get lock {}.", lockContext);
+        return true;
+      } else if (isExpired(previous)) {
+        logger.debug("Previous lock is expired, retrying.");
+        lockHolder.remove(key, previous);
+        return tryLock(lockContext, enterTime);
+      } else {
+        ReflectionUtils
+            .throwException(lockContext.getMutexException(), true, new Object[]{lockContext});
+      }
+    }
+    boolean isEndless = lockBean.getTimeout() == ENDLESS_TIMEOUT_MILLIS;
     boolean isTimeout;
-    while (timeoutDisabled || !(isTimeout = timeoutAt < System.currentTimeMillis())) {
+    while (isEndless || !(isTimeout =
+        enterTime + lockBean.getTimeout() < System.currentTimeMillis())) {
       lockBean.setTimestamp(System.currentTimeMillis());
       LockBean previous;
       if ((previous = lockHolder.putIfAbsent(key, lockBean)) == null) {
@@ -87,9 +104,9 @@ public class DefaultLockService implements LockService {
       }
     }
     if (isTimeout
-        && lockContext.getStrategy() == LockTimeoutStrategy.THROW_EXCEPTION_WHILE_TIMEOUT) {
+        && lockContext.getTimeoutStrategy() == LockTimeoutStrategy.THROW_EXCEPTION_WHILE_TIMEOUT) {
       ReflectionUtils
-          .throwException(lockContext.getExceptionClass(), true, new Object[]{lockContext});
+          .throwException(lockContext.getTimeoutException(), true, new Object[]{lockContext});
     }
     logger.debug("Try lock timeout with strategy {} {}.", LockTimeoutStrategy.RELEASE_WHILE_TIMEOUT,
         lockContext);
@@ -97,7 +114,8 @@ public class DefaultLockService implements LockService {
   }
 
   private static boolean isExpired(LockBean lockBean) {
-    return lockBean.getTimestamp() + lockBean.getTimeout() > System.currentTimeMillis();
+    return lockBean.getTimeout() != ENDLESS_TIMEOUT_MILLIS
+        && lockBean.getTimestamp() + lockBean.getTimeout() > System.currentTimeMillis();
   }
 
   public long getTimeBetweenEvictionRunsMillis() {

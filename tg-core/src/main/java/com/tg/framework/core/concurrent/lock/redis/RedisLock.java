@@ -16,13 +16,17 @@ public @interface RedisLock {
 
   String key();
 
+  boolean mutex() default false;
+
+  Class<? extends Throwable> mutexException() default LockTimeoutException.class;
+
   long timeout() default -1L;
 
   TimeUnit timeUnit() default TimeUnit.MILLISECONDS;
 
-  LockTimeoutStrategy strategy() default LockTimeoutStrategy.THROW_EXCEPTION_WHILE_TIMEOUT;
+  LockTimeoutStrategy timeoutStrategy() default LockTimeoutStrategy.THROW_EXCEPTION_WHILE_TIMEOUT;
 
-  Class<? extends Throwable> exceptionClass() default LockTimeoutException.class;
+  Class<? extends Throwable> timeoutException() default LockTimeoutException.class;
 
   long sleepMillis() default 100L;
 

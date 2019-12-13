@@ -118,6 +118,20 @@ public class CNYUtils {
     return parse(str, CNYUnit.FEN, CNYUnit.YUAN);
   }
 
+  public static double sum(double... values) {
+    if (values == null || values.length == 0) {
+      return 0D;
+    }
+    if (values.length == 1) {
+      return values[0];
+    }
+    BigDecimal sum = BigDecimal.valueOf(values[0]);
+    for (int i = 1; i < values.length; i++) {
+      sum = sum.add(BigDecimal.valueOf(values[i]));
+    }
+    return sum.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue();
+  }
+
   private static double convertAmount(double amount, CNYUnit unit, CNYUnit targetUnit) {
     if (unit == targetUnit) {
       return amount;

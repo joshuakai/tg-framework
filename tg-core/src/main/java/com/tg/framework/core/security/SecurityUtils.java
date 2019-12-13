@@ -4,6 +4,7 @@ import java.util.Optional;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 public class SecurityUtils {
 
@@ -21,6 +22,21 @@ public class SecurityUtils {
 
   public static Optional<Object> getPrincipal(Authentication authentication) {
     return Optional.ofNullable(authentication).map(Authentication::getPrincipal);
+  }
+
+  private static String mapPrincipalAsString(Object principal) {
+    if (principal instanceof UserDetails) {
+      return ((UserDetails) principal).getUsername();
+    }
+    return principal.toString();
+  }
+
+  public static Optional<String> getPrincipalAsString() {
+    return getAuthentication().map(Authentication::getPrincipal).map(SecurityUtils::mapPrincipalAsString);
+  }
+
+  public static Optional<String> getPrincipalAsString(Authentication authentication) {
+    return Optional.ofNullable(authentication).map(Authentication::getPrincipal).map(SecurityUtils::mapPrincipalAsString);
   }
 
   public static <T> Optional<T> getPrincipal(Class<T> clazz) {

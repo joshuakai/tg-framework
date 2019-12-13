@@ -34,8 +34,9 @@ public class PredicateBuilder {
     return new PredicateBuilder(initialCapacity);
   }
 
-  private void addPredicate(Predicate predicate) {
+  public PredicateBuilder addPredicate(Predicate predicate) {
     predicates.add(predicate);
+    return this;
   }
 
   public <T> PredicateBuilder addOnCondition(boolean condition, T value,

@@ -4,14 +4,20 @@ import com.tg.framework.commons.lang.StringOptional;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.WeekFields;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Optional;
@@ -23,8 +29,13 @@ public class JavaTimeUtils {
   public static final String PATTERN_Y_M = "yyyy-MM";
   public static final String PATTERN_Y_W = "YYYY-ww";
   public static final String PATTERN_H_MI_S = "HH:mm:ss";
+  public static final long MILLIS_PER_DAY = 1000 * 60 * 60 * 24;
 
   private JavaTimeUtils() {
+  }
+
+  public static long milliseconds(LocalDateTime localDateTime) {
+    return localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
   }
 
   public static SimpleDateFormat simpleDateFormat(String pattern, Locale locale, boolean lenient) {
@@ -244,6 +255,99 @@ public class JavaTimeUtils {
     return parse(str, timeFormat());
   }
 
+
+  public static Date innerStartOfDay(Calendar calendar) {
+    calendar.set(Calendar.HOUR_OF_DAY, 0);
+    calendar.set(Calendar.MINUTE, 0);
+    calendar.set(Calendar.SECOND, 0);
+    calendar.set(Calendar.MILLISECOND, 0);
+    return calendar.getTime();
+  }
+
+  public static Date innerEndOfDay(Calendar calendar) {
+    calendar.set(Calendar.HOUR_OF_DAY, 23);
+    calendar.set(Calendar.MINUTE, 59);
+    calendar.set(Calendar.SECOND, 59);
+    calendar.set(Calendar.MILLISECOND, 999);
+    return calendar.getTime();
+  }
+
+  public static Date startOfDay(Date date) {
+    return Optional.ofNullable(date).map(d -> {
+      Calendar calendar = Calendar.getInstance();
+      calendar.setTime(d);
+      return innerStartOfDay(calendar);
+    }).orElse(null);
+  }
+
+  public static Date endOfDay(Date date) {
+    return Optional.ofNullable(date).map(d -> {
+      Calendar calendar = Calendar.getInstance();
+      calendar.setTime(d);
+      return innerEndOfDay(calendar);
+    }).orElse(null);
+  }
+
+  public static Date startOfWeek(Date date) {
+    return Optional.ofNullable(date).map(d -> {
+      Calendar calendar = Calendar.getInstance();
+      calendar.setTime(d);
+      calendar.setFirstDayOfWeek(Calendar.MONDAY);
+      calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+      return innerStartOfDay(calendar);
+    }).orElse(null);
+  }
+
+  public static Date endOfWeek(Date date) {
+    return Optional.ofNullable(date).map(d -> {
+      Calendar calendar = Calendar.getInstance();
+      calendar.setTime(d);
+      calendar.setFirstDayOfWeek(Calendar.MONDAY);
+      calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+      return innerEndOfDay(calendar);
+    }).orElse(null);
+  }
+
+  public static Date startOfMonth(Date date) {
+    return Optional.ofNullable(date).map(d -> {
+      Calendar calendar = Calendar.getInstance();
+      calendar.setTime(d);
+      calendar.set(Calendar.DAY_OF_MONTH, 1);
+      return innerStartOfDay(calendar);
+    }).orElse(null);
+  }
+
+  public static Date endOfMonth(Date date) {
+    return Optional.ofNullable(date).map(d -> {
+      Calendar calendar = Calendar.getInstance();
+      calendar.setTime(d);
+      calendar.set(Calendar.DAY_OF_MONTH, calendar.getMaximum(Calendar.DAY_OF_MONTH));
+      return innerEndOfDay(calendar);
+    }).orElse(null);
+  }
+
+  public static long daysBetween(Date a, Date b, boolean strict,
+      boolean absolute) {
+    if (strict) {
+      Calendar c = Calendar.getInstance();
+      c.setTime(a);
+      a = innerStartOfDay(c);
+      Calendar d = Calendar.getInstance();
+      d.setTime(b);
+      b = innerStartOfDay(d);
+    }
+    long duration = a.getTime() - b.getTime();
+    return absolute ? Math.abs(duration / MILLIS_PER_DAY) : duration / MILLIS_PER_DAY;
+  }
+
+  public static long daysBetween(Date a, Date b, boolean strict) {
+    return daysBetween(a, b, strict, false);
+  }
+
+  public static long daysBetween(Date a, Date b) {
+    return daysBetween(a, b, true);
+  }
+
   public static DateTimeFormatter dateTimeFormatter(String pattern, Locale locale) {
     return DateTimeFormatter.ofPattern(pattern, locale);
   }
@@ -394,7 +498,6 @@ public class JavaTimeUtils {
     return parseLocalDateTime(str, localDateTimeFormatter());
   }
 
-
   public static LocalDate parseLocalDate(String str, DateTimeFormatter dateTimeFormatter) {
     return StringOptional.ofNullable(str).map(
         s -> Optional.ofNullable(dateTimeFormatter).map(df -> LocalDate.parse(str, df))
@@ -500,6 +603,103 @@ public class JavaTimeUtils {
 
   public static LocalDate parseYearWeek(String str, Locale locale) {
     return parseYearWeek(str, yearWeekFormatter(locale));
+  }
+
+  public static LocalDateTime innerStartOfDay(LocalDateTime localDateTime) {
+    return localDateTime.withHour(0).withMinute(0).withSecond(0).withNano(0);
+  }
+
+  public static LocalDateTime innerEndOfDay(LocalDateTime localDateTime) {
+    return localDateTime.withHour(23).withMinute(59).withSecond(59).withNano(999999999);
+  }
+
+  public static LocalDateTime startOfDay(LocalDateTime localDateTime) {
+    return Optional.ofNullable(localDateTime).map(LocalDateTime::from)
+        .map(JavaTimeUtils::innerStartOfDay).orElse(null);
+  }
+
+  public static LocalDateTime endOfDay(LocalDateTime localDateTime) {
+    return Optional.ofNullable(localDateTime).map(LocalDateTime::from)
+        .map(JavaTimeUtils::innerEndOfDay).orElse(null);
+  }
+
+  public static LocalDateTime startOfWeek(LocalDateTime localDateTime) {
+    return Optional.ofNullable(localDateTime).map(LocalDateTime::from)
+        .map(dt -> dt.with(DayOfWeek.MONDAY)).map(JavaTimeUtils::innerStartOfDay).orElse(null);
+  }
+
+  public static LocalDateTime endOfWeek(LocalDateTime localDateTime) {
+    return Optional.ofNullable(localDateTime).map(LocalDateTime::from)
+        .map(dt -> dt.with(DayOfWeek.SUNDAY)).map(JavaTimeUtils::innerEndOfDay).orElse(null);
+  }
+
+  public static LocalDateTime startOfMonth(LocalDateTime localDateTime) {
+    return Optional.ofNullable(localDateTime).map(LocalDateTime::from)
+        .map(dt -> dt.withDayOfMonth(1)).map(JavaTimeUtils::innerStartOfDay).orElse(null);
+  }
+
+  public static LocalDateTime endOfMonth(LocalDateTime localDateTime) {
+    return Optional.ofNullable(localDateTime).map(LocalDateTime::from)
+        .map(dt -> dt.withDayOfMonth(LocalDate.from(dt).lengthOfMonth()))
+        .map(JavaTimeUtils::innerEndOfDay).orElse(null);
+  }
+
+  public static LocalDate startOfWeek(LocalDate localDate) {
+    return Optional.ofNullable(localDate).map(LocalDate::from).map(d -> d.with(DayOfWeek.MONDAY))
+        .orElse(null);
+  }
+
+  public static LocalDate endOfWeek(LocalDate localDate) {
+    return Optional.ofNullable(localDate).map(LocalDate::from).map(d -> d.with(DayOfWeek.SUNDAY))
+        .orElse(null);
+  }
+
+  public static LocalDate startOfMonth(LocalDate localDate) {
+    return Optional.ofNullable(localDate).map(LocalDate::from).map(d -> d.withDayOfMonth(1))
+        .orElse(null);
+  }
+
+  public static LocalDate endOfMonth(LocalDate localDate) {
+    return Optional.ofNullable(localDate).map(LocalDate::from)
+        .map(d -> d.withDayOfMonth(localDate.lengthOfMonth())).orElse(null);
+  }
+
+  public static LocalDate startOfMonth(YearMonth yearMonth) {
+    return Optional.ofNullable(yearMonth).map(ym -> LocalDate.of(ym.getYear(), ym.getMonth(), 1))
+        .orElse(null);
+  }
+
+  public static LocalDate endOfMonth(YearMonth yearMonth) {
+    return Optional.ofNullable(yearMonth)
+        .map(ym -> LocalDate.of(ym.getYear(), ym.getMonth(), ym.lengthOfMonth())).orElse(null);
+  }
+
+  private static long innerDaysBetween(Temporal a, Temporal b, boolean absolute) {
+    return absolute ? Math.abs(ChronoUnit.DAYS.between(a, b)) : ChronoUnit.DAYS.between(a, b);
+  }
+
+  public static long daysBetween(LocalDateTime a, LocalDateTime b, boolean strict,
+      boolean absolute) {
+    if (strict) {
+      return Duration.between(a, b).toDays();
+    }
+    return innerDaysBetween(a, b, absolute);
+  }
+
+  public static long daysBetween(LocalDateTime a, LocalDateTime b, boolean strict) {
+    return daysBetween(a, b, strict, false);
+  }
+
+  public static long daysBetween(LocalDateTime a, LocalDateTime b) {
+    return daysBetween(a, b, true);
+  }
+
+  public static long daysBetween(LocalDate a, LocalDate b, boolean absolute) {
+    return innerDaysBetween(a, b, absolute);
+  }
+
+  public static long daysBetween(LocalDate a, LocalDate b) {
+    return daysBetween(a, b, false);
   }
 
 }

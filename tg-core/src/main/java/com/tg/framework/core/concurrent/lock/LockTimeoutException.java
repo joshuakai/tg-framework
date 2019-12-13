@@ -4,9 +4,9 @@ import com.tg.framework.core.exception.BusinessException;
 
 public class LockTimeoutException extends BusinessException {
 
-  public static final String PRESENT_CODE = "Lock#LockTimeout";
-
   private static final long serialVersionUID = -5619886320436095278L;
+
+  public static final String PRESENT_CODE = "Lock#LockTimeout";
 
   public LockTimeoutException() {
     super(PRESENT_CODE);
