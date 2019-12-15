@@ -24,4 +24,19 @@ public class DefaultRedisLockConfig {
     return new RedisLockAspect(redisLockService, keyPrefix, defaultTimeoutMillis);
   }
 
+  public String getKeyPrefix() {
+    return keyPrefix;
+  }
+
+  public void setKeyPrefix(String keyPrefix) {
+    this.keyPrefix = keyPrefix;
+  }
+
+  public long getDefaultTimeoutMillis() {
+    return defaultTimeoutMillis;
+  }
+
+  public void setDefaultTimeoutMillis(long defaultTimeoutMillis) {
+    this.defaultTimeoutMillis = defaultTimeoutMillis;
+  }
 }

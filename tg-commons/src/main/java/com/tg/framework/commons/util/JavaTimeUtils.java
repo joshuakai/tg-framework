@@ -188,7 +188,7 @@ public class JavaTimeUtils {
   }
 
   public static Date parse(String str, DateFormat dateFormat) {
-    return parse(str, dateFormat, true);
+    return parse(str, dateFormat, false);
   }
 
   public static Date parse(String str, String pattern, Locale locale, boolean lenient) {
@@ -476,10 +476,23 @@ public class JavaTimeUtils {
     return formatYearWeek(localDate, Locale.getDefault());
   }
 
+  public static LocalDateTime parseLocalDateTime(String str, DateTimeFormatter dateTimeFormatter,
+      boolean throwException) {
+    return StringOptional.ofNullable(str)
+        .map(s -> Optional.ofNullable(dateTimeFormatter).map(df -> {
+          try {
+            return LocalDateTime.parse(str, df);
+          } catch (Exception e) {
+            if (throwException) {
+              throw new IllegalArgumentException(e);
+            }
+            return null;
+          }
+        }).orElse(null)).orElse(null);
+  }
+
   public static LocalDateTime parseLocalDateTime(String str, DateTimeFormatter dateTimeFormatter) {
-    return StringOptional.ofNullable(str).map(
-        s -> Optional.ofNullable(dateTimeFormatter).map(df -> LocalDateTime.parse(str, df))
-            .orElse(null)).orElse(null);
+    return parseLocalDateTime(str, dateTimeFormatter, false);
   }
 
   public static LocalDateTime parseLocalDateTime(String str, String pattern, Locale locale) {
@@ -498,10 +511,23 @@ public class JavaTimeUtils {
     return parseLocalDateTime(str, localDateTimeFormatter());
   }
 
+  public static LocalDate parseLocalDate(String str, DateTimeFormatter dateTimeFormatter,
+      boolean throwException) {
+    return StringOptional.ofNullable(str)
+        .map(s -> Optional.ofNullable(dateTimeFormatter).map(df -> {
+          try {
+            return LocalDate.parse(str, df);
+          } catch (Exception e) {
+            if (throwException) {
+              throw new IllegalArgumentException(e);
+            }
+            return null;
+          }
+        }).orElse(null)).orElse(null);
+  }
+
   public static LocalDate parseLocalDate(String str, DateTimeFormatter dateTimeFormatter) {
-    return StringOptional.ofNullable(str).map(
-        s -> Optional.ofNullable(dateTimeFormatter).map(df -> LocalDate.parse(str, df))
-            .orElse(null)).orElse(null);
+    return parseLocalDate(str, dateTimeFormatter, false);
   }
 
   public static LocalDate parseLocalDate(String str, String pattern, Locale locale) {
@@ -520,11 +546,23 @@ public class JavaTimeUtils {
     return parseLocalDate(str, localDateFormatter());
   }
 
+  public static LocalTime parseLocalTime(String str, DateTimeFormatter dateTimeFormatter,
+      boolean throwException) {
+    return StringOptional.ofNullable(str)
+        .map(s -> Optional.ofNullable(dateTimeFormatter).map(df -> {
+          try {
+            return LocalTime.parse(str, df);
+          } catch (Exception e) {
+            if (throwException) {
+              throw new IllegalArgumentException(e);
+            }
+            return null;
+          }
+        }).orElse(null)).orElse(null);
+  }
 
   public static LocalTime parseLocalTime(String str, DateTimeFormatter dateTimeFormatter) {
-    return StringOptional.ofNullable(str).map(
-        s -> Optional.ofNullable(dateTimeFormatter).map(df -> LocalTime.parse(str, df))
-            .orElse(null)).orElse(null);
+    return parseLocalTime(str, dateTimeFormatter, false);
   }
 
   public static LocalTime parseLocalTime(String str, String pattern, Locale locale) {
@@ -543,11 +581,23 @@ public class JavaTimeUtils {
     return parseLocalTime(str, localTimeFormatter());
   }
 
+  public static YearMonth parseYearMonth(String str, DateTimeFormatter dateTimeFormatter,
+      boolean throwException) {
+    return StringOptional.ofNullable(str)
+        .map(s -> Optional.ofNullable(dateTimeFormatter).map(df -> {
+          try {
+            return YearMonth.parse(str, df);
+          } catch (Exception e) {
+            if (throwException) {
+              throw new IllegalArgumentException(e);
+            }
+            return null;
+          }
+        }).orElse(null)).orElse(null);
+  }
 
   public static YearMonth parseYearMonth(String str, DateTimeFormatter dateTimeFormatter) {
-    return StringOptional.ofNullable(str).map(
-        s -> Optional.ofNullable(dateTimeFormatter).map(df -> YearMonth.parse(str, df))
-            .orElse(null)).orElse(null);
+    return parseYearMonth(str, dateTimeFormatter, false);
   }
 
   public static YearMonth parseYearMonth(String str, String pattern, Locale locale) {
@@ -566,11 +616,8 @@ public class JavaTimeUtils {
     return parseYearMonth(str, yearMonthFormatter());
   }
 
-
   public static LocalDate parseYearWeek(String str, DateTimeFormatter dateTimeFormatter) {
-    return StringOptional.ofNullable(str).map(
-        s -> Optional.ofNullable(dateTimeFormatter).map(df -> LocalDate.parse(str, df))
-            .orElse(null)).orElse(null);
+    return parseLocalDate(str, dateTimeFormatter, false);
   }
 
   public static LocalDate parseYearWeek(String str, String pattern, int dayOfWeek, Locale locale) {

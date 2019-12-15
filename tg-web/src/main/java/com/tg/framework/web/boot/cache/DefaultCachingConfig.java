@@ -2,9 +2,14 @@ package com.tg.framework.web.boot.cache;
 
 import com.tg.framework.commons.util.JSONUtils;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Resource;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
 import org.springframework.cache.annotation.EnableCaching;
@@ -19,15 +24,20 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
+import org.springframework.data.redis.serializer.RedisSerializationContext.SerializationPair;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 @EnableCaching(proxyTargetClass = true)
+@ConfigurationProperties("tg.cache")
 public class DefaultCachingConfig extends CachingConfigurerSupport {
 
   @Resource
   private LettuceConnectionFactory lettuceConnectionFactory;
+
+  private Long ttl = -1L;
+  private Map<String, Long> initialTtl = new HashMap<>();
 
   @Bean
   @Override
@@ -43,14 +53,25 @@ public class DefaultCachingConfig extends CachingConfigurerSupport {
   @Bean
   @Override
   public CacheManager cacheManager() {
+    SerializationPair<String> keySerializationPair = RedisSerializationContext.SerializationPair
+        .fromSerializer(keySerializer());
+    SerializationPair<?> valueSerializationPair = RedisSerializationContext.SerializationPair
+        .fromSerializer(valueSerializer());
     RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
-        .serializeKeysWith(
-            RedisSerializationContext.SerializationPair.fromSerializer(keySerializer()))
-        .serializeValuesWith(
-            RedisSerializationContext.SerializationPair.fromSerializer(valueSerializer()))
-        .entryTtl(Duration.ofNanos(-1));
+        .serializeKeysWith(keySerializationPair)
+        .serializeValuesWith(valueSerializationPair)
+        .entryTtl(Duration.ofMillis(ttl));
+    Map<String, RedisCacheConfiguration> initialCacheConfigurations = initialTtl.entrySet().stream()
+        .collect(Collectors.toMap(
+            Entry::getKey,
+            e -> RedisCacheConfiguration.defaultCacheConfig()
+                .serializeKeysWith(keySerializationPair)
+                .serializeValuesWith(valueSerializationPair)
+                .entryTtl(Duration.ofMillis(e.getValue()))
+        ));
     return RedisCacheManagerBuilder.fromConnectionFactory(lettuceConnectionFactory)
-        .cacheDefaults(redisCacheConfiguration).build();
+        .cacheDefaults(redisCacheConfiguration)
+        .withInitialCacheConfigurations(initialCacheConfigurations).build();
   }
 
   @Bean
@@ -67,12 +88,12 @@ public class DefaultCachingConfig extends CachingConfigurerSupport {
   }
 
   @Bean
-  public RedisSerializer keySerializer() {
+  public RedisSerializer<String> keySerializer() {
     return new StringRedisSerializer();
   }
 
   @Bean
-  public RedisSerializer valueSerializer() {
+  public RedisSerializer<?> valueSerializer() {
     return new GenericJackson2JsonRedisSerializer(JSONUtils.serializationObjectMapper());
   }
 
@@ -95,4 +116,19 @@ public class DefaultCachingConfig extends CachingConfigurerSupport {
     return new JdkSerializationRedisSerializer();
   }
 
+  public Long getTtl() {
+    return ttl;
+  }
+
+  public void setTtl(Long ttl) {
+    this.ttl = ttl;
+  }
+
+  public Map<String, Long> getInitialTtl() {
+    return initialTtl;
+  }
+
+  public void setInitialTtl(Map<String, Long> initialTtl) {
+    this.initialTtl = initialTtl;
+  }
 }

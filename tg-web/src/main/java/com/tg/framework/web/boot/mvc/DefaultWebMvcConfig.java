@@ -9,6 +9,7 @@ import com.tg.framework.web.boot.mvc.formatter.CompositeDateFormatter;
 import com.tg.framework.web.boot.mvc.formatter.LocalDateFormatter;
 import com.tg.framework.web.boot.mvc.formatter.LocalDateTimeFormatter;
 import com.tg.framework.web.boot.mvc.formatter.LocalTimeFormatter;
+import com.tg.framework.web.boot.mvc.resolver.PrincipalHandlerMethodArgumentResolver;
 import com.tg.framework.web.boot.mvc.resolver.RequestDetailsHandlerMethodArgumentResolver;
 import com.tg.framework.web.boot.mvc.resolver.UserAgentHandlerMethodArgumentResolver;
 import java.time.LocalDate;
@@ -88,28 +89,28 @@ public class DefaultWebMvcConfig implements WebMvcConfigurer {
     @ExceptionHandler(NestedException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorDTO handleException(NestedException ex) {
-      logger.error("系统请求异常: ex={}",ex.getMessage(),ex);
+      logger.error("系统请求异常: ex={}", ex.getMessage(), ex);
       return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
     }
 
     @ExceptionHandler(NestedRuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorDTO handleException(NestedRuntimeException ex) {
-      logger.error("系统请求异常: ex={}",ex.getMessage(),ex);
+      logger.error("系统请求异常: ex={}", ex.getMessage(), ex);
       return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
     }
 
     @ExceptionHandler(TransactionalException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorDTO handleException(TransactionalException ex) {
-      logger.error("系统请求异常: ex={}",ex.getMessage(),ex);
+      logger.error("系统请求异常: ex={}", ex.getMessage(), ex);
       return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
     }
 
     @ExceptionHandler(BusinessException.class)
     public ErrorDTO handleException(HttpServletResponse response, BusinessException ex) {
       response.setStatus(456);
-      logger.error("业务请求异常: ex={}",ex.getMessage(),ex);
+      logger.error("业务请求异常: ex={}", ex.getMessage(), ex);
       return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
     }
 
@@ -172,6 +173,7 @@ public class DefaultWebMvcConfig implements WebMvcConfigurer {
         sortArgumentResolver);
     pageableArgumentResolver.setPrefix("_");
     argumentResolvers.add(pageableArgumentResolver);
+    argumentResolvers.add(new PrincipalHandlerMethodArgumentResolver());
     argumentResolvers.add(new UserAgentHandlerMethodArgumentResolver());
     argumentResolvers.add(new RequestDetailsHandlerMethodArgumentResolver());
   }

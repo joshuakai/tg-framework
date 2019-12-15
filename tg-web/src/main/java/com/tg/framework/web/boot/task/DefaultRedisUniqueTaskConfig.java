@@ -23,6 +23,14 @@ public class DefaultRedisUniqueTaskConfig {
     return new RedisUniqueTaskService(redisTemplate, keyPrefix);
   }
 
+  public String getKeyPrefix() {
+    return keyPrefix;
+  }
+
+  public void setKeyPrefix(String keyPrefix) {
+    this.keyPrefix = keyPrefix;
+  }
+
   @RestController
   static class UniqueTaskController {
 
