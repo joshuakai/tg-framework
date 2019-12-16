@@ -1,10 +1,10 @@
 package com.tg.framework.web.captcha.exception;
 
-import com.tg.framework.core.exception.NestedRuntimeException;
+import com.tg.framework.core.exception.ParameterException;
 
-public class InvalidCaptchaException extends NestedRuntimeException {
+public class InvalidCaptchaException extends ParameterException {
 
-  public static final String PRESENT_CODE = "Captcha#InvalidCaptcha";
+  public static final String PRESENT_CODE = "Param#CaptchaInvalid";
 
   public InvalidCaptchaException() {
     super(PRESENT_CODE);

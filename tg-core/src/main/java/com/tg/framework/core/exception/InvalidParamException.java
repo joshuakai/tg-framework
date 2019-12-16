@@ -1,10 +1,10 @@
 package com.tg.framework.core.exception;
 
-public class InvalidParamException extends BusinessException {
+public class InvalidParamException extends ParameterException {
 
   private static final long serialVersionUID = -5792960084906277988L;
 
-  public static final String PRESENT_CODE = "DomainObject#InvalidParam";
+  public static final String PRESENT_CODE = "Param#Invalid";
 
   public InvalidParamException(String paramName, Object paramValue) {
     super(PRESENT_CODE, new Object[]{paramName, paramValue});

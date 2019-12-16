@@ -2,7 +2,7 @@ package com.tg.framework.core.exception;
 
 public class InvalidStateException extends BusinessException {
 
-  public static final String PRESENT_CODE = "DomainObject#InvalidState";
+  public static final String PRESENT_CODE = "Biz#InvalidState";
 
   private static final long serialVersionUID = 4558702588840671918L;
 

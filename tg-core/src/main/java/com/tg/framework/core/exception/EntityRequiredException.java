@@ -1,10 +1,10 @@
 package com.tg.framework.core.exception;
 
-public class EntityRequiredException extends BusinessException {
+public class EntityRequiredException extends ParameterException {
 
   private static final long serialVersionUID = -8408973709553472406L;
 
-  public static final String PRESENT_CODE = "DomainObject#EntityRequired";
+  public static final String PRESENT_CODE = "Param#EntityRequired";
 
   public EntityRequiredException() {
     super(PRESENT_CODE);

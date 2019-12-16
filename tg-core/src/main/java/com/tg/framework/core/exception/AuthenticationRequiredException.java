@@ -1,9 +1,9 @@
 package com.tg.framework.core.exception;
 
-public class AuthenticationRequiredException extends BusinessException {
+public class AuthenticationRequiredException extends NestedRuntimeException {
 
   private static final long serialVersionUID = -7074344870076159125L;
-  public static final String PRESENT_CODE = "DomainObject# AuthenticationRequired";
+  public static final String PRESENT_CODE = "Security#AuthenticationRequired";
 
   public AuthenticationRequiredException() {
     super(PRESENT_CODE);

@@ -6,7 +6,7 @@ public class UniqueTaskException extends BusinessException {
 
   private static final long serialVersionUID = -689229004283230178L;
 
-  public static final String PRESENT_CODE = "Task#UniqueTask";
+  public static final String PRESENT_CODE = "Biz#UniqueTask";
 
 
   public UniqueTaskException() {

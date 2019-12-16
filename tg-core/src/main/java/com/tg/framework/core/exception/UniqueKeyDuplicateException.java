@@ -4,7 +4,7 @@ public class UniqueKeyDuplicateException extends BusinessException {
 
   private static final long serialVersionUID = -2083685513356399099L;
 
-  public static final String PRESENT_CODE = "DomainObject#UniqueKeyDuplicate";
+  public static final String PRESENT_CODE = "Biz#UniqueKeyDuplicate";
 
   public UniqueKeyDuplicateException() {
     super(PRESENT_CODE);

@@ -1,6 +1,6 @@
 package com.tg.framework.core.exception;
 
-public class BusinessException extends NestedRuntimeException {
+public abstract class BusinessException extends NestedRuntimeException {
 
   private static final long serialVersionUID = 8738716899287151836L;
 

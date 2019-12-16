@@ -4,7 +4,7 @@ public class EntityRelatedException extends BusinessException {
 
   private static final long serialVersionUID = -4920717049003521037L;
 
-  public static final String PRESENT_CODE = "DomainObject#EntityRelated";
+  public static final String PRESENT_CODE = "Biz#EntityRelated";
 
   public EntityRelatedException() {
     super(PRESENT_CODE);

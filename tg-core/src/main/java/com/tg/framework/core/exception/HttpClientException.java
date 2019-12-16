@@ -1,10 +1,10 @@
 package com.tg.framework.core.exception;
 
-public class HttpClientException extends BusinessException {
+public class HttpClientException extends NestedRuntimeException {
 
   private static final long serialVersionUID = -961770641625806479L;
 
-  public static final String PRESENT_CODE = "HttpClient#HttpClientError";
+  public static final String PRESENT_CODE = "Http";
 
   public HttpClientException() {
     super(PRESENT_CODE);

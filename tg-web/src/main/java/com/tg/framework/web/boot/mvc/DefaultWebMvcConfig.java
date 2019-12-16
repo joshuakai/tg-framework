@@ -1,9 +1,12 @@
 package com.tg.framework.web.boot.mvc;
 
 import com.tg.framework.commons.util.JSONUtils;
+import com.tg.framework.core.exception.AuthenticationRequiredException;
+import com.tg.framework.core.exception.AuthorityRequiredException;
 import com.tg.framework.core.exception.BusinessException;
 import com.tg.framework.core.exception.NestedException;
 import com.tg.framework.core.exception.NestedRuntimeException;
+import com.tg.framework.core.exception.ParameterException;
 import com.tg.framework.core.exception.TransactionalException;
 import com.tg.framework.web.boot.mvc.formatter.CompositeDateFormatter;
 import com.tg.framework.web.boot.mvc.formatter.LocalDateFormatter;
@@ -84,33 +87,52 @@ public class DefaultWebMvcConfig implements WebMvcConfigurer {
   @RestControllerAdvice
   static class DefaultExceptionHandler {
 
-    private static Logger logger = LoggerFactory.getLogger(DefaultExceptionHandler.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultExceptionHandler.class);
 
     @ExceptionHandler(NestedException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorDTO handleException(NestedException ex) {
-      logger.error("系统请求异常: ex={}", ex.getMessage(), ex);
+      LOGGER.error("系统异常: {}", ex.getMessage(), ex);
       return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
     }
 
     @ExceptionHandler(NestedRuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorDTO handleException(NestedRuntimeException ex) {
-      logger.error("系统请求异常: ex={}", ex.getMessage(), ex);
+      LOGGER.error("系统异常: {}", ex.getMessage(), ex);
       return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
     }
 
     @ExceptionHandler(TransactionalException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorDTO handleException(TransactionalException ex) {
-      logger.error("系统请求异常: ex={}", ex.getMessage(), ex);
+      LOGGER.error("系统异常: {}", ex.getMessage(), ex);
+      return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
+    }
+
+    @ExceptionHandler(AuthenticationRequiredException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorDTO handleException(AuthenticationRequiredException ex) {
+      return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
+    }
+
+    @ExceptionHandler(AuthorityRequiredException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorDTO handleException(AuthorityRequiredException ex) {
+      return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
+    }
+
+    @ExceptionHandler(ParameterException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDTO handleException(ParameterException ex) {
+      LOGGER.error("参数错误: ", ex.getMessage(), ex);
       return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
     }
 
     @ExceptionHandler(BusinessException.class)
     public ErrorDTO handleException(HttpServletResponse response, BusinessException ex) {
       response.setStatus(456);
-      logger.error("业务请求异常: ex={}", ex.getMessage(), ex);
+      LOGGER.error("业务异常: ", ex.getMessage(), ex);
       return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
     }
 

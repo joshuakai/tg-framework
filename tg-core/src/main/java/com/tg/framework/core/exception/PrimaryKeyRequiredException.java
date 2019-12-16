@@ -1,10 +1,10 @@
 package com.tg.framework.core.exception;
 
-public class PrimaryKeyRequiredException extends BusinessException {
+public class PrimaryKeyRequiredException extends ParameterException {
 
   private static final long serialVersionUID = -8477154087002809241L;
 
-  public static final String PRESENT_CODE = "DomainObject#PrimaryKeyRequired";
+  public static final String PRESENT_CODE = "Param#PrimaryKeyRequired";
 
   public PrimaryKeyRequiredException() {
     super(PRESENT_CODE);

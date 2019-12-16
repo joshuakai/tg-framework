@@ -6,7 +6,7 @@ public class LockMutexException extends BusinessException {
 
   private static final long serialVersionUID = 1693173019040467612L;
 
-  public static final String PRESENT_CODE = "Lock#LockMutex";
+  public static final String PRESENT_CODE = "Biz#LockMutex";
 
 
   public LockMutexException() {

@@ -6,7 +6,7 @@ public class LockTimeoutException extends BusinessException {
 
   private static final long serialVersionUID = -5619886320436095278L;
 
-  public static final String PRESENT_CODE = "Lock#LockTimeout";
+  public static final String PRESENT_CODE = "Biz#LockTimeout";
 
   public LockTimeoutException() {
     super(PRESENT_CODE);

@@ -4,7 +4,7 @@ public class EntityExistsException extends BusinessException {
 
   private static final long serialVersionUID = 5257541521579205897L;
 
-  public static final String PRESENT_CODE = "DomainObject#EntityExists";
+  public static final String PRESENT_CODE = "Biz#EntityExists";
 
   public EntityExistsException() {
     super(PRESENT_CODE);

@@ -1,10 +1,10 @@
 package com.tg.framework.core.exception;
 
-public class AuthorityRequiredException extends BusinessException {
+public class AuthorityRequiredException extends NestedRuntimeException {
 
   private static final long serialVersionUID = 3758611621914546504L;
 
-  public static final String PRESENT_CODE = "DomainObject#AuthorityRequired";
+  public static final String PRESENT_CODE = "Security#AuthorityRequired";
 
   public AuthorityRequiredException() {
     super(PRESENT_CODE);

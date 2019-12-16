@@ -48,5 +48,5 @@ public class EntityNotFoundException extends BusinessException {
       boolean enableSuppression, boolean writableStackTrace) {
     super(PRESENT_CODE, args, message, cause, enableSuppression, writableStackTrace);
   }
-  
+
 }
