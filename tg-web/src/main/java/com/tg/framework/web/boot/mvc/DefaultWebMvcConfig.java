@@ -4,9 +4,11 @@ import com.tg.framework.commons.util.JSONUtils;
 import com.tg.framework.core.exception.AuthenticationRequiredException;
 import com.tg.framework.core.exception.AuthorityRequiredException;
 import com.tg.framework.core.exception.BusinessException;
+import com.tg.framework.core.exception.HttpClientException;
 import com.tg.framework.core.exception.NestedException;
 import com.tg.framework.core.exception.NestedRuntimeException;
 import com.tg.framework.core.exception.ParameterException;
+import com.tg.framework.core.exception.ResourceNotFoundException;
 import com.tg.framework.core.exception.TransactionalException;
 import com.tg.framework.web.boot.mvc.formatter.CompositeDateFormatter;
 import com.tg.framework.web.boot.mvc.formatter.LocalDateFormatter;
@@ -15,6 +17,7 @@ import com.tg.framework.web.boot.mvc.formatter.LocalTimeFormatter;
 import com.tg.framework.web.boot.mvc.resolver.PrincipalHandlerMethodArgumentResolver;
 import com.tg.framework.web.boot.mvc.resolver.RequestDetailsHandlerMethodArgumentResolver;
 import com.tg.framework.web.boot.mvc.resolver.UserAgentHandlerMethodArgumentResolver;
+import com.tg.framework.web.util.RestTemplateUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -24,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.hibernate.validator.HibernateValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +36,6 @@ import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.validation.Validator;
@@ -44,6 +47,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+@ConditionalOnMissingBean(WebMvcConfigurer.class)
 @Configuration
 public class DefaultWebMvcConfig implements WebMvcConfigurer {
 
@@ -92,21 +96,21 @@ public class DefaultWebMvcConfig implements WebMvcConfigurer {
     @ExceptionHandler(NestedException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorDTO handleException(NestedException ex) {
-      LOGGER.error("系统异常: {}", ex.getMessage(), ex);
+      LOGGER.error("{} {}", ex.getCode(), ex.getArgs(), ex);
       return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
     }
 
     @ExceptionHandler(NestedRuntimeException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorDTO handleException(NestedRuntimeException ex) {
-      LOGGER.error("系统异常: {}", ex.getMessage(), ex);
+      LOGGER.error("{} {}", ex.getCode(), ex.getArgs(), ex);
       return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
     }
 
     @ExceptionHandler(TransactionalException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorDTO handleException(TransactionalException ex) {
-      LOGGER.error("系统异常: {}", ex.getMessage(), ex);
+      LOGGER.error("{} {}", ex.getCode(), ex.getArgs(), ex);
       return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
     }
 
@@ -122,17 +126,31 @@ public class DefaultWebMvcConfig implements WebMvcConfigurer {
       return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
     }
 
+    @ExceptionHandler(HttpClientException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorDTO handleException(HttpClientException ex) {
+      LOGGER.error("{} {}", ex.getCode(), ex.getArgs(), ex);
+      return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
+    }
+
     @ExceptionHandler(ParameterException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorDTO handleException(ParameterException ex) {
-      LOGGER.error("参数错误: ", ex.getMessage(), ex);
+      LOGGER.error("{} {}", ex.getCode(), ex.getArgs(), ex);
+      return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorDTO handleException(ResourceNotFoundException ex) {
+      LOGGER.error("{} {}", ex.getCode(), ex.getArgs(), ex);
       return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
     }
 
     @ExceptionHandler(BusinessException.class)
     public ErrorDTO handleException(HttpServletResponse response, BusinessException ex) {
       response.setStatus(456);
-      LOGGER.error("业务异常: ", ex.getMessage(), ex);
+      LOGGER.error("{} {}", ex.getCode(), ex.getArgs(), ex);
       return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
     }
 
@@ -160,18 +178,7 @@ public class DefaultWebMvcConfig implements WebMvcConfigurer {
 
   @Bean("defaultRestTemplate")
   public RestTemplate defaultRestTemplate() {
-    HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
-    httpRequestFactory.setConnectionRequestTimeout(2000);
-    httpRequestFactory.setConnectTimeout(3000);
-    httpRequestFactory.setReadTimeout(5000);
-    RestTemplate restTemplate = new RestTemplate(httpRequestFactory);
-    List<HttpMessageConverter<?>> messageConverters = restTemplate.getMessageConverters();
-    for (int i = 0; i < messageConverters.size(); i++) {
-      if (MappingJackson2HttpMessageConverter.class == messageConverters.get(i).getClass()) {
-        messageConverters.set(i, mappingJackson2HttpMessageConverter());
-      }
-    }
-    return restTemplate;
+    return RestTemplateUtils.buildDefaultRestTemplate(mappingJackson2HttpMessageConverter());
   }
 
   @Override

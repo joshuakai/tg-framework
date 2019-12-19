@@ -104,7 +104,7 @@ public class RedisUniqueTaskService implements UniqueTaskService {
   }
 
   @Override
-  public boolean progress(String key, long id, long progressSteps, UniqueTaskStep... steps) {
+  public long progress(String key, long id, long progressSteps, UniqueTaskStep... steps) {
     String currentKey = formatKey(key, CURRENT_SUFFIX);
     RedisUniqueTask uniqueTask = (RedisUniqueTask) redisTemplate.opsForValue().get(currentKey);
     if (uniqueTask == null || uniqueTask.getId() != id) {
@@ -152,7 +152,7 @@ public class RedisUniqueTaskService implements UniqueTaskService {
           .delete(Stream.of(currentKey, completedKey, stepsKey).collect(Collectors.toSet()));
       logger.debug("Complete unique task '{}' {} {}.", key, id, uniqueTask);
     }
-    return completed;
+    return finalCompletedSteps;
   }
 
   private static class RedisUniqueTask implements Serializable {

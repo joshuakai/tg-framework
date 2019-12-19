@@ -46,7 +46,7 @@ public class DefaultLockService implements LockService {
   }
 
   private void startExpireThread() {
-    new Thread(() -> {
+    Thread thread = new Thread(() -> {
       while (true) {
         logger.debug("Check expired LockBean.");
         Iterator<Entry<String, LockBean>> ite = lockHolder.entrySet().iterator();
@@ -64,7 +64,9 @@ public class DefaultLockService implements LockService {
           logger.error("Expire thread was interrupted.", e);
         }
       }
-    }).start();
+    });
+    thread.setDaemon(true);
+    thread.start();
   }
 
   private boolean tryLock(LockContext lockContext, long enterTime) throws Throwable {

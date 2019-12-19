@@ -4,7 +4,7 @@ public class EntityNotFoundException extends BusinessException {
 
   private static final long serialVersionUID = -8589881185218225549L;
 
-  public static final String PRESENT_CODE = "DomainObject#EntityNotFound";
+  public static final String PRESENT_CODE = "Biz#EntityNotFound";
 
   public EntityNotFoundException() {
     super(PRESENT_CODE);

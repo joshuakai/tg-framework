@@ -166,43 +166,68 @@ public class JSONUtils {
     return toObject(json, typeReference).orElse(defaultValue);
   }
 
+  public static Optional<Boolean> getBoolean(JsonNode jsonNode, String fieldName) {
+    return Optional.ofNullable(jsonNode).map(j -> j.get(fieldName)).map(JsonNode::booleanValue);
+  }
+
+  public static Optional<Short> getShort(JsonNode jsonNode, String fieldName) {
+    return Optional.ofNullable(jsonNode).map(j -> j.get(fieldName)).map(JsonNode::shortValue);
+  }
+
+  public static Optional<Integer> getInt(JsonNode jsonNode, String fieldName) {
+    return Optional.ofNullable(jsonNode).map(j -> j.get(fieldName)).map(JsonNode::intValue);
+  }
+
+  public static Optional<Long> getLong(JsonNode jsonNode, String fieldName) {
+    return Optional.ofNullable(jsonNode).map(j -> j.get(fieldName)).map(JsonNode::longValue);
+  }
+
+  public static Optional<Float> getFloat(JsonNode jsonNode, String fieldName) {
+    return Optional.ofNullable(jsonNode).map(j -> j.get(fieldName)).map(JsonNode::floatValue);
+  }
+
+  public static Optional<Double> getDouble(JsonNode jsonNode, String fieldName) {
+    return Optional.ofNullable(jsonNode).map(j -> j.get(fieldName)).map(JsonNode::doubleValue);
+  }
+
+  public static Optional<String> getString(JsonNode jsonNode, String fieldName) {
+    return Optional.ofNullable(jsonNode).map(j -> j.get(fieldName)).map(JsonNode::toString);
+  }
+
+  public static Optional<JsonNode> getNode(JsonNode jsonNode, String fieldName) {
+    return Optional.ofNullable(jsonNode).map(j -> j.get(fieldName));
+  }
+
   public static boolean getBoolean(JsonNode jsonNode, String fieldName, boolean defaultValue) {
-    return Optional.ofNullable(jsonNode).map(j -> j.get(fieldName)).map(JsonNode::booleanValue)
-        .orElse(defaultValue);
+    return getBoolean(jsonNode, fieldName).orElse(defaultValue);
   }
 
   public static short getShort(JsonNode jsonNode, String fieldName, short defaultValue) {
-    return Optional.ofNullable(jsonNode).map(j -> j.get(fieldName)).map(JsonNode::shortValue)
-        .orElse(defaultValue);
+    return getShort(jsonNode, fieldName).orElse(defaultValue);
   }
 
   public static int getInt(JsonNode jsonNode, String fieldName, int defaultValue) {
-    return Optional.ofNullable(jsonNode).map(j -> j.get(fieldName)).map(JsonNode::intValue)
-        .orElse(defaultValue);
+    return getInt(jsonNode, fieldName).orElse(defaultValue);
   }
 
   public static long getLong(JsonNode jsonNode, String fieldName, long defaultValue) {
-    return Optional.ofNullable(jsonNode).map(j -> j.get(fieldName)).map(JsonNode::longValue)
-        .orElse(defaultValue);
+    return getLong(jsonNode, fieldName).orElse(defaultValue);
   }
 
   public static float getFloat(JsonNode jsonNode, String fieldName, float defaultValue) {
-    return Optional.ofNullable(jsonNode).map(j -> j.get(fieldName)).map(JsonNode::floatValue)
-        .orElse(defaultValue);
+    return getFloat(jsonNode, fieldName).orElse(defaultValue);
   }
 
   public static double getDouble(JsonNode jsonNode, String fieldName, double defaultValue) {
-    return Optional.ofNullable(jsonNode).map(j -> j.get(fieldName)).map(JsonNode::doubleValue)
-        .orElse(defaultValue);
+    return getDouble(jsonNode, fieldName).orElse(defaultValue);
   }
 
   public static String getString(JsonNode jsonNode, String fieldName, String defaultValue) {
-    return Optional.ofNullable(jsonNode).map(j -> j.get(fieldName)).map(JsonNode::asText)
-        .orElse(defaultValue);
+    return getString(jsonNode, fieldName).orElse(defaultValue);
   }
 
   public static JsonNode getNode(JsonNode jsonNode, String fieldName, JsonNode defaultValue) {
-    return Optional.ofNullable(jsonNode).map(j -> j.get(fieldName)).orElse(defaultValue);
+    return getNode(jsonNode, fieldName).orElse(defaultValue);
   }
 
 }

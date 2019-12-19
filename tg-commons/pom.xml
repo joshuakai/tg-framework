@@ -21,6 +21,10 @@
       <artifactId>commons-collections4</artifactId>
     </dependency>
     <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
     </dependency>
@@ -54,7 +58,7 @@
     </dependency>
     <dependency>
       <groupId>cn.afterturn</groupId>
-      <artifactId>easypoi-spring-boot-starter</artifactId>
+      <artifactId>easypoi-base</artifactId>
     </dependency>
   </dependencies>
 

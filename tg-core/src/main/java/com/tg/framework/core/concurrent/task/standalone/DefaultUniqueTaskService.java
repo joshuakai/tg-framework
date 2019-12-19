@@ -44,7 +44,7 @@ public class DefaultUniqueTaskService implements UniqueTaskService {
   }
 
   private void startExpireThread() {
-    new Thread(() -> {
+    Thread thread = new Thread(() -> {
       while (true) {
         logger.debug("Check expired UniqueTask.");
         Iterator<Entry<String, ConcurrentUniqueTask>> ite = previousUniqueTaskHolder.entrySet()
@@ -63,7 +63,9 @@ public class DefaultUniqueTaskService implements UniqueTaskService {
           logger.error("Expire thread was interrupted.", e);
         }
       }
-    }).start();
+    });
+    thread.setDaemon(true);
+    thread.start();
   }
 
   @Override
@@ -103,7 +105,7 @@ public class DefaultUniqueTaskService implements UniqueTaskService {
 
 
   @Override
-  public boolean progress(String key, long id, long progressSteps, UniqueTaskStep... steps) {
+  public long progress(String key, long id, long progressSteps, UniqueTaskStep... steps) {
     ConcurrentUniqueTask uniqueTask = uniqueTaskHolder.get(key);
     if (uniqueTask == null || uniqueTask.getId() != id) {
       throw new UniqueTaskException(String.format("Unique task not found '%s' %d.", key, id));
@@ -136,7 +138,7 @@ public class DefaultUniqueTaskService implements UniqueTaskService {
       uniqueTaskHolder.remove(key);
       logger.debug("Complete unique task '{}' {} {}.", key, id, uniqueTask);
     }
-    return completed;
+    return finalCompletedSteps;
   }
 
   private static UniqueTask mapUniqueTask(ConcurrentUniqueTask concurrentUniqueTask) {

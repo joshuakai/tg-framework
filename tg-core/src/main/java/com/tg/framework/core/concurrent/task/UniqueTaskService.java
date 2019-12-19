@@ -12,9 +12,9 @@ public interface UniqueTaskService {
 
   long start(String key, String title, long totalSteps, String startBy, long historyKeepMillis);
 
-  boolean progress(String key, long id, long progressSteps, UniqueTaskStep... steps);
+  long progress(String key, long id, long progressSteps, UniqueTaskStep... steps);
 
-  default boolean progress(String key, long id, UniqueTaskStep step) {
+  default long progress(String key, long id, UniqueTaskStep step) {
     return progress(key, id, SINGLE_PROGRESS_STEP, step);
   }
 
