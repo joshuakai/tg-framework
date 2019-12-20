@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
+import com.tg.framework.beans.jackson.Mask;
+import com.tg.framework.beans.jackson.SensitiveProperty;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;

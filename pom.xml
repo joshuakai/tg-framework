@@ -29,6 +29,7 @@
   </distributionManagement>
   <modules>
     <module>tg-parent</module>
+    <module>tg-beans</module>
     <module>tg-commons</module>
     <module>tg-core</module>
     <module>tg-web</module>
@@ -45,6 +46,7 @@
     <commons-lang3.version>3.8.1</commons-lang3.version>
     <commons-collections4.version>4.2</commons-collections4.version>
     <commons-io.version>2.6</commons-io.version>
+    <commons-fileupload.version>1.4</commons-fileupload.version>
     <guava.version>27.1-jre</guava.version>
     <orika.version>1.5.4</orika.version>
     <hibernate-validator.version>6.0.16.Final</hibernate-validator.version>
@@ -92,6 +94,13 @@
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>${commons-io.version}</version>
+      </dependency>
+
+      <!-- https://mvnrepository.com/artifact/commons-fileupload/commons-fileupload -->
+      <dependency>
+        <groupId>commons-fileupload</groupId>
+        <artifactId>commons-fileupload</artifactId>
+        <version>${commons-fileupload.version}</version>
       </dependency>
 
       <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->

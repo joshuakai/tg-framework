@@ -1,7 +1,7 @@
 package com.tg.framework.web.util;
 
-import com.tg.framework.commons.http.ProxyRequestBean;
-import com.tg.framework.commons.http.ProxyResponseBean;
+import com.tg.framework.beans.http.ProxyRequestBean;
+import com.tg.framework.beans.http.ProxyResponseBean;
 import com.tg.framework.commons.lang.MapOptional;
 import com.tg.framework.core.exception.InvalidParamException;
 import java.net.URI;

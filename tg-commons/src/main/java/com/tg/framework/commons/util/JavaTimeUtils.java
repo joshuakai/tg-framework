@@ -23,12 +23,18 @@ import java.util.Locale;
 import java.util.Optional;
 
 public class JavaTimeUtils {
-
-  public static final String PATTERN_Y_M_D_H_MI_S = "yyyy-MM-dd HH:mm:ss";
   public static final String PATTERN_Y_M_D = "yyyy-MM-dd";
   public static final String PATTERN_Y_M = "yyyy-MM";
   public static final String PATTERN_Y_W = "YYYY-ww";
   public static final String PATTERN_H_MI_S = "HH:mm:ss";
+  public static final String PATTERN_Y_M_D_H_MI_S = PATTERN_Y_M_D + " " + PATTERN_H_MI_S;
+
+  public static final String PATTERN_Y_M_D_COMPACT = "yyyyMMdd";
+  public static final String PATTERN_Y_M_COMPACT = "yyyyMM";
+  public static final String PATTERN_Y_W_COMPACT = "YYYYww";
+  public static final String PATTERN_H_MI_S_COMPACT = "HHmmss";
+  public static final String PATTERN_Y_M_D_H_MI_S_COMPACT = PATTERN_Y_M_D_COMPACT + PATTERN_H_MI_S_COMPACT;
+
   public static final long MILLIS_PER_DAY = 1000 * 60 * 60 * 24;
 
   private JavaTimeUtils() {

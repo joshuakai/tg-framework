@@ -1,7 +1,6 @@
 package com.tg.framework.web.captcha;
 
-import com.tg.framework.commons.captcha.support.CaptchaType;
-import com.tg.framework.web.captcha.exception.InvalidCaptchaException;
+import com.tg.framework.beans.captcha.CaptchaType;
 import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;

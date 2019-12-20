@@ -3,6 +3,8 @@ package com.tg.framework.commons.jackson;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
+import com.tg.framework.beans.jackson.Mask;
+import com.tg.framework.beans.jackson.MaskType;
 import com.tg.framework.commons.util.MaskUtils;
 
 public class MaskSensitivePropertyWriter extends BeanPropertyWriter {

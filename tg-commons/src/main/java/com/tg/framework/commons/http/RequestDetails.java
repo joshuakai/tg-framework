@@ -1,6 +1,5 @@
 package com.tg.framework.commons.http;
 
-import com.google.common.base.MoreObjects;
 import eu.bitwalker.useragentutils.UserAgent;
 import java.io.Serializable;
 
@@ -66,12 +65,12 @@ public class RequestDetails implements Serializable {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this)
-        .add("url", url)
-        .add("remoteAddress", remoteAddress)
-        .add("xRealIp", xRealIp)
-        .add("xForwardedFor", xForwardedFor)
-        .add("userAgent", userAgent)
-        .toString();
+    return "RequestDetails{" +
+        "url='" + url + '\'' +
+        ", remoteAddress='" + remoteAddress + '\'' +
+        ", xRealIp='" + xRealIp + '\'' +
+        ", xForwardedFor='" + xForwardedFor + '\'' +
+        ", userAgent=" + userAgent +
+        '}';
   }
 }

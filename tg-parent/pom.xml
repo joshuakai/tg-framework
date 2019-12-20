@@ -17,6 +17,11 @@
     <dependencies>
       <dependency>
         <groupId>com.tg.framework</groupId>
+        <artifactId>tg-beans</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.tg.framework</groupId>
         <artifactId>tg-commons</artifactId>
         <version>${project.version}</version>
       </dependency>
