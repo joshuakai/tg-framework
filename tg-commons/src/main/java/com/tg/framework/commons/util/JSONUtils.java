@@ -60,7 +60,7 @@ public class JSONUtils {
   private JSONUtils() {
   }
 
-  private static JavaTimeModule buildJavaTimeModule() {
+  public static JavaTimeModule buildJavaTimeModule() {
     JavaTimeModule module = new JavaTimeModule();
     DateTimeFormatter dtFormatter = DateTimeFormatter
         .ofPattern(PATTERN_Y_M_D_H_MI_S, Locale.getDefault());
@@ -191,7 +191,7 @@ public class JSONUtils {
   }
 
   public static Optional<String> getString(JsonNode jsonNode, String fieldName) {
-    return Optional.ofNullable(jsonNode).map(j -> j.get(fieldName)).map(JsonNode::toString);
+    return Optional.ofNullable(jsonNode).map(j -> j.get(fieldName)).map(JsonNode::textValue);
   }
 
   public static Optional<JsonNode> getNode(JsonNode jsonNode, String fieldName) {

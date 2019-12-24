@@ -7,7 +7,7 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.PARAMETER;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-import com.tg.framework.beans.validation.validator.MatchEnumValidator;
+import com.tg.framework.beans.validation.validator.CharsetValidator;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -17,23 +17,19 @@ import javax.validation.Payload;
 @Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER})
 @Retention(RUNTIME)
 @Documented
-@Constraint(validatedBy = MatchEnumValidator.class)
-public @interface MatchEnum {
+@Constraint(validatedBy = CharsetValidator.class)
+public @interface Charset {
 
-  String message() default "{com.tg.framework.beans.validation.constraint.MatchEnum.message}";
+  String message() default "{com.tg.framework.beans.validation.constraint.Charset.message}";
 
   Class<?>[] groups() default {};
 
   Class<? extends Payload>[] payload() default {};
 
-  Class<?> enumClass();
-
-  String valueAccessor() default "getValue";
-
   boolean multiple() default false;
 
   String separator() default ",";
 
-  boolean ignoreCase() default false;
+  boolean ignoreCase() default true;
 
 }

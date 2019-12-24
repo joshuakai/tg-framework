@@ -17,6 +17,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -38,21 +39,31 @@ public class RestTemplateUtils {
       T restTemplate, MappingJackson2HttpMessageConverter messageConverter) {
     List<HttpMessageConverter<?>> messageConverters = restTemplate.getMessageConverters();
     for (int i = 0; i < messageConverters.size(); i++) {
-      if (MappingJackson2HttpMessageConverter.class == messageConverters.get(i).getClass()) {
+      Class clazz = messageConverters.get(i).getClass();
+      if (MappingJackson2HttpMessageConverter.class == clazz) {
         messageConverters.set(i, messageConverter);
       }
     }
     return restTemplate;
   }
 
-  public static RestTemplate buildDefaultRestTemplate(
-      MappingJackson2HttpMessageConverter messageConverter) {
+  public static ClientHttpRequestFactory buildDefaultClientHttpRequestFactory() {
     HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
     httpRequestFactory.setConnectionRequestTimeout(2000);
     httpRequestFactory.setConnectTimeout(3000);
-    httpRequestFactory.setReadTimeout(5000);
-    return replaceMappingJackson2HttpMessageConverter(new RestTemplate(httpRequestFactory),
-        messageConverter);
+    httpRequestFactory.setReadTimeout(10000);
+    return httpRequestFactory;
+  }
+
+  public static <T extends RestTemplate> T buildDefaultRestTemplate(T restTemplate,
+      MappingJackson2HttpMessageConverter messageConverter) {
+    restTemplate.setRequestFactory(buildDefaultClientHttpRequestFactory());
+    return replaceMappingJackson2HttpMessageConverter(restTemplate, messageConverter);
+  }
+
+  public static RestTemplate buildDefaultRestTemplate(
+      MappingJackson2HttpMessageConverter messageConverter) {
+    return buildDefaultRestTemplate(new RestTemplate(), messageConverter);
   }
 
   public static <T> T proxyGet(RestTemplate restTemplate, String url,
@@ -66,6 +77,11 @@ public class RestTemplateUtils {
       Class<T> responseType) {
     UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
     return restTemplate.postForObject(builder.build().toUri(), requestBody, responseType);
+  }
+
+  public static void proxyPut(RestTemplate restTemplate, String url, Object requestBody) {
+    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+    restTemplate.put(builder.build().toUri(), requestBody);
   }
 
   public static ProxyResponseBean proxyRequest(RestTemplate restTemplate,

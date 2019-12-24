@@ -38,6 +38,7 @@ import org.springframework.format.FormatterRegistry;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -93,6 +94,13 @@ public class DefaultWebMvcConfig implements WebMvcConfigurer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultExceptionHandler.class);
 
+    @ExceptionHandler(Throwable.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorDTO handleException(Throwable ex) {
+      LOGGER.error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), ex);
+      return new ErrorDTO(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), ex.getMessage(), null);
+    }
+
     @ExceptionHandler(NestedException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorDTO handleException(NestedException ex) {
@@ -124,6 +132,12 @@ public class DefaultWebMvcConfig implements WebMvcConfigurer {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ErrorDTO handleException(AuthorityRequiredException ex) {
       return new ErrorDTO(ex.getCode(), ex.getMessage(), ex.getArgs());
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorDTO handleException(AccessDeniedException ex) {
+      return new ErrorDTO(HttpStatus.FORBIDDEN.getReasonPhrase(), ex.getMessage(), null);
     }
 
     @ExceptionHandler(HttpClientException.class)
