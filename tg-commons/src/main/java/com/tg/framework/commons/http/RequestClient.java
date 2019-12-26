@@ -3,20 +3,22 @@ package com.tg.framework.commons.http;
 import eu.bitwalker.useragentutils.UserAgent;
 import java.io.Serializable;
 
-public class RequestDetails implements Serializable {
+public class RequestClient implements Serializable {
 
   private String url;
+  private String requestIp;
   private String remoteAddress;
   private String xRealIp;
   private String xForwardedFor;
   private UserAgent userAgent;
 
-  public RequestDetails() {
+  public RequestClient() {
   }
 
-  public RequestDetails(String url, String remoteAddress, String xRealIp, String xForwardedFor,
-      UserAgent userAgent) {
+  public RequestClient(String url, String requestIp, String remoteAddress, String xRealIp,
+      String xForwardedFor, UserAgent userAgent) {
     this.url = url;
+    this.requestIp = requestIp;
     this.remoteAddress = remoteAddress;
     this.xRealIp = xRealIp;
     this.xForwardedFor = xForwardedFor;
@@ -29,6 +31,14 @@ public class RequestDetails implements Serializable {
 
   public void setUrl(String url) {
     this.url = url;
+  }
+
+  public String getRequestIp() {
+    return requestIp;
+  }
+
+  public void setRequestIp(String requestIp) {
+    this.requestIp = requestIp;
   }
 
   public String getRemoteAddress() {
@@ -65,8 +75,9 @@ public class RequestDetails implements Serializable {
 
   @Override
   public String toString() {
-    return "RequestDetails{" +
+    return "RequestClient{" +
         "url='" + url + '\'' +
+        ", requestIp='" + requestIp + '\'' +
         ", remoteAddress='" + remoteAddress + '\'' +
         ", xRealIp='" + xRealIp + '\'' +
         ", xForwardedFor='" + xForwardedFor + '\'' +

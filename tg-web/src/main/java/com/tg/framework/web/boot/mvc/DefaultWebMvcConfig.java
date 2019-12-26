@@ -15,19 +15,26 @@ import com.tg.framework.web.boot.mvc.formatter.LocalDateFormatter;
 import com.tg.framework.web.boot.mvc.formatter.LocalDateTimeFormatter;
 import com.tg.framework.web.boot.mvc.formatter.LocalTimeFormatter;
 import com.tg.framework.web.boot.mvc.resolver.PrincipalHandlerMethodArgumentResolver;
-import com.tg.framework.web.boot.mvc.resolver.RequestDetailsHandlerMethodArgumentResolver;
+import com.tg.framework.web.boot.mvc.resolver.RequestClientHandlerMethodArgumentResolver;
+import com.tg.framework.web.boot.mvc.resolver.RequestHeaderHandlerMethodArgumentResolver;
+import com.tg.framework.web.boot.mvc.resolver.RequestIpHandlerMethodArgumentResolver;
 import com.tg.framework.web.boot.mvc.resolver.UserAgentHandlerMethodArgumentResolver;
+import com.tg.framework.web.http.support.DefaultIpResolver;
+import com.tg.framework.web.http.IpResolver;
+import com.tg.framework.web.http.support.IpResolverStrategy;
 import com.tg.framework.web.util.RestTemplateUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import javax.servlet.http.HttpServletResponse;
 import org.hibernate.validator.HibernateValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -50,43 +57,103 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @ConditionalOnMissingBean(WebMvcConfigurer.class)
 @Configuration
+@ConfigurationProperties("tg.web")
 public class DefaultWebMvcConfig implements WebMvcConfigurer {
 
-  static class ErrorDTO {
+  private IpResolverStrategy ipResolverStrategy = IpResolverStrategy.AUTO;
+  private String ipResolverCustomHeaderName;
+  private Set<String> trustAgents;
+  private boolean trustAgentsAcceptWildcard;
 
-    private String error;
-    private String message;
-    private Object[] args;
+  @Bean
+  public IpResolver ipResolver() {
+    return new DefaultIpResolver(ipResolverStrategy, ipResolverCustomHeaderName, trustAgents,
+        trustAgentsAcceptWildcard);
+  }
 
-    public ErrorDTO(String error, String message, Object[] args) {
-      this.error = error;
-      this.message = message;
-      this.args = args;
-    }
+  @Bean
+  public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter() {
+    return new MappingJackson2HttpMessageConverter(JSONUtils.transferObjectMapper());
+  }
 
-    public String getError() {
-      return error;
-    }
+  @Bean
+  public MessageSource messageSource() {
+    ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
+    messageSource.setUseCodeAsDefaultMessage(true);
+    return messageSource;
+  }
 
-    public void setError(String error) {
-      this.error = error;
-    }
+  @Bean
+  public Validator hibernateValidator() {
+    LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
+    validator.setProviderClass(HibernateValidator.class);
+    validator.setValidationMessageSource(messageSource());
+    return validator;
+  }
 
-    public String getMessage() {
-      return message;
-    }
+  @Bean("defaultRestTemplate")
+  public RestTemplate defaultRestTemplate() {
+    return RestTemplateUtils.buildDefaultRestTemplate(mappingJackson2HttpMessageConverter());
+  }
 
-    public void setMessage(String message) {
-      this.message = message;
-    }
+  @Override
+  public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+    converters.add(mappingJackson2HttpMessageConverter());
+  }
 
-    public Object[] getArgs() {
-      return args;
-    }
+  @Override
+  public void addFormatters(FormatterRegistry registry) {
+    registry.addFormatterForFieldType(Date.class, new CompositeDateFormatter());
+    registry.addFormatterForFieldType(LocalDateTime.class, new LocalDateTimeFormatter());
+    registry.addFormatterForFieldType(LocalDate.class, new LocalDateFormatter());
+    registry.addFormatterForFieldType(LocalTime.class, new LocalTimeFormatter());
+  }
 
-    public void setArgs(Object[] args) {
-      this.args = args;
-    }
+  @Override
+  public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
+    SortHandlerMethodArgumentResolver sortArgumentResolver = new SortHandlerMethodArgumentResolver();
+    sortArgumentResolver.setSortParameter("_sort");
+    PageableHandlerMethodArgumentResolver pageableArgumentResolver = new PageableHandlerMethodArgumentResolver(
+        sortArgumentResolver);
+    pageableArgumentResolver.setPrefix("_");
+    argumentResolvers.add(pageableArgumentResolver);
+    argumentResolvers.add(new RequestIpHandlerMethodArgumentResolver(ipResolver()));
+    argumentResolvers.add(new RequestHeaderHandlerMethodArgumentResolver());
+    argumentResolvers.add(new UserAgentHandlerMethodArgumentResolver());
+    argumentResolvers.add(new RequestClientHandlerMethodArgumentResolver(ipResolver()));
+    argumentResolvers.add(new PrincipalHandlerMethodArgumentResolver());
+  }
+
+  public IpResolverStrategy getIpResolverStrategy() {
+    return ipResolverStrategy;
+  }
+
+  public void setIpResolverStrategy(IpResolverStrategy ipResolverStrategy) {
+    this.ipResolverStrategy = ipResolverStrategy;
+  }
+
+  public String getIpResolverCustomHeaderName() {
+    return ipResolverCustomHeaderName;
+  }
+
+  public void setIpResolverCustomHeaderName(String ipResolverCustomHeaderName) {
+    this.ipResolverCustomHeaderName = ipResolverCustomHeaderName;
+  }
+
+  public Set<String> getTrustAgents() {
+    return trustAgents;
+  }
+
+  public void setTrustAgents(Set<String> trustAgents) {
+    this.trustAgents = trustAgents;
+  }
+
+  public boolean isTrustAgentsAcceptWildcard() {
+    return trustAgentsAcceptWildcard;
+  }
+
+  public void setTrustAgentsAcceptWildcard(boolean trustAgentsAcceptWildcard) {
+    this.trustAgentsAcceptWildcard = trustAgentsAcceptWildcard;
   }
 
   @RestControllerAdvice
@@ -98,7 +165,8 @@ public class DefaultWebMvcConfig implements WebMvcConfigurer {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorDTO handleException(Throwable ex) {
       LOGGER.error(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), ex);
-      return new ErrorDTO(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), ex.getMessage(), null);
+      return new ErrorDTO(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), ex.getMessage(),
+          null);
     }
 
     @ExceptionHandler(NestedException.class)
@@ -170,55 +238,41 @@ public class DefaultWebMvcConfig implements WebMvcConfigurer {
 
   }
 
-  @Bean
-  public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter() {
-    return new MappingJackson2HttpMessageConverter(JSONUtils.transferObjectMapper());
-  }
+  static class ErrorDTO {
 
-  @Bean
-  public MessageSource messageSource() {
-    ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-    messageSource.setUseCodeAsDefaultMessage(true);
-    return messageSource;
-  }
+    private String error;
+    private String message;
+    private Object[] args;
 
-  @Bean
-  public Validator hibernateValidator() {
-    LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
-    validator.setProviderClass(HibernateValidator.class);
-    validator.setValidationMessageSource(messageSource());
-    return validator;
-  }
+    public ErrorDTO(String error, String message, Object[] args) {
+      this.error = error;
+      this.message = message;
+      this.args = args;
+    }
 
-  @Bean("defaultRestTemplate")
-  public RestTemplate defaultRestTemplate() {
-    return RestTemplateUtils.buildDefaultRestTemplate(mappingJackson2HttpMessageConverter());
-  }
+    public String getError() {
+      return error;
+    }
 
-  @Override
-  public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-    converters.add(mappingJackson2HttpMessageConverter());
-  }
+    public void setError(String error) {
+      this.error = error;
+    }
 
-  @Override
-  public void addFormatters(FormatterRegistry registry) {
-    registry.addFormatterForFieldType(Date.class, new CompositeDateFormatter());
-    registry.addFormatterForFieldType(LocalDateTime.class, new LocalDateTimeFormatter());
-    registry.addFormatterForFieldType(LocalDate.class, new LocalDateFormatter());
-    registry.addFormatterForFieldType(LocalTime.class, new LocalTimeFormatter());
-  }
+    public String getMessage() {
+      return message;
+    }
 
-  @Override
-  public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
-    SortHandlerMethodArgumentResolver sortArgumentResolver = new SortHandlerMethodArgumentResolver();
-    sortArgumentResolver.setSortParameter("_sort");
-    PageableHandlerMethodArgumentResolver pageableArgumentResolver = new PageableHandlerMethodArgumentResolver(
-        sortArgumentResolver);
-    pageableArgumentResolver.setPrefix("_");
-    argumentResolvers.add(pageableArgumentResolver);
-    argumentResolvers.add(new PrincipalHandlerMethodArgumentResolver());
-    argumentResolvers.add(new UserAgentHandlerMethodArgumentResolver());
-    argumentResolvers.add(new RequestDetailsHandlerMethodArgumentResolver());
+    public void setMessage(String message) {
+      this.message = message;
+    }
+
+    public Object[] getArgs() {
+      return args;
+    }
+
+    public void setArgs(Object[] args) {
+      this.args = args;
+    }
   }
 
 }

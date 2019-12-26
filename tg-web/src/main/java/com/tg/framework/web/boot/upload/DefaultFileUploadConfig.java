@@ -1,6 +1,6 @@
 package com.tg.framework.web.boot.upload;
 
-import com.tg.framework.commons.http.RequestDetails;
+import com.tg.framework.web.boot.mvc.resolver.annotation.RequestIp;
 import com.tg.framework.web.upload.FileUploadService;
 import com.tg.framework.web.upload.support.DefaultFileUploadService;
 import com.tg.framework.web.upload.support.FileUploadSettings;
@@ -49,15 +49,14 @@ public class DefaultFileUploadConfig {
 
 
     @PostMapping("/upload-file")
-    public String upload(@RequestParam("file") MultipartFile file, RequestDetails requestDetails)
-        throws Exception {
-      return fileUploadService.store(file, requestDetails);
+    public String upload(@RequestParam("file") MultipartFile file, @RequestIp String requestIp) {
+      return fileUploadService.store(file, requestIp);
     }
 
     @PostMapping("/upload-files")
     public String[] upload(@RequestParam("files") MultipartFile[] files,
-        RequestDetails requestDetails) {
-      return fileUploadService.store(files, requestDetails);
+        @RequestIp String requestIp) {
+      return fileUploadService.store(files, requestIp);
     }
   }
 

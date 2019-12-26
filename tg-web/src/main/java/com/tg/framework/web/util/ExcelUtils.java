@@ -18,11 +18,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.web.multipart.MultipartFile;
 
-/**
- * @Description: TODO
- * @Date: 2019/7/4 19:35
- * @Author: neway
- */
 public class ExcelUtils {
 
   public static void exportExcel(List<?> list, String title, String sheetName, Class<?> pojoClass,

@@ -1,6 +1,6 @@
 package com.tg.framework.web.boot.upload;
 
-import com.tg.framework.commons.http.RequestDetails;
+import com.tg.framework.web.boot.mvc.resolver.annotation.RequestIp;
 import com.tg.framework.web.upload.FileUploadService;
 import com.tg.framework.web.upload.support.DefaultFileUploadService;
 import com.tg.framework.web.upload.support.FileUploadSettings;
@@ -24,7 +24,8 @@ import org.springframework.web.multipart.MultipartFile;
 @ConfigurationProperties("tg.upload.image")
 public class DefaultImageUploadConfig {
 
-  private Set<String> acceptMimeTypes = Stream.of("BPM", "ICO", "JPG", "JEPG", "PNG", "GIF", "SWF").collect(Collectors.toSet());
+  private Set<String> acceptMimeTypes = Stream.of("BPM", "ICO", "JPG", "JEPG", "PNG", "GIF", "SWF")
+      .collect(Collectors.toSet());
   private String localDir;
   private String filenamePattern;
   private boolean replaceExists;
@@ -49,15 +50,14 @@ public class DefaultImageUploadConfig {
 
 
     @PostMapping("/upload-image")
-    public String upload(@RequestParam("image") MultipartFile image, RequestDetails requestDetails)
-        throws Exception {
-      return imageUploadService.store(image, requestDetails);
+    public String upload(@RequestParam("image") MultipartFile image, @RequestIp String requestIp) {
+      return imageUploadService.store(image, requestIp);
     }
 
     @PostMapping("/upload-images")
     public String[] upload(@RequestParam("images") MultipartFile[] images,
-        RequestDetails requestDetails) {
-      return imageUploadService.store(images, requestDetails);
+        @RequestIp String requestIp) {
+      return imageUploadService.store(images, requestIp);
     }
   }
 

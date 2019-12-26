@@ -2,6 +2,7 @@ package com.tg.framework.web.boot.mvc.resolver;
 
 import com.tg.framework.core.exception.AuthenticationRequiredException;
 import com.tg.framework.core.security.SecurityUtils;
+import com.tg.framework.web.boot.mvc.resolver.annotation.Principal;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.MethodParameter;

@@ -18,6 +18,7 @@ public abstract class AbstractActuatorWebSecurityConfig extends WebSecurityConfi
     Optional.ofNullable(webEndpointProperties).map(WebEndpointProperties::getBasePath)
         .map(basePath -> new AntPathRequestMatcher(basePath + "/**"))
         .ifPresent(web.ignoring()::requestMatchers);
+    web.ignoring().antMatchers("/error");
   }
 
   @Override

@@ -18,8 +18,8 @@ public class PredicateBuilder {
     this.predicates = new ArrayList<>();
   }
 
-  private PredicateBuilder(int initialCapacity) {
-    this.predicates = new ArrayList<>(initialCapacity);
+  private PredicateBuilder(int maxSize) {
+    this.predicates = new ArrayList<>(maxSize + 1);
   }
 
   public static Predicate[] empty() {
@@ -30,8 +30,8 @@ public class PredicateBuilder {
     return new PredicateBuilder();
   }
 
-  public static PredicateBuilder of(int initialCapacity) {
-    return new PredicateBuilder(initialCapacity);
+  public static PredicateBuilder of(int maxSize) {
+    return new PredicateBuilder(maxSize);
   }
 
   public PredicateBuilder addPredicate(Predicate predicate) {
@@ -72,9 +72,11 @@ public class PredicateBuilder {
     return addIfy(value, mapper, true);
   }
 
-  public PredicateBuilder addStartsWithIfy(String value, Function<String, Predicate> mapper, boolean skipEmpty) {
+  public PredicateBuilder addStartsWithIfy(String value, Function<String, Predicate> mapper,
+      boolean skipEmpty) {
     if (skipEmpty) {
-      StringOptional.ofNullable(value).map(SQLUtils::startsWith).map(mapper).ifPresent(this::addPredicate);
+      StringOptional.ofNullable(value).map(SQLUtils::startsWith).map(mapper)
+          .ifPresent(this::addPredicate);
     }
     Optional.ofNullable(value).map(SQLUtils::startsWith).map(mapper).ifPresent(this::addPredicate);
     return this;
@@ -84,9 +86,11 @@ public class PredicateBuilder {
     return addStartsWithIfy(value, mapper, true);
   }
 
-  public PredicateBuilder addEndsWithIfy(String value, Function<String, Predicate> mapper, boolean skipEmpty) {
+  public PredicateBuilder addEndsWithIfy(String value, Function<String, Predicate> mapper,
+      boolean skipEmpty) {
     if (skipEmpty) {
-      StringOptional.ofNullable(value).map(SQLUtils::endsWith).map(mapper).ifPresent(this::addPredicate);
+      StringOptional.ofNullable(value).map(SQLUtils::endsWith).map(mapper)
+          .ifPresent(this::addPredicate);
     }
     Optional.ofNullable(value).map(SQLUtils::endsWith).map(mapper).ifPresent(this::addPredicate);
     return this;
@@ -96,9 +100,11 @@ public class PredicateBuilder {
     return addEndsWithIfy(value, mapper, true);
   }
 
-  public PredicateBuilder addContainsIfy(String value, Function<String, Predicate> mapper, boolean skipEmpty) {
+  public PredicateBuilder addContainsIfy(String value, Function<String, Predicate> mapper,
+      boolean skipEmpty) {
     if (skipEmpty) {
-      StringOptional.ofNullable(value).map(SQLUtils::contains).map(mapper).ifPresent(this::addPredicate);
+      StringOptional.ofNullable(value).map(SQLUtils::contains).map(mapper)
+          .ifPresent(this::addPredicate);
     }
     Optional.ofNullable(value).map(SQLUtils::endsWith).map(mapper).ifPresent(this::addPredicate);
     return this;
@@ -136,7 +142,8 @@ public class PredicateBuilder {
     return addInIfy(value, mapper, false);
   }
 
-  public <T, C extends Collection<T>> PredicateBuilder addNotInIfy(C value, Function<C, In<T>> mapper, boolean skipEmpty) {
+  public <T, C extends Collection<T>> PredicateBuilder addNotInIfy(C value,
+      Function<C, In<T>> mapper, boolean skipEmpty) {
     if (value != null && (skipEmpty || !value.isEmpty())) {
       In<T> in = mapper.apply(value);
       value.forEach(in::value);
@@ -145,11 +152,13 @@ public class PredicateBuilder {
     return this;
   }
 
-  public <T, C extends Collection<T>> PredicateBuilder addNotInIfy(C value, Function<C, In<T>> mapper) {
+  public <T, C extends Collection<T>> PredicateBuilder addNotInIfy(C value,
+      Function<C, In<T>> mapper) {
     return addNotInIfy(value, mapper, false);
   }
 
-  public <T> PredicateBuilder addNotInIfy(T[] value, Function<T[], In<T>> mapper, boolean skipEmpty) {
+  public <T> PredicateBuilder addNotInIfy(T[] value, Function<T[], In<T>> mapper,
+      boolean skipEmpty) {
     if (value != null && (skipEmpty || value.length != 0)) {
       In<T> in = mapper.apply(value);
       Stream.of(value).forEach(in::value);

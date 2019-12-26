@@ -1,6 +1,5 @@
 package com.tg.framework.web.upload.support;
 
-import com.tg.framework.commons.http.RequestDetails;
 import com.tg.framework.commons.lang.ArrayOptional;
 import com.tg.framework.commons.lang.StringOptional;
 import com.tg.framework.core.exception.EntityRequiredException;
@@ -54,14 +53,14 @@ public class DefaultFileUploadService implements FileUploadService {
   }
 
   @Override
-  public String[] store(MultipartFile[] multipartFiles, RequestDetails requestDetails) {
+  public String[] store(MultipartFile[] multipartFiles, String requestIp) {
     ArrayOptional.ofNullable(multipartFiles).orElseThrow(EntityRequiredException::new);
-    return Stream.of(multipartFiles).map(multipartFile -> store(multipartFile, requestDetails))
+    return Stream.of(multipartFiles).map(multipartFile -> store(multipartFile, requestIp))
         .collect(Collectors.toList()).toArray(new String[multipartFiles.length]);
   }
 
   @Override
-  public String store(MultipartFile multipartFile, RequestDetails requestDetails) {
+  public String store(MultipartFile multipartFile, String requestIp) {
     Optional.ofNullable(multipartFile).orElseThrow(EntityRequiredException::new);
     String originalFilename = multipartFile.getOriginalFilename();
     String filename = StringUtils
@@ -69,11 +68,11 @@ public class DefaultFileUploadService implements FileUploadService {
     String mimeType = StringUtils
         .substringAfterLast(originalFilename, FilenameResolver.MIME_TYPE_SEPARATOR);
     if (!isMimeTypeAccept(mimeType)) {
-      logger.warn("Invalid mime type found {} {}.", originalFilename, requestDetails);
+      logger.warn("Invalid mime type found {} {}.", originalFilename, requestIp);
       throw new UploadException(originalFilename, "Bad mime type.");
     }
     if (!isFileNameAccept(filename)) {
-      logger.warn("Invalid file name found {} {}.", originalFilename, requestDetails);
+      logger.warn("Invalid file name found {} {}.", originalFilename, requestIp);
       throw new UploadException(originalFilename, "Bad file name.");
     }
     String finalFilename = filenameResolver.resolve(originalFilename, filename, mimeType);
