@@ -1,9 +1,9 @@
 package com.tg.framework.web.util;
 
-import com.tg.framework.commons.http.ProxyRequestBean;
-import com.tg.framework.commons.http.ProxyResponseBean;
+import com.tg.framework.beans.http.ProxyRequestBean;
+import com.tg.framework.beans.http.ProxyResponseBean;
 import com.tg.framework.commons.lang.MapOptional;
-import com.tg.framework.core.exception.InvalidParamException;
+import com.tg.framework.commons.exception.InvalidParamException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +17,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -38,21 +39,31 @@ public class RestTemplateUtils {
       T restTemplate, MappingJackson2HttpMessageConverter messageConverter) {
     List<HttpMessageConverter<?>> messageConverters = restTemplate.getMessageConverters();
     for (int i = 0; i < messageConverters.size(); i++) {
-      if (MappingJackson2HttpMessageConverter.class == messageConverters.get(i).getClass()) {
+      Class clazz = messageConverters.get(i).getClass();
+      if (MappingJackson2HttpMessageConverter.class == clazz) {
         messageConverters.set(i, messageConverter);
       }
     }
     return restTemplate;
   }
 
-  public static RestTemplate buildDefaultRestTemplate(
-      MappingJackson2HttpMessageConverter messageConverter) {
+  public static ClientHttpRequestFactory buildDefaultClientHttpRequestFactory() {
     HttpComponentsClientHttpRequestFactory httpRequestFactory = new HttpComponentsClientHttpRequestFactory();
     httpRequestFactory.setConnectionRequestTimeout(2000);
     httpRequestFactory.setConnectTimeout(3000);
-    httpRequestFactory.setReadTimeout(5000);
-    return replaceMappingJackson2HttpMessageConverter(new RestTemplate(httpRequestFactory),
-        messageConverter);
+    httpRequestFactory.setReadTimeout(30000);
+    return httpRequestFactory;
+  }
+
+  public static <T extends RestTemplate> T buildDefaultRestTemplate(T restTemplate,
+      MappingJackson2HttpMessageConverter messageConverter) {
+    restTemplate.setRequestFactory(buildDefaultClientHttpRequestFactory());
+    return replaceMappingJackson2HttpMessageConverter(restTemplate, messageConverter);
+  }
+
+  public static RestTemplate buildDefaultRestTemplate(
+      MappingJackson2HttpMessageConverter messageConverter) {
+    return buildDefaultRestTemplate(new RestTemplate(), messageConverter);
   }
 
   public static <T> T proxyGet(RestTemplate restTemplate, String url,
@@ -68,12 +79,17 @@ public class RestTemplateUtils {
     return restTemplate.postForObject(builder.build().toUri(), requestBody, responseType);
   }
 
+  public static void proxyPut(RestTemplate restTemplate, String url, Object requestBody) {
+    UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+    restTemplate.put(builder.build().toUri(), requestBody);
+  }
+
   public static ProxyResponseBean proxyRequest(RestTemplate restTemplate,
       ProxyRequestBean proxyRequest) {
     String url = proxyRequest.getUrl();
     HttpMethod method = determineHttpMethod(proxyRequest.getMethod());
     boolean isUsingPayload = proxyRequest.isUsingPayload();
-    Map<String, Object> parameters = proxyRequest.getParameters();
+    Map<String, ?> parameters = proxyRequest.getParameters();
     Object payload = proxyRequest.getPayload();
     Map<String, Object> uriVariables = proxyRequest.getUriVariables();
     return wrapProxyRequest(restTemplate, url, method, isUsingPayload, parameters, payload,
@@ -81,7 +97,7 @@ public class RestTemplateUtils {
   }
 
   private static ProxyResponseBean wrapProxyRequest(RestTemplate restTemplate, String url,
-      HttpMethod method, boolean isUsingPayload, Map<String, Object> parameters, Object payload,
+      HttpMethod method, boolean isUsingPayload, Map<String, ?> parameters, Object payload,
       Map<String, Object> uriVariables) {
     boolean isGetOrDelete = method == HttpMethod.GET || method == HttpMethod.DELETE;
     URI uri =
@@ -103,13 +119,13 @@ public class RestTemplateUtils {
     return HttpMethod.valueOf(method.toUpperCase());
   }
 
-  private static URI buildURI(String url, Map<String, Object> parameters,
+  private static URI buildURI(String url, Map<String, ?> parameters,
       Map<String, Object> uriVariables) {
     UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
     if (MapUtils.isNotEmpty(parameters)) {
-      parameters.entrySet().stream().forEach(e -> {
-        if (e.getValue() != null && !Objects.equals(StringUtils.EMPTY, e.getValue())) {
-          builder.queryParam(e.getKey(), e.getValue());
+      parameters.forEach((key, value) -> {
+        if (value != null && !Objects.equals(StringUtils.EMPTY, value)) {
+          builder.queryParam(key, value);
         }
       });
     }
@@ -119,7 +135,7 @@ public class RestTemplateUtils {
     return builder.build(uriVariables);
   }
 
-  private static HttpEntity getHttpEntity(boolean isUsingPayload, Map<String, Object> parameters,
+  private static HttpEntity getHttpEntity(boolean isUsingPayload, Map<String, ?> parameters,
       Object payload) {
     if (isUsingPayload) {
       return new HttpEntity<>(payload);
@@ -127,7 +143,7 @@ public class RestTemplateUtils {
       HttpHeaders headers = new HttpHeaders();
       headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
       MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
-      parameters.entrySet().forEach(e -> formData.add(e.getKey(), e.getValue()));
+      parameters.forEach(formData::add);
       return new HttpEntity<>(formData, headers);
     }
   }

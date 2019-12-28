@@ -6,34 +6,37 @@
   <parent>
     <groupId>com.tg.framework</groupId>
     <artifactId>tg-framework</artifactId>
-    <version>0.0.9</version>
+    <version>0.9.0</version>
   </parent>
   <artifactId>tg-parent</artifactId>
   <packaging>pom</packaging>
-  <name>tg-parent</name>
-  <description>TG Parent</description>
 
   <dependencyManagement>
     <dependencies>
       <dependency>
         <groupId>com.tg.framework</groupId>
-        <artifactId>tg-commons</artifactId>
-        <version>${project.version}</version>
+        <artifactId>tg-beans</artifactId>
+        <version>0.9.0</version>
       </dependency>
       <dependency>
         <groupId>com.tg.framework</groupId>
-        <artifactId>tg-core</artifactId>
-        <version>${project.version}</version>
+        <artifactId>tg-commons</artifactId>
+        <version>0.9.0</version>
       </dependency>
       <dependency>
         <groupId>com.tg.framework</groupId>
         <artifactId>tg-web</artifactId>
-        <version>${project.version}</version>
+        <version>0.9.0</version>
       </dependency>
       <dependency>
         <groupId>com.tg.framework</groupId>
-        <artifactId>tg-cloud</artifactId>
-        <version>${project.version}</version>
+        <artifactId>tg-web-starter</artifactId>
+        <version>0.9.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.tg.framework</groupId>
+        <artifactId>tg-cloud-starter</artifactId>
+        <version>0.9.0</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
