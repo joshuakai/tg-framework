@@ -2,7 +2,7 @@ package com.tg.framework.web.upload.support;
 
 import com.tg.framework.commons.lang.ArrayOptional;
 import com.tg.framework.commons.lang.StringOptional;
-import com.tg.framework.core.exception.EntityRequiredException;
+import com.tg.framework.commons.exception.EntityRequiredException;
 import com.tg.framework.web.upload.FileUploadService;
 import com.tg.framework.web.upload.FilenameResolver;
 import java.io.File;
@@ -12,7 +12,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -56,7 +55,7 @@ public class DefaultFileUploadService implements FileUploadService {
   public String[] store(MultipartFile[] multipartFiles, String requestIp) {
     ArrayOptional.ofNullable(multipartFiles).orElseThrow(EntityRequiredException::new);
     return Stream.of(multipartFiles).map(multipartFile -> store(multipartFile, requestIp))
-        .collect(Collectors.toList()).toArray(new String[multipartFiles.length]);
+        .toArray(String[]::new);
   }
 
   @Override

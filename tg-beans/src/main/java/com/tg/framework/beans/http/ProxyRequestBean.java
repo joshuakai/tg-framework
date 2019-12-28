@@ -15,7 +15,7 @@ public class ProxyRequestBean implements Serializable {
   @Length(max = 10)
   private String method;
   private boolean usingPayload;
-  private Map<String, Object> parameters;
+  private Map<String, ?> parameters;
   private Object payload;
   private Map<String, Object> uriVariables;
 
@@ -43,11 +43,11 @@ public class ProxyRequestBean implements Serializable {
     this.usingPayload = usingPayload;
   }
 
-  public Map<String, Object> getParameters() {
+  public Map<String, ?> getParameters() {
     return parameters;
   }
 
-  public void setParameters(Map<String, Object> parameters) {
+  public void setParameters(Map<String, ?> parameters) {
     this.parameters = parameters;
   }
 

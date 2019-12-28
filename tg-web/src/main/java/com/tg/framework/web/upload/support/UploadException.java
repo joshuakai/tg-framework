@@ -1,6 +1,6 @@
 package com.tg.framework.web.upload.support;
 
-import com.tg.framework.core.exception.NestedRuntimeException;
+import com.tg.framework.commons.exception.NestedRuntimeException;
 
 public class UploadException extends NestedRuntimeException {
 

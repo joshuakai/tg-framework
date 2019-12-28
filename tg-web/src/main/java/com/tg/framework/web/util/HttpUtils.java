@@ -4,6 +4,9 @@ import com.tg.framework.commons.lang.StringOptional;
 import eu.bitwalker.useragentutils.DeviceType;
 import eu.bitwalker.useragentutils.OperatingSystem;
 import eu.bitwalker.useragentutils.UserAgent;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,7 +32,6 @@ public class HttpUtils {
   private static final String FORMATTER_SERVER_PATH_WITH_HTTP_PORT = "%s://%s";
   private static final String FORMATTER_SERVER_PATH = "%s://%s:%s";
   private static final String XML_HTTP_REQUEST = "XMLHttpRequest";
-  private static final String LOCALHOST_REMOTE_ADDRESS = "0:0:0:0:0:0:0:1";
 
   private static final int HTTP_PORT = 80;
   private static final String UNKNOWN = "unknown";
@@ -39,17 +41,63 @@ public class HttpUtils {
   private static final String WILDCARD_REPLACER = "[0-9\\.]*";
   private static final String IP_PATTERN_TEMPLATE = "^%s$";
 
+
+  private static final String LOCALHOST = "localhost";
+  private static final String LOCALHOST_IPV4 = "127.0.0.1";
+  private static final String LOCALHOST_IPV6 = "0:0:0:0:0:0:0:1";
+  private static final String DNS_8888 = "8.8.8.8";
+  private static final int DNS_8888_PORT = 10002;
+
   private HttpUtils() {
+  }
+
+  public static boolean isLocalhost(String ip) {
+    return LOCALHOST.equals(ip) || LOCALHOST_IPV4.equals(ip) || LOCALHOST_IPV6.equals(ip);
+  }
+
+  public static String getLocalHostAddressPreferOutbound() {
+    try (final DatagramSocket socket = new DatagramSocket()) {
+      socket.connect(InetAddress.getByName(DNS_8888), DNS_8888_PORT);
+      return socket.getLocalAddress().getHostAddress();
+    } catch (Exception e) {
+      return getLocalHostAddress();
+    }
+  }
+
+  public static String getLocalHostAddress() {
+    try {
+      return InetAddress.getLocalHost().getHostAddress();
+    } catch (UnknownHostException e) {
+      return LOCALHOST_IPV4;
+    }
+  }
+
+  public static String convertLocalhost(String ip, boolean preferOutbound) {
+    return Optional.ofNullable(ip)
+        .filter(HttpUtils::isLocalhost)
+        .map(s -> preferOutbound ? getLocalHostAddressPreferOutbound() : getLocalHostAddress())
+        .orElse(ip);
+  }
+
+  public static String convertLocalhost2Ipv4(String ip) {
+    return Optional.ofNullable(ip)
+        .filter(HttpUtils::isLocalhost)
+        .map(s -> LOCALHOST_IPV4)
+        .orElse(ip);
+  }
+
+  public static String convertLocalhost(String ip) {
+    return convertLocalhost(ip, true);
   }
 
   public static String getRemoteAddr(ServletRequest request) {
     return Optional.ofNullable(request).map(ServletRequest::getRemoteAddr)
-        .filter(ip -> StringUtils.isNotBlank(ip) && !LOCALHOST_REMOTE_ADDRESS.equals(ip))
+        .map(HttpUtils::convertLocalhost)
         .orElse(null);
   }
 
   public static String getXRealIp(HttpServletRequest request) {
-    return getHeader(request, HEADER_X_REAL_IP);
+    return convertLocalhost(getHeader(request, HEADER_X_REAL_IP));
   }
 
   public static String getRawXForwardedFor(HttpServletRequest request) {
@@ -57,9 +105,11 @@ public class HttpUtils {
   }
 
   public static String getXForwardedForFromRaw(String rawXForwardedFor) {
-    return StringOptional.ofNullable(rawXForwardedFor).map(
-        ip -> ip.indexOf(SEPARATOR_REVERSE_PROXY_IP) == -1 ? ip
-            : ip.split(SEPARATOR_REVERSE_PROXY_IP)[0]).orElse(null);
+    return StringOptional.ofNullable(rawXForwardedFor)
+        .map(ip -> ip.indexOf(SEPARATOR_REVERSE_PROXY_IP) == -1 ? ip
+            : ip.split(SEPARATOR_REVERSE_PROXY_IP)[0])
+        .map(HttpUtils::convertLocalhost)
+        .orElse(null);
   }
 
   public static String getXForwardedFor(HttpServletRequest request) {
@@ -67,22 +117,22 @@ public class HttpUtils {
   }
 
   public static String getProxyClientIp(HttpServletRequest request) {
-    return getHeader(request, HEADER_PROXY_CLIENT_IP);
+    return convertLocalhost(getHeader(request, HEADER_PROXY_CLIENT_IP));
   }
 
   public static String getWlProxyClientIp(HttpServletRequest request) {
-    return getHeader(request, HEADER_WL_PROXY_CLIENT_IP);
+    return convertLocalhost(getHeader(request, HEADER_WL_PROXY_CLIENT_IP));
   }
 
   public static String getRemoteAddrPreferXRealIp(HttpServletRequest request) {
     return StringOptional.ofNullable(getXRealIp(request))
-        .filter(ip -> !UNKNOWN.equalsIgnoreCase(ip) && !LOCALHOST_REMOTE_ADDRESS.equals(ip))
+        .filter(ip -> !UNKNOWN.equalsIgnoreCase(ip))
         .orElseGet(() -> getRemoteAddr(request));
   }
 
   public static String getRemoteAddrPreferXForwardedFor(HttpServletRequest request) {
     return StringOptional.ofNullable(getXForwardedFor(request))
-        .filter(ip -> !UNKNOWN.equalsIgnoreCase(ip) && !LOCALHOST_REMOTE_ADDRESS.equals(ip))
+        .filter(ip -> !UNKNOWN.equalsIgnoreCase(ip))
         .orElseGet(() -> getRemoteAddr(request));
   }
 

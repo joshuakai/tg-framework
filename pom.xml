@@ -12,7 +12,7 @@
   <groupId>com.tg.framework</groupId>
   <artifactId>tg-framework</artifactId>
   <packaging>pom</packaging>
-  <version>0.0.9</version>
+  <version>0.9.0</version>
   <name>tg-framework</name>
   <description>TG Framework</description>
   <distributionManagement>
@@ -31,9 +31,9 @@
     <module>tg-parent</module>
     <module>tg-beans</module>
     <module>tg-commons</module>
-    <module>tg-core</module>
     <module>tg-web</module>
-    <module>tg-cloud</module>
+    <module>tg-web-starter</module>
+    <module>tg-cloud-starter</module>
   </modules>
 
   <properties>
@@ -232,6 +232,13 @@
       <dependency>
         <groupId>cn.afterturn</groupId>
         <artifactId>easypoi-base</artifactId>
+        <version>${easypoi.version}</version>
+      </dependency>
+
+      <!-- https://mvnrepository.com/artifact/cn.afterturn/easypoi-web -->
+      <dependency>
+        <groupId>cn.afterturn</groupId>
+        <artifactId>easypoi-web</artifactId>
         <version>${easypoi.version}</version>
       </dependency>
 

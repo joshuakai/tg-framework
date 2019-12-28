@@ -22,16 +22,18 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
-import com.tg.framework.commons.jackson.SensitivePropertySerializerModifier;
+import com.tg.framework.commons.data.jackson.SensitivePropertySerializerModifier;
 import com.tg.framework.commons.lang.StringOptional;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TimeZone;
 
 public class JSONUtils {
@@ -164,6 +166,24 @@ public class JSONUtils {
 
   public static <T> T toObject(String json, TypeReference<T> typeReference, T defaultValue) {
     return toObject(json, typeReference).orElse(defaultValue);
+  }
+
+  public static <T> Optional<List<T>> toList(String json, Class<T> clazz) {
+    return toObject(json, new TypeReference<List<T>>() {
+    });
+  }
+
+  public static <T> List<T> toList(String json, Class<T> clazz, List<T> defaultValue) {
+    return toList(json, clazz).orElse(defaultValue);
+  }
+
+  public static <T> Optional<Set<T>> toSet(String json, Class<T> clazz) {
+    return toObject(json, new TypeReference<Set<T>>() {
+    });
+  }
+
+  public static <T> Set<T> toSet(String json, Class<T> clazz, Set<T> defaultValue) {
+    return toSet(json, clazz).orElse(defaultValue);
   }
 
   public static Optional<Boolean> getBoolean(JsonNode jsonNode, String fieldName) {

@@ -3,7 +3,7 @@ package com.tg.framework.web.util;
 import com.tg.framework.beans.http.ProxyRequestBean;
 import com.tg.framework.beans.http.ProxyResponseBean;
 import com.tg.framework.commons.lang.MapOptional;
-import com.tg.framework.core.exception.InvalidParamException;
+import com.tg.framework.commons.exception.InvalidParamException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -89,7 +89,7 @@ public class RestTemplateUtils {
     String url = proxyRequest.getUrl();
     HttpMethod method = determineHttpMethod(proxyRequest.getMethod());
     boolean isUsingPayload = proxyRequest.isUsingPayload();
-    Map<String, Object> parameters = proxyRequest.getParameters();
+    Map<String, ?> parameters = proxyRequest.getParameters();
     Object payload = proxyRequest.getPayload();
     Map<String, Object> uriVariables = proxyRequest.getUriVariables();
     return wrapProxyRequest(restTemplate, url, method, isUsingPayload, parameters, payload,
@@ -97,7 +97,7 @@ public class RestTemplateUtils {
   }
 
   private static ProxyResponseBean wrapProxyRequest(RestTemplate restTemplate, String url,
-      HttpMethod method, boolean isUsingPayload, Map<String, Object> parameters, Object payload,
+      HttpMethod method, boolean isUsingPayload, Map<String, ?> parameters, Object payload,
       Map<String, Object> uriVariables) {
     boolean isGetOrDelete = method == HttpMethod.GET || method == HttpMethod.DELETE;
     URI uri =
@@ -119,13 +119,13 @@ public class RestTemplateUtils {
     return HttpMethod.valueOf(method.toUpperCase());
   }
 
-  private static URI buildURI(String url, Map<String, Object> parameters,
+  private static URI buildURI(String url, Map<String, ?> parameters,
       Map<String, Object> uriVariables) {
     UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
     if (MapUtils.isNotEmpty(parameters)) {
-      parameters.entrySet().stream().forEach(e -> {
-        if (e.getValue() != null && !Objects.equals(StringUtils.EMPTY, e.getValue())) {
-          builder.queryParam(e.getKey(), e.getValue());
+      parameters.forEach((key, value) -> {
+        if (value != null && !Objects.equals(StringUtils.EMPTY, value)) {
+          builder.queryParam(key, value);
         }
       });
     }
@@ -135,7 +135,7 @@ public class RestTemplateUtils {
     return builder.build(uriVariables);
   }
 
-  private static HttpEntity getHttpEntity(boolean isUsingPayload, Map<String, Object> parameters,
+  private static HttpEntity getHttpEntity(boolean isUsingPayload, Map<String, ?> parameters,
       Object payload) {
     if (isUsingPayload) {
       return new HttpEntity<>(payload);
@@ -143,7 +143,7 @@ public class RestTemplateUtils {
       HttpHeaders headers = new HttpHeaders();
       headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
       MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
-      parameters.entrySet().forEach(e -> formData.add(e.getKey(), e.getValue()));
+      parameters.forEach(formData::add);
       return new HttpEntity<>(formData, headers);
     }
   }
