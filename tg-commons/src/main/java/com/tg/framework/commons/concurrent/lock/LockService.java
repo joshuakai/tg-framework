@@ -1,10 +1,14 @@
 package com.tg.framework.commons.concurrent.lock;
 
+import com.tg.framework.commons.concurrent.lock.exception.LockException;
+import com.tg.framework.commons.concurrent.lock.exception.LockMutexException;
+import com.tg.framework.commons.concurrent.lock.exception.LockTimeoutException;
+
 public interface LockService {
 
-  boolean tryLock(LockContext lockContext) throws Throwable;
+  Object tryLock(LockContext lockContext) throws LockException;
 
-  void unlock(LockContext lockContext);
+  void unlock(String key, Object lock);
 
   static LockContext lockToDeath(String key) {
     return new LockContext(key, false, LockMutexException.class, -1L,

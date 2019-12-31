@@ -4,28 +4,34 @@ import com.tg.framework.commons.exception.NestedRuntimeException;
 
 public class UploadException extends NestedRuntimeException {
 
-  public static final String PRESENT_CODE = "Upload";
+  private String originalFilename;
 
-  public UploadException(String fileName) {
-    super(PRESENT_CODE, new Object[]{fileName});
+  public UploadException(String originalFilename) {
+    this.originalFilename = originalFilename;
   }
 
-  public UploadException(String fileName, String message) {
-    super(PRESENT_CODE, new Object[]{fileName}, message);
+  public UploadException(String message, String originalFilename) {
+    super(message);
+    this.originalFilename = originalFilename;
   }
 
-  public UploadException(String fileName, String message, Throwable cause) {
-    super(PRESENT_CODE, new Object[]{fileName}, message, cause);
+  public UploadException(String message, Throwable cause, String originalFilename) {
+    super(message, cause);
+    this.originalFilename = originalFilename;
   }
 
-  public UploadException(String fileName, Throwable cause) {
-    super(PRESENT_CODE, new Object[]{fileName}, cause);
+  public UploadException(Throwable cause, String originalFilename) {
+    super(cause);
+    this.originalFilename = originalFilename;
   }
 
-  public UploadException(String fileName, String message, Throwable cause,
-      boolean enableSuppression, boolean writableStackTrace) {
-    super(PRESENT_CODE, new Object[]{fileName}, message, cause, enableSuppression,
-        writableStackTrace);
+  public UploadException(String message, Throwable cause, boolean enableSuppression,
+      boolean writableStackTrace, String originalFilename) {
+    super(message, cause, enableSuppression, writableStackTrace);
+    this.originalFilename = originalFilename;
   }
 
+  public String getOriginalFilename() {
+    return originalFilename;
+  }
 }

@@ -21,6 +21,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 public class HttpUtils {
 
+  public static final String HEADER_CONTENT_TYPE = "Content-Type";
   public static final String HEADER_X_REAL_IP = "X-Real-IP";
   public static final String HEADER_X_FORWARDED_FOR = "x-forwarded-for";
   public static final String SEPARATOR_REVERSE_PROXY_IP = ",";
@@ -181,7 +182,12 @@ public class HttpUtils {
   }
 
   public static String getHeader(HttpServletRequest request, String name) {
-    return Optional.ofNullable(request).map(req -> req.getHeader(name)).orElse(null);
+    return Optional.ofNullable(request)
+        .flatMap(req -> StringOptional.ofNullable(name).map(req::getHeader)).orElse(null);
+  }
+
+  public static String getContentType(HttpServletRequest request) {
+    return getHeader(request, HEADER_CONTENT_TYPE);
   }
 
   public static Map<String, String> getHeaderMap(HttpServletRequest request) {

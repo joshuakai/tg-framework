@@ -2,8 +2,8 @@ package com.tg.framework.web.util;
 
 import com.tg.framework.beans.http.ProxyRequestBean;
 import com.tg.framework.beans.http.ProxyResponseBean;
+import com.tg.framework.commons.exception.ParamInvalidException;
 import com.tg.framework.commons.lang.MapOptional;
-import com.tg.framework.commons.exception.InvalidParamException;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +13,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -27,6 +29,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 public class RestTemplateUtils {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(RestTemplateUtils.class);
 
   private static final Set<String> SUPPORTED_HTTP_METHODS = Stream
       .of(HttpMethod.GET, HttpMethod.POST, HttpMethod.PUT, HttpMethod.PATCH, HttpMethod.DELETE)
@@ -108,13 +112,16 @@ public class RestTemplateUtils {
       return ProxyResponseBean
           .success(restTemplate.exchange(uri, method, httpEntity, String.class).getBody());
     } catch (Exception e) {
+      if (LOGGER.isDebugEnabled()) {
+        LOGGER.error("Failed to execute proxy request.", e);
+      }
       return ProxyResponseBean.fail(e.getMessage());
     }
   }
 
   private static HttpMethod determineHttpMethod(String method) {
     if (StringUtils.isBlank(method) || !SUPPORTED_HTTP_METHODS.contains(method.toUpperCase())) {
-      throw new InvalidParamException("method", method);
+      throw new ParamInvalidException("method", method);
     }
     return HttpMethod.valueOf(method.toUpperCase());
   }

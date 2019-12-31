@@ -1,8 +1,8 @@
 package com.tg.framework.web.upload.support;
 
+import com.tg.framework.commons.exception.DomainObjectRequiredException;
 import com.tg.framework.commons.lang.ArrayOptional;
 import com.tg.framework.commons.lang.StringOptional;
-import com.tg.framework.commons.exception.EntityRequiredException;
 import com.tg.framework.web.upload.FileUploadService;
 import com.tg.framework.web.upload.FilenameResolver;
 import java.io.File;
@@ -53,14 +53,14 @@ public class DefaultFileUploadService implements FileUploadService {
 
   @Override
   public String[] store(MultipartFile[] multipartFiles, String requestIp) {
-    ArrayOptional.ofNullable(multipartFiles).orElseThrow(EntityRequiredException::new);
+    ArrayOptional.ofNullable(multipartFiles).orElseThrow(DomainObjectRequiredException::new);
     return Stream.of(multipartFiles).map(multipartFile -> store(multipartFile, requestIp))
         .toArray(String[]::new);
   }
 
   @Override
   public String store(MultipartFile multipartFile, String requestIp) {
-    Optional.ofNullable(multipartFile).orElseThrow(EntityRequiredException::new);
+    Optional.ofNullable(multipartFile).orElseThrow(DomainObjectRequiredException::new);
     String originalFilename = multipartFile.getOriginalFilename();
     String filename = StringUtils
         .substringAfterLast(originalFilename, FilenameResolver.MIME_TYPE_SEPARATOR);
@@ -68,22 +68,22 @@ public class DefaultFileUploadService implements FileUploadService {
         .substringAfterLast(originalFilename, FilenameResolver.MIME_TYPE_SEPARATOR);
     if (!isMimeTypeAccept(mimeType)) {
       logger.warn("Invalid mime type found {} {}.", originalFilename, requestIp);
-      throw new UploadException(originalFilename, "Bad mime type.");
+      throw new UploadException("Bad mime type.", originalFilename);
     }
     if (!isFileNameAccept(filename)) {
       logger.warn("Invalid file name found {} {}.", originalFilename, requestIp);
-      throw new UploadException(originalFilename, "Bad file name.");
+      throw new UploadException("Bad file name.", originalFilename);
     }
     String finalFilename = filenameResolver.resolve(originalFilename, filename, mimeType);
     File file = new File(
         StringUtils.join(settings.getLocalDir(), finalFilename, FilenameResolver.DIR_SEPARATOR));
     if (file.exists() && !settings.isReplaceExists()) {
-      throw new UploadException(originalFilename, "File exists.");
+      throw new UploadException("File exists.", originalFilename);
     }
     try {
       multipartFile.transferTo(file);
     } catch (IOException e) {
-      throw new UploadException(originalFilename, "Failed to write file.", e);
+      throw new UploadException("Failed to write file.", e, originalFilename);
     }
     return StringUtils
         .join(settings.getWebBasePath(), finalFilename, FilenameResolver.DIR_SEPARATOR);

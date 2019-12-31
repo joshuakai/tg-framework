@@ -15,13 +15,11 @@ public abstract class LockAspectSupport<T extends LockService> extends AbstractE
 
   protected Object doAspect(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
     LockContext lockContext = getLockContext(proceedingJoinPoint);
-    boolean isLockGot = lockService.tryLock(lockContext);
+    Object lock = lockService.tryLock(lockContext);
     try {
       return proceedingJoinPoint.proceed();
     } finally {
-      if (isLockGot) {
-        lockService.unlock(lockContext);
-      }
+      lockService.unlock(lockContext.getKey(), lock);
     }
   }
 

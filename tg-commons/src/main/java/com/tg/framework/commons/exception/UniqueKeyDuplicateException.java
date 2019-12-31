@@ -1,53 +1,34 @@
 package com.tg.framework.commons.exception;
 
-public class UniqueKeyDuplicateException extends BusinessException {
+public class UniqueKeyDuplicateException extends ParamException {
 
   private static final long serialVersionUID = -2083685513356399099L;
 
-  public static final String PRESENT_CODE = "Biz#UniqueKeyDuplicate";
+  public static final String PRESENT_CODE = "Param#Duplicate#UK";
 
-  public UniqueKeyDuplicateException() {
-    super(PRESENT_CODE);
+  @Override
+  protected String getPresentCode() {
+    return PRESENT_CODE;
   }
 
-  public UniqueKeyDuplicateException(String message) {
-    super(PRESENT_CODE, message);
+  public UniqueKeyDuplicateException(String paramName) {
+    super(paramName);
   }
 
-  public UniqueKeyDuplicateException(String message, Throwable cause) {
-    super(PRESENT_CODE, message, cause);
+  public UniqueKeyDuplicateException(String message, String paramName) {
+    super(message, paramName);
   }
 
-  public UniqueKeyDuplicateException(Throwable cause) {
-    super(PRESENT_CODE, cause);
+  public UniqueKeyDuplicateException(String message, Throwable cause, String paramName) {
+    super(message, cause, paramName);
+  }
+
+  public UniqueKeyDuplicateException(Throwable cause, String paramName) {
+    super(cause, paramName);
   }
 
   public UniqueKeyDuplicateException(String message, Throwable cause, boolean enableSuppression,
-      boolean writableStackTrace) {
-    super(PRESENT_CODE, message, cause, enableSuppression, writableStackTrace);
+      boolean writableStackTrace, String paramName) {
+    super(message, cause, enableSuppression, writableStackTrace, paramName);
   }
-
-  public UniqueKeyDuplicateException(Object[] args) {
-    super(PRESENT_CODE, args);
-  }
-
-  public UniqueKeyDuplicateException(Object[] args, String message) {
-    super(PRESENT_CODE, args, message);
-  }
-
-  public UniqueKeyDuplicateException(Object[] args, String message,
-      Throwable cause) {
-    super(PRESENT_CODE, args, message, cause);
-  }
-
-  public UniqueKeyDuplicateException(Object[] args, Throwable cause) {
-    super(PRESENT_CODE, args, cause);
-  }
-
-  public UniqueKeyDuplicateException(Object[] args, String message, Throwable cause,
-      boolean enableSuppression, boolean writableStackTrace) {
-    super(PRESENT_CODE, args, message, cause, enableSuppression, writableStackTrace);
-  }
-
-
 }

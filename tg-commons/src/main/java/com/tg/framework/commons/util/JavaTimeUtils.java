@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 public class JavaTimeUtils {
+
   public static final String PATTERN_Y_M_D = "yyyy-MM-dd";
   public static final String PATTERN_Y_M = "yyyy-MM";
   public static final String PATTERN_Y_W = "YYYY-ww";
@@ -33,7 +34,8 @@ public class JavaTimeUtils {
   public static final String PATTERN_Y_M_COMPACT = "yyyyMM";
   public static final String PATTERN_Y_W_COMPACT = "YYYYww";
   public static final String PATTERN_H_MI_S_COMPACT = "HHmmss";
-  public static final String PATTERN_Y_M_D_H_MI_S_COMPACT = PATTERN_Y_M_D_COMPACT + PATTERN_H_MI_S_COMPACT;
+  public static final String PATTERN_Y_M_D_H_MI_S_COMPACT =
+      PATTERN_Y_M_D_COMPACT + PATTERN_H_MI_S_COMPACT;
 
   public static final long MILLIS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -181,16 +183,17 @@ public class JavaTimeUtils {
   }
 
   public static Date parse(String str, DateFormat dateFormat, boolean throwException) {
-    return StringOptional.ofNullable(str).map(s -> Optional.ofNullable(dateFormat).map(df -> {
-      try {
-        return df.parse(s);
-      } catch (ParseException e) {
-        if (throwException) {
-          throw new IllegalArgumentException(e);
-        }
-        return null;
-      }
-    }).orElse(null)).orElse(null);
+    return StringOptional.ofNullable(str)
+        .flatMap(s -> Optional.ofNullable(dateFormat).map(df -> {
+          try {
+            return df.parse(s);
+          } catch (ParseException e) {
+            if (throwException) {
+              throw new IllegalArgumentException(e);
+            }
+            return null;
+          }
+        })).orElse(null);
   }
 
   public static Date parse(String str, DateFormat dateFormat) {
@@ -412,7 +415,7 @@ public class JavaTimeUtils {
   }
 
   public static DateTimeFormatter yearWeekFormatter(String pattern, Locale locale) {
-    return yearWeekFormatter(pattern, 1, Locale.getDefault());
+    return yearWeekFormatter(pattern, 1, locale);
   }
 
   public static DateTimeFormatter yearWeekFormatter(int dayOfWeek, Locale locale) {
@@ -424,13 +427,13 @@ public class JavaTimeUtils {
   }
 
   public static DateTimeFormatter yearWeekFormatter(Locale locale) {
-    return yearWeekFormatter(1, Locale.getDefault());
+    return yearWeekFormatter(1, locale);
   }
 
   public static String format(TemporalAccessor temporalAccessor,
       DateTimeFormatter dateTimeFormatter) {
     return Optional.ofNullable(temporalAccessor)
-        .map(t -> Optional.ofNullable(dateTimeFormatter).map(df -> df.format(t)).orElse(null))
+        .flatMap(t -> Optional.ofNullable(dateTimeFormatter).map(df -> df.format(t)))
         .orElse(null);
   }
 
@@ -485,7 +488,7 @@ public class JavaTimeUtils {
   public static LocalDateTime parseLocalDateTime(String str, DateTimeFormatter dateTimeFormatter,
       boolean throwException) {
     return StringOptional.ofNullable(str)
-        .map(s -> Optional.ofNullable(dateTimeFormatter).map(df -> {
+        .flatMap(s -> Optional.ofNullable(dateTimeFormatter).map(df -> {
           try {
             return LocalDateTime.parse(str, df);
           } catch (Exception e) {
@@ -494,7 +497,7 @@ public class JavaTimeUtils {
             }
             return null;
           }
-        }).orElse(null)).orElse(null);
+        })).orElse(null);
   }
 
   public static LocalDateTime parseLocalDateTime(String str, DateTimeFormatter dateTimeFormatter) {
@@ -520,7 +523,7 @@ public class JavaTimeUtils {
   public static LocalDate parseLocalDate(String str, DateTimeFormatter dateTimeFormatter,
       boolean throwException) {
     return StringOptional.ofNullable(str)
-        .map(s -> Optional.ofNullable(dateTimeFormatter).map(df -> {
+        .flatMap(s -> Optional.ofNullable(dateTimeFormatter).map(df -> {
           try {
             return LocalDate.parse(str, df);
           } catch (Exception e) {
@@ -529,7 +532,7 @@ public class JavaTimeUtils {
             }
             return null;
           }
-        }).orElse(null)).orElse(null);
+        })).orElse(null);
   }
 
   public static LocalDate parseLocalDate(String str, DateTimeFormatter dateTimeFormatter) {
@@ -555,7 +558,7 @@ public class JavaTimeUtils {
   public static LocalTime parseLocalTime(String str, DateTimeFormatter dateTimeFormatter,
       boolean throwException) {
     return StringOptional.ofNullable(str)
-        .map(s -> Optional.ofNullable(dateTimeFormatter).map(df -> {
+        .flatMap(s -> Optional.ofNullable(dateTimeFormatter).map(df -> {
           try {
             return LocalTime.parse(str, df);
           } catch (Exception e) {
@@ -564,7 +567,7 @@ public class JavaTimeUtils {
             }
             return null;
           }
-        }).orElse(null)).orElse(null);
+        })).orElse(null);
   }
 
   public static LocalTime parseLocalTime(String str, DateTimeFormatter dateTimeFormatter) {
@@ -590,7 +593,7 @@ public class JavaTimeUtils {
   public static YearMonth parseYearMonth(String str, DateTimeFormatter dateTimeFormatter,
       boolean throwException) {
     return StringOptional.ofNullable(str)
-        .map(s -> Optional.ofNullable(dateTimeFormatter).map(df -> {
+        .flatMap(s -> Optional.ofNullable(dateTimeFormatter).map(df -> {
           try {
             return YearMonth.parse(str, df);
           } catch (Exception e) {
@@ -599,7 +602,7 @@ public class JavaTimeUtils {
             }
             return null;
           }
-        }).orElse(null)).orElse(null);
+        })).orElse(null);
   }
 
   public static YearMonth parseYearMonth(String str, DateTimeFormatter dateTimeFormatter) {

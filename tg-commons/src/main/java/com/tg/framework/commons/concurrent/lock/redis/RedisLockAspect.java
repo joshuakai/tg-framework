@@ -51,8 +51,7 @@ public class RedisLockAspect extends LockAspectSupport<RedisLockService> {
         String.class) : key;
     long timeoutMillis =
         lock.timeout() == -1L ? defaultTimeoutMillis : lock.timeUnit().toMillis(lock.timeout());
-    return new LockContext(key, lock.mutex(), lock.mutexException(), timeoutMillis,
-        lock.timeoutStrategy(), lock.timeoutException(), lock.sleepMillis());
+    return new LockContext(key, lock.mutex(), lock.mutexException(), timeoutMillis, lock.timeoutStrategy(), lock.timeoutException(), lock.sleepMillis());
   }
 
   public String getKeyPrefix() {
