@@ -1,6 +1,7 @@
 package com.tg.framework.commons.concurrent.lock.standalone;
 
-import com.tg.framework.commons.concurrent.lock.LockTimeoutException;
+import com.tg.framework.commons.concurrent.lock.exception.LockMutexException;
+import com.tg.framework.commons.concurrent.lock.exception.LockTimeoutException;
 import com.tg.framework.commons.concurrent.lock.LockTimeoutStrategy;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -18,7 +19,7 @@ public @interface Lock {
 
   boolean mutex() default false;
 
-  Class<? extends Throwable> mutexException() default LockTimeoutException.class;
+  Class<? extends LockMutexException> mutexException() default LockMutexException.class;
 
   long timeout() default -1L;
 
@@ -26,7 +27,7 @@ public @interface Lock {
 
   LockTimeoutStrategy timeoutStrategy() default LockTimeoutStrategy.THROW_EXCEPTION_WHILE_TIMEOUT;
 
-  Class<? extends Throwable> timeoutException() default LockTimeoutException.class;
+  Class<? extends LockTimeoutException> timeoutException() default LockTimeoutException.class;
 
   long sleepMillis() default 100L;
 

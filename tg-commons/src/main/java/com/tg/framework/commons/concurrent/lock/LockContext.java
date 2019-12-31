@@ -1,24 +1,26 @@
 package com.tg.framework.commons.concurrent.lock;
 
 import com.google.common.base.MoreObjects;
+import com.tg.framework.commons.concurrent.lock.exception.LockMutexException;
+import com.tg.framework.commons.concurrent.lock.exception.LockTimeoutException;
 
 public class LockContext {
 
   private String key;
   private boolean mutex;
-  private Class<? extends Throwable> mutexException;
+  private Class<? extends LockMutexException> mutexException;
   private long timeoutMillis;
   private LockTimeoutStrategy timeoutStrategy;
-  private Class<? extends Throwable> timeoutException;
+  private Class<? extends LockTimeoutException> timeoutException;
   private long sleepMillis;
 
   public LockContext() {
   }
 
   public LockContext(String key, boolean mutex,
-      Class<? extends Throwable> mutexException, long timeoutMillis,
+      Class<? extends LockMutexException> mutexException, long timeoutMillis,
       LockTimeoutStrategy timeoutStrategy,
-      Class<? extends Throwable> timeoutException, long sleepMillis) {
+      Class<? extends LockTimeoutException> timeoutException, long sleepMillis) {
     this.key = key;
     this.mutex = mutex;
     this.mutexException = mutexException;
@@ -44,11 +46,12 @@ public class LockContext {
     this.mutex = mutex;
   }
 
-  public Class<? extends Throwable> getMutexException() {
+  public Class<? extends LockMutexException> getMutexException() {
     return mutexException;
   }
 
-  public void setMutexException(Class<? extends Throwable> mutexException) {
+  public void setMutexException(
+      Class<? extends LockMutexException> mutexException) {
     this.mutexException = mutexException;
   }
 
@@ -64,15 +67,17 @@ public class LockContext {
     return timeoutStrategy;
   }
 
-  public void setTimeoutStrategy(LockTimeoutStrategy timeoutStrategy) {
+  public void setTimeoutStrategy(
+      LockTimeoutStrategy timeoutStrategy) {
     this.timeoutStrategy = timeoutStrategy;
   }
 
-  public Class<? extends Throwable> getTimeoutException() {
+  public Class<? extends LockTimeoutException> getTimeoutException() {
     return timeoutException;
   }
 
-  public void setTimeoutException(Class<? extends Throwable> timeoutException) {
+  public void setTimeoutException(
+      Class<? extends LockTimeoutException> timeoutException) {
     this.timeoutException = timeoutException;
   }
 

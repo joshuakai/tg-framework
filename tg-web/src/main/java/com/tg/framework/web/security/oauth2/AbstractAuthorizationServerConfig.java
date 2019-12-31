@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
@@ -24,8 +25,6 @@ public abstract class AbstractAuthorizationServerConfig extends
   protected RedisConnectionFactory connectionFactory;
   @Resource(name = "jdkSerializationRedisTemplate")
   private RedisTemplate<String, OAuth2Authentication> redisTemplate;
-  @Resource
-  protected AuthenticationManager authenticationManager;
 
   @Bean
   @Primary
@@ -71,9 +70,17 @@ public abstract class AbstractAuthorizationServerConfig extends
 
   @Override
   public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-    endpoints.authenticationManager(authenticationManager);
+    endpoints.authenticationManager(authenticationManager());
     endpoints.tokenStore(tokenStore());
     endpoints.authorizationCodeServices(authorizationCodeServices());
   }
 
+  @Override
+  public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+    super.configure(clients);
+  }
+
+  protected AuthenticationManager authenticationManager() {
+    return null;
+  }
 }

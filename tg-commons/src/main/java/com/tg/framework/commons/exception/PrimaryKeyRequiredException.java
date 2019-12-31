@@ -1,52 +1,34 @@
 package com.tg.framework.commons.exception;
 
-public class PrimaryKeyRequiredException extends ParameterException {
+public class PrimaryKeyRequiredException extends ParamRequiredException {
 
   private static final long serialVersionUID = -8477154087002809241L;
 
-  public static final String PRESENT_CODE = "Param#PrimaryKeyRequired";
+  public static final String PRESENT_CODE = "Param#Required#PK";
 
-  public PrimaryKeyRequiredException() {
-    super(PRESENT_CODE);
+  @Override
+  protected String getPresentCode() {
+    return PRESENT_CODE;
   }
 
-  public PrimaryKeyRequiredException(String message) {
-    super(PRESENT_CODE, message);
+  public PrimaryKeyRequiredException(String paramName) {
+    super(paramName);
   }
 
-  public PrimaryKeyRequiredException(String message, Throwable cause) {
-    super(PRESENT_CODE, message, cause);
+  public PrimaryKeyRequiredException(String message, String paramName) {
+    super(message, paramName);
   }
 
-  public PrimaryKeyRequiredException(Throwable cause) {
-    super(PRESENT_CODE, cause);
+  public PrimaryKeyRequiredException(String message, Throwable cause, String paramName) {
+    super(message, cause, paramName);
+  }
+
+  public PrimaryKeyRequiredException(Throwable cause, String paramName) {
+    super(cause, paramName);
   }
 
   public PrimaryKeyRequiredException(String message, Throwable cause, boolean enableSuppression,
-      boolean writableStackTrace) {
-    super(PRESENT_CODE, message, cause, enableSuppression, writableStackTrace);
+      boolean writableStackTrace, String paramName) {
+    super(message, cause, enableSuppression, writableStackTrace, paramName);
   }
-
-  public PrimaryKeyRequiredException(Object[] args) {
-    super(PRESENT_CODE, args);
-  }
-
-  public PrimaryKeyRequiredException(Object[] args, String message) {
-    super(PRESENT_CODE, args, message);
-  }
-
-  public PrimaryKeyRequiredException(Object[] args, String message,
-      Throwable cause) {
-    super(PRESENT_CODE, args, message, cause);
-  }
-
-  public PrimaryKeyRequiredException(Object[] args, Throwable cause) {
-    super(PRESENT_CODE, args, cause);
-  }
-
-  public PrimaryKeyRequiredException(Object[] args, String message, Throwable cause,
-      boolean enableSuppression, boolean writableStackTrace) {
-    super(PRESENT_CODE, args, message, cause, enableSuppression, writableStackTrace);
-  }
-
 }

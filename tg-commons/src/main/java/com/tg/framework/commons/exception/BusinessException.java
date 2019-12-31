@@ -1,49 +1,54 @@
 package com.tg.framework.commons.exception;
 
-public abstract class BusinessException extends NestedRuntimeException {
+public class BusinessException extends NestedRuntimeException {
 
-  private static final long serialVersionUID = 8738716899287151836L;
+  private Object[] args;
 
-  public BusinessException(String code) {
-    super(code);
+  public BusinessException() {
   }
 
-  public BusinessException(String code, String message) {
-    super(code, message);
+  public BusinessException(String message) {
+    super(message);
   }
 
-  public BusinessException(String code, String message, Throwable cause) {
-    super(code, message, cause);
+  public BusinessException(String message, Throwable cause) {
+    super(message, cause);
   }
 
-  public BusinessException(String code, Throwable cause) {
-    super(code, cause);
+  public BusinessException(Throwable cause) {
+    super(cause);
   }
 
-  public BusinessException(String code, String message, Throwable cause, boolean enableSuppression,
+  public BusinessException(String message, Throwable cause, boolean enableSuppression,
       boolean writableStackTrace) {
-    super(code, message, cause, enableSuppression, writableStackTrace);
+    super(message, cause, enableSuppression, writableStackTrace);
   }
 
-  public BusinessException(String code, Object[] args) {
-    super(code, args);
+  public BusinessException(Object... args) {
+    this.args = args;
   }
 
-  public BusinessException(String code, Object[] args, String message) {
-    super(code, args, message);
+  public BusinessException(String message, Object... args) {
+    super(message);
+    this.args = args;
   }
 
-  public BusinessException(String code, Object[] args, String message, Throwable cause) {
-    super(code, args, message, cause);
+  public BusinessException(String message, Throwable cause, Object... args) {
+    super(message, cause);
+    this.args = args;
   }
 
-  public BusinessException(String code, Object[] args, Throwable cause) {
-    super(code, args, cause);
+  public BusinessException(Throwable cause, Object... args) {
+    super(cause);
+    this.args = args;
   }
 
-  public BusinessException(String code, Object[] args, String message, Throwable cause,
-      boolean enableSuppression, boolean writableStackTrace) {
-    super(code, args, message, cause, enableSuppression, writableStackTrace);
+  public BusinessException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace, Object... args) {
+    super(message, cause, enableSuppression, writableStackTrace);
+    this.args = args;
   }
 
+  public Object[] getArgs() {
+    return args;
+  }
 }

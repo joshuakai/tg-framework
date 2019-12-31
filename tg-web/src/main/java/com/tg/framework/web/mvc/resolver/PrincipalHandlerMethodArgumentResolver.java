@@ -1,11 +1,11 @@
 package com.tg.framework.web.mvc.resolver;
 
-import com.tg.framework.commons.exception.AuthenticationRequiredException;
 import com.tg.framework.commons.security.util.SecurityUtils;
 import com.tg.framework.web.mvc.resolver.annotation.Principal;
 import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.MethodParameter;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -29,7 +29,7 @@ public class PrincipalHandlerMethodArgumentResolver implements HandlerMethodArgu
     }
     Principal principal = parameter.getParameterAnnotation(Principal.class);
     if (principal.required()) {
-      throw new AuthenticationRequiredException();
+      throw new AuthenticationServiceException(null);
     }
     return isString ? StringUtils.EMPTY : null;
   }

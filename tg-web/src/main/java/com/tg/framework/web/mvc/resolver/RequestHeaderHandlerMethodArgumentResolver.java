@@ -1,6 +1,6 @@
 package com.tg.framework.web.mvc.resolver;
 
-import com.tg.framework.commons.exception.HttpClientException;
+import com.tg.framework.commons.http.exception.RequestHeaderRequiredException;
 import com.tg.framework.web.mvc.resolver.annotation.RequestHeader;
 import com.tg.framework.web.util.HttpUtils;
 import javax.servlet.http.HttpServletRequest;
@@ -26,9 +26,10 @@ public class RequestHeaderHandlerMethodArgumentResolver implements HandlerMethod
     String value = HttpUtils
         .getHeader(webRequest.getNativeRequest(HttpServletRequest.class), requestHeader.value());
     if (requestHeader.required() && StringUtils.isBlank(value)) {
-      throw new HttpClientException(
-          String.format("Header '%s' is required.", requestHeader.value()));
+      throw new RequestHeaderRequiredException(requestHeader.value());
     }
     return value;
   }
+
+
 }

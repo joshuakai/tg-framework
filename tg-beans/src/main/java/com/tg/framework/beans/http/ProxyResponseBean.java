@@ -45,4 +45,13 @@ public class ProxyResponseBean implements Serializable {
     proxyResponse.setMessage(message);
     return proxyResponse;
   }
+
+  @Override
+  public String toString() {
+    return "ProxyResponseBean{" +
+        "succeed=" + succeed +
+        ", message='" + message + '\'' +
+        ", body='" + body + '\'' +
+        '}';
+  }
 }

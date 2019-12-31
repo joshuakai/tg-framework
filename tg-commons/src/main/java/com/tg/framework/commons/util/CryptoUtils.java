@@ -65,18 +65,10 @@ public class CryptoUtils {
         }
         return out.toByteArray();
       }
-    } catch (NoSuchAlgorithmException e) {
+    } catch (NoSuchAlgorithmException | IOException e) {
       throw new IllegalStateException(e);
-    } catch (NoSuchPaddingException e) {
+    } catch (NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
       throw new IllegalArgumentException(e);
-    } catch (InvalidKeyException e) {
-      throw new IllegalArgumentException(e);
-    } catch (IllegalBlockSizeException e) {
-      throw new IllegalArgumentException(e);
-    } catch (BadPaddingException e) {
-      throw new IllegalArgumentException(e);
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
     }
   }
 
@@ -171,18 +163,10 @@ public class CryptoUtils {
         }
         return out.toByteArray();
       }
-    } catch (NoSuchAlgorithmException e) {
+    } catch (NoSuchAlgorithmException | IOException e) {
       throw new IllegalStateException(e);
-    } catch (NoSuchPaddingException e) {
+    } catch (NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
       throw new IllegalArgumentException(e);
-    } catch (InvalidKeyException e) {
-      throw new IllegalArgumentException(e);
-    } catch (IllegalBlockSizeException e) {
-      throw new IllegalArgumentException(e);
-    } catch (BadPaddingException e) {
-      throw new IllegalArgumentException(e);
-    } catch (IOException e) {
-      throw new IllegalStateException(e);
     }
   }
 

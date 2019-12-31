@@ -66,4 +66,16 @@ public class ProxyRequestBean implements Serializable {
   public void setUriVariables(Map<String, Object> uriVariables) {
     this.uriVariables = uriVariables;
   }
+
+  @Override
+  public String toString() {
+    return "ProxyRequestBean{" +
+        "url='" + url + '\'' +
+        ", method='" + method + '\'' +
+        ", usingPayload=" + usingPayload +
+        ", parameters=" + parameters +
+        ", payload=" + payload +
+        ", uriVariables=" + uriVariables +
+        '}';
+  }
 }
