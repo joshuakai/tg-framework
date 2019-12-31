@@ -20,7 +20,6 @@ import com.tg.framework.web.mvc.formatter.CompositeDateFormatter;
 import com.tg.framework.web.mvc.formatter.LocalDateFormatter;
 import com.tg.framework.web.mvc.formatter.LocalDateTimeFormatter;
 import com.tg.framework.web.mvc.formatter.LocalTimeFormatter;
-import com.tg.framework.web.mvc.resolver.PrincipalHandlerMethodArgumentResolver;
 import com.tg.framework.web.mvc.resolver.RequestClientHandlerMethodArgumentResolver;
 import com.tg.framework.web.mvc.resolver.RequestHeaderHandlerMethodArgumentResolver;
 import com.tg.framework.web.mvc.resolver.RequestIpHandlerMethodArgumentResolver;
@@ -125,7 +124,6 @@ public abstract class AbstractWebMvcConfiguration implements WebMvcConfigurer {
     argumentResolvers.add(new RequestHeaderHandlerMethodArgumentResolver());
     argumentResolvers.add(new UserAgentHandlerMethodArgumentResolver());
     argumentResolvers.add(new RequestClientHandlerMethodArgumentResolver(ipResolver()));
-    argumentResolvers.add(new PrincipalHandlerMethodArgumentResolver());
   }
 
   public IpResolverStrategy getIpResolverStrategy() {
