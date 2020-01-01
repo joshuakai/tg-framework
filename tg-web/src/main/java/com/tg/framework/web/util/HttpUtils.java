@@ -21,20 +21,35 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 public class HttpUtils {
 
-  public static final String HEADER_CONTENT_TYPE = "Content-Type";
-  public static final String HEADER_X_REAL_IP = "X-Real-IP";
-  public static final String HEADER_X_FORWARDED_FOR = "x-forwarded-for";
-  public static final String SEPARATOR_REVERSE_PROXY_IP = ",";
-  public static final String HEADER_PROXY_CLIENT_IP = "Proxy-RequestClient-IP";
-  public static final String HEADER_WL_PROXY_CLIENT_IP = "WL-Proxy-RequestClient-IP";
-  public static final String HEADER_USER_AGENT = "user-agent";
-  public static final String HEADER_X_REQUESTED_WITH = "x-requested-with";
+  public static final int HTTP_PORT = 80;
+  public static final int HTTPS_PORT = 443;
+  public static final String HTTP_SCHEME = "http";
+  public static final String HTTPS_SCHEME = "https";
 
-  private static final String FORMATTER_SERVER_PATH_WITH_HTTP_PORT = "%s://%s";
-  private static final String FORMATTER_SERVER_PATH = "%s://%s:%s";
-  private static final String XML_HTTP_REQUEST = "XMLHttpRequest";
+  public static final String LOCALHOST_IPV4 = "127.0.0.1";
+  public static final String LOCALHOST_IPV6 = "0:0:0:0:0:0:0:1";
 
-  private static final int HTTP_PORT = 80;
+  public static final String CONTENT_TYPE_HEADER = "Content-Type";
+  public static final String USER_AGENT_HEADER = "user-agent";
+  public static final String X_REQUESTED_WITH_HEADER = "x-requested-with";
+  public static final String XML_HTTP_REQUEST = "XMLHttpRequest";
+
+  public static final String X_FORWARDED_FOR_HEADER = "X-Forwarded-For";
+  public static final String X_FORWARDED_HOST_HEADER = "X-Forwarded-Host";
+  public static final String X_FORWARDED_PORT_HEADER = "X-Forwarded-Port";
+  public static final String X_FORWARDED_PROTO_HEADER = "X-Forwarded-Proto";
+  public static final String X_FORWARDED_PREFIX_HEADER = "X-Forwarded-Prefix";
+  public static final String X_FORWARDED_SEPARATOR = ",";
+  public static final String URL_SEPARATOR = "/";
+  public static final String QUERY_STRING_SEPARATOR = "?";
+
+  public static final String X_REAL_IP_HEADER = "X-Real-IP";
+  public static final String PROXY_CLIENT_IP_HEADER = "Proxy-RequestClient-IP";
+  public static final String WL_PROXY_CLIENT_IP_HEADER = "WL-Proxy-RequestClient-IP";
+
+  private static final String FORMATTER_HTTP_HOST_PORT = "%s:%d";
+  private static final String FORMATTER_HTTP_PROTOCOL_HOST = "%s://%s";
+
   private static final String UNKNOWN = "unknown";
 
   private static final String WILDCARD = "*";
@@ -43,9 +58,6 @@ public class HttpUtils {
   private static final String IP_PATTERN_TEMPLATE = "^%s$";
 
 
-  private static final String LOCALHOST = "localhost";
-  private static final String LOCALHOST_IPV4 = "127.0.0.1";
-  private static final String LOCALHOST_IPV6 = "0:0:0:0:0:0:0:1";
   private static final String DNS_8888 = "8.8.8.8";
   private static final int DNS_8888_PORT = 10002;
 
@@ -53,7 +65,7 @@ public class HttpUtils {
   }
 
   public static boolean isLocalhost(String ip) {
-    return LOCALHOST.equals(ip) || LOCALHOST_IPV4.equals(ip) || LOCALHOST_IPV6.equals(ip);
+    return LOCALHOST_IPV4.equals(ip) || LOCALHOST_IPV6.equals(ip);
   }
 
   public static String getLocalHostAddressPreferOutbound() {
@@ -74,14 +86,14 @@ public class HttpUtils {
   }
 
   public static String convertLocalhost(String ip, boolean preferOutbound) {
-    return Optional.ofNullable(ip)
+    return StringOptional.ofNullable(ip)
         .filter(HttpUtils::isLocalhost)
         .map(s -> preferOutbound ? getLocalHostAddressPreferOutbound() : getLocalHostAddress())
         .orElse(ip);
   }
 
   public static String convertLocalhost2Ipv4(String ip) {
-    return Optional.ofNullable(ip)
+    return StringOptional.ofNullable(ip)
         .filter(HttpUtils::isLocalhost)
         .map(s -> LOCALHOST_IPV4)
         .orElse(ip);
@@ -97,97 +109,22 @@ public class HttpUtils {
         .orElse(null);
   }
 
-  public static String getXRealIp(HttpServletRequest request) {
-    return convertLocalhost(getHeader(request, HEADER_X_REAL_IP));
-  }
-
-  public static String getRawXForwardedFor(HttpServletRequest request) {
-    return getHeader(request, HEADER_X_FORWARDED_FOR);
-  }
-
-  public static String getXForwardedForFromRaw(String rawXForwardedFor) {
-    return StringOptional.ofNullable(rawXForwardedFor)
-        .map(ip -> ip.indexOf(SEPARATOR_REVERSE_PROXY_IP) == -1 ? ip
-            : ip.split(SEPARATOR_REVERSE_PROXY_IP)[0])
-        .map(HttpUtils::convertLocalhost)
-        .orElse(null);
-  }
-
-  public static String getXForwardedFor(HttpServletRequest request) {
-    return getXForwardedForFromRaw(getRawXForwardedFor(request));
-  }
-
-  public static String getProxyClientIp(HttpServletRequest request) {
-    return convertLocalhost(getHeader(request, HEADER_PROXY_CLIENT_IP));
-  }
-
-  public static String getWlProxyClientIp(HttpServletRequest request) {
-    return convertLocalhost(getHeader(request, HEADER_WL_PROXY_CLIENT_IP));
-  }
-
-  public static String getRemoteAddrPreferXRealIp(HttpServletRequest request) {
-    return StringOptional.ofNullable(getXRealIp(request))
-        .filter(ip -> !UNKNOWN.equalsIgnoreCase(ip))
-        .orElseGet(() -> getRemoteAddr(request));
-  }
-
-  public static String getRemoteAddrPreferXForwardedFor(HttpServletRequest request) {
-    return StringOptional.ofNullable(getXForwardedFor(request))
-        .filter(ip -> !UNKNOWN.equalsIgnoreCase(ip))
-        .orElseGet(() -> getRemoteAddr(request));
-  }
-
-  public static String getUserAgentString(HttpServletRequest request) {
-    return Optional.ofNullable(request).map(req -> req.getHeader(HEADER_USER_AGENT))
-        .orElse(StringUtils.EMPTY);
-  }
-
-  public static UserAgent getUserAgent(HttpServletRequest request) {
-    return Optional.ofNullable(request).map(req -> req.getHeader(HEADER_USER_AGENT))
-        .filter(StringUtils::isNoneBlank).map(UserAgent::parseUserAgentString).orElse(null);
-  }
-
   public static String getMethod(HttpServletRequest request) {
     return Optional.ofNullable(request).map(HttpServletRequest::getMethod).map(String::toUpperCase)
         .orElse(StringUtils.EMPTY);
   }
 
-  public static String getServerPath(HttpServletRequest request) {
-    return Optional.ofNullable(request).map(req -> {
-      int serverPort = req.getServerPort();
-      return serverPort == HTTP_PORT ?
-          String.format(FORMATTER_SERVER_PATH_WITH_HTTP_PORT, req.getScheme(), req.getServerName())
-          : String.format(FORMATTER_SERVER_PATH, req.getScheme(), req.getServerName(), serverPort);
-    }).orElse(StringUtils.EMPTY);
-  }
-
-  public static String getRequestURI(HttpServletRequest request) {
-    return Optional.ofNullable(request).map(HttpServletRequest::getRequestURI)
-        .orElse(StringUtils.EMPTY);
-  }
-
-  public static String getContextPath(HttpServletRequest request) {
-    return Optional.ofNullable(request).map(HttpServletRequest::getContextPath)
-        .orElse(StringUtils.EMPTY);
-  }
-
-  public static String getServletPath(HttpServletRequest request) {
-    return Optional.ofNullable(request).map(HttpServletRequest::getServletPath)
-        .orElse(StringUtils.EMPTY);
-  }
-
-  public static String getUrl(HttpServletRequest request) {
-    return Optional.ofNullable(request).map(req -> getServerPath(req) + getRequestURI(req))
-        .orElse(StringUtils.EMPTY);
-  }
-
   public static String getHeader(HttpServletRequest request, String name) {
     return Optional.ofNullable(request)
-        .flatMap(req -> StringOptional.ofNullable(name).map(req::getHeader)).orElse(null);
+        .flatMap(req -> StringOptional.ofNullable(name).map(req::getHeader))
+        .map(StringUtils::trim)
+        .filter(StringUtils::isNotBlank)
+        .orElse(null);
   }
 
+
   public static String getContentType(HttpServletRequest request) {
-    return getHeader(request, HEADER_CONTENT_TYPE);
+    return getHeader(request, CONTENT_TYPE_HEADER);
   }
 
   public static Map<String, String> getHeaderMap(HttpServletRequest request) {
@@ -202,9 +139,187 @@ public class HttpUtils {
     }).orElse(new HashMap<>());
   }
 
+  public static String getXRealIp(HttpServletRequest request) {
+    return convertLocalhost(getHeader(request, X_REAL_IP_HEADER));
+  }
+
+  public static String getXForwardedFor(HttpServletRequest request) {
+    return getHeader(request, X_FORWARDED_FOR_HEADER);
+  }
+
+  public static String getXForwardedOriginal(String value) {
+    return StringOptional.ofNullable(value)
+        .map(v -> !v.contains(X_FORWARDED_SEPARATOR) ? v : v.split(X_FORWARDED_SEPARATOR)[0])
+        .map(String::trim)
+        .filter(StringUtils::isNotEmpty)
+        .orElse(null);
+  }
+
+  public static String getXForwardedForAsRemoteAddr(HttpServletRequest request) {
+    return StringOptional.ofNullable(getXForwardedFor(request))
+        .map(HttpUtils::getXForwardedOriginal)
+        .map(HttpUtils::convertLocalhost)
+        .orElse(null);
+  }
+
+  public static String getProxyClientIp(HttpServletRequest request) {
+    return convertLocalhost(getHeader(request, PROXY_CLIENT_IP_HEADER));
+  }
+
+  public static String getWlProxyClientIp(HttpServletRequest request) {
+    return convertLocalhost(getHeader(request, WL_PROXY_CLIENT_IP_HEADER));
+  }
+
+  public static String getRemoteAddrPreferXRealIp(HttpServletRequest request) {
+    return StringOptional.ofNullable(getXRealIp(request))
+        .filter(ip -> !UNKNOWN.equalsIgnoreCase(ip))
+        .orElseGet(() -> getRemoteAddr(request));
+  }
+
+  public static String getRemoteAddrPreferXForwardedFor(HttpServletRequest request) {
+    return StringOptional.ofNullable(getXForwardedForAsRemoteAddr(request))
+        .filter(ip -> !UNKNOWN.equalsIgnoreCase(ip))
+        .orElseGet(() -> getRemoteAddr(request));
+  }
+
+  public static String getProtocol(HttpServletRequest request) {
+    return Optional.ofNullable(request)
+        .map(HttpServletRequest::getScheme)
+        .orElse(StringUtils.EMPTY);
+  }
+
+  public static String getXForwardedProto(HttpServletRequest request) {
+    return getHeader(request, X_FORWARDED_PROTO_HEADER);
+  }
+
+  public static String getXForwardedProtoAsProtocol(HttpServletRequest request) {
+    return StringOptional.ofNullable(getXForwardedProto(request))
+        .map(HttpUtils::getXForwardedOriginal)
+        .orElse(null);
+  }
+
+  public static String getProtocolPreferXForwardedProto(HttpServletRequest request) {
+    return StringOptional.ofNullable(getXForwardedProtoAsProtocol(request))
+        .orElseGet(request::getScheme);
+  }
+
+  public static String getHost(HttpServletRequest request) {
+    return Optional.ofNullable(request)
+        .map(req -> isDefaultPort(req.getScheme(), req.getServerPort()) ? req.getServerName()
+            : String.format(FORMATTER_HTTP_HOST_PORT, req.getServerName(), req.getServerPort()))
+        .orElse(StringUtils.EMPTY);
+  }
+
+  public static String getXForwardedHost(HttpServletRequest request) {
+    return getHeader(request, X_FORWARDED_HOST_HEADER);
+  }
+
+  public static String getXForwardedHostAsHost(HttpServletRequest request) {
+    return StringOptional.ofNullable(getXForwardedHost(request))
+        .map(HttpUtils::getXForwardedOriginal)
+        .orElse(null);
+  }
+
+  public static String getHostPreferXForwardedHost(HttpServletRequest request) {
+    return StringOptional.ofNullable(getXForwardedHostAsHost(request))
+        .orElseGet(request::getServerName);
+  }
+
+  public static int getPort(HttpServletRequest request) {
+    return Optional.ofNullable(request)
+        .map(HttpServletRequest::getServerPort)
+        .filter(p -> p >= 0)
+        .orElseGet(() -> getDefaultPort(getProtocol(request)));
+  }
+
+  public static int getDefaultPort(String protocol) {
+    return HTTPS_SCHEME.equals(protocol) ? HTTPS_PORT : HTTP_PORT;
+  }
+
+  public static String getXForwardedPort(HttpServletRequest request) {
+    return getHeader(request, X_FORWARDED_PORT_HEADER);
+  }
+
+  public static Integer getXForwardedPortAsPort(HttpServletRequest request) {
+    return StringOptional.ofNullable(getXForwardedPort(request))
+        .map(HttpUtils::getXForwardedOriginal)
+        .map(Integer::valueOf)
+        .orElse(null);
+  }
+
+  public static int getPortPreferXForwardedPort(HttpServletRequest request) {
+    return Optional.ofNullable(getXForwardedPortAsPort(request))
+        .filter(p -> p >= 0)
+        .orElseGet(request::getServerPort);
+  }
+
+  public static String getRequestURI(HttpServletRequest request) {
+    return Optional.ofNullable(request)
+        .map(HttpServletRequest::getRequestURI)
+        .orElse(StringUtils.EMPTY);
+  }
+
+  public static String getXForwardedPrefix(HttpServletRequest request) {
+    return getHeader(request, X_FORWARDED_PREFIX_HEADER);
+  }
+
+  public static String getRequestURIPreferXForwardedPrefix(HttpServletRequest request) {
+    return StringOptional.ofNullable(getHeader(request, X_FORWARDED_PREFIX_HEADER))
+        .map(p -> p.replaceAll(X_FORWARDED_SEPARATOR, URL_SEPARATOR))
+        .map(p -> p + getRequestURI(request))
+        .orElseGet(() -> getRequestURI(request));
+  }
+
+  public static String getUrl(HttpServletRequest request) {
+    return Optional.ofNullable(request).map(req -> {
+      String protocol = req.getScheme();
+      int port = req.getServerPort();
+      StringBuilder sb = new StringBuilder();
+      if (isDefaultPort(protocol, port)) {
+        sb.append(String.format(FORMATTER_HTTP_PROTOCOL_HOST, protocol, req.getServerName()))
+            .append(req.getRequestURI());
+        return String.format(FORMATTER_HTTP_PROTOCOL_HOST, protocol, req.getServerName()) + req
+            .getRequestURI();
+      } else {
+        sb.append(req.getRequestURL());
+      }
+      StringOptional.ofNullable(req.getQueryString())
+          .ifPresent(qs -> sb.append(QUERY_STRING_SEPARATOR).append(qs));
+      return sb.toString();
+    }).orElse(StringUtils.EMPTY);
+  }
+
+  public static String getUrlPreferXForwarded(HttpServletRequest request) {
+    return Optional.ofNullable(request).map(req -> {
+      String protocol = getProtocolPreferXForwardedProto(req);
+      String host = getHostPreferXForwardedHost(req);
+      String uri = getRequestURIPreferXForwardedPrefix(req);
+      StringBuilder sb = new StringBuilder(
+          String.format(FORMATTER_HTTP_PROTOCOL_HOST, protocol, host) + uri);
+      StringOptional.ofNullable(req.getQueryString())
+          .ifPresent(qs -> sb.append(QUERY_STRING_SEPARATOR).append(qs));
+      return sb.toString();
+    }).orElse(StringUtils.EMPTY);
+  }
+
+  public static boolean isDefaultPort(String protocol, int port) {
+    return port < 0 || (port == HTTP_PORT && HTTP_SCHEME.equals(protocol)) || (port == HTTPS_PORT
+        && HTTPS_SCHEME.equals(protocol));
+  }
+
+  public static String getUserAgentString(HttpServletRequest request) {
+    return Optional.ofNullable(request).map(req -> req.getHeader(USER_AGENT_HEADER))
+        .orElse(StringUtils.EMPTY);
+  }
+
+  public static UserAgent getUserAgent(HttpServletRequest request) {
+    return Optional.ofNullable(request).map(req -> req.getHeader(USER_AGENT_HEADER))
+        .filter(StringUtils::isNoneBlank).map(UserAgent::parseUserAgentString).orElse(null);
+  }
+
   public static boolean isXMLHttpRequest(HttpServletRequest request) {
     return Optional.ofNullable(request).filter(req -> StringUtils
-        .equalsIgnoreCase(XML_HTTP_REQUEST, req.getHeader(HEADER_X_REQUESTED_WITH))).isPresent();
+        .equalsIgnoreCase(XML_HTTP_REQUEST, req.getHeader(X_REQUESTED_WITH_HEADER))).isPresent();
   }
 
   public static boolean isMobileOrTablet(HttpServletRequest request) {
