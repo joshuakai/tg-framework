@@ -2,7 +2,7 @@ package com.tg.framework.web.ip.filter;
 
 import com.tg.framework.web.ip.IpAccessVoter;
 import com.tg.framework.web.ip.IpForbiddenHandler;
-import com.tg.framework.web.ip.IpResolver;
+import com.tg.framework.web.ip.RequestDetailsResolver;
 import com.tg.framework.web.ip.support.DefaultIpForbiddenHandler;
 import com.tg.framework.web.util.HttpUtils;
 import java.io.IOException;
@@ -19,23 +19,25 @@ public class IpProtectingFilter extends OncePerRequestFilter {
 
   private static Logger logger = LoggerFactory.getLogger(IpProtectingFilter.class);
 
-  private IpResolver ipResolver;
+  private RequestDetailsResolver requestDetailsResolver;
   private IpAccessVoter ipAccessVoter;
   private IpForbiddenHandler ipForbiddenHandler = new DefaultIpForbiddenHandler();
 
-  public IpProtectingFilter(IpResolver ipResolver, IpAccessVoter ipAccessVoter) {
-    Assert.notNull(ipResolver, "IpResolver must not be null.");
+  public IpProtectingFilter(RequestDetailsResolver requestDetailsResolver,
+      IpAccessVoter ipAccessVoter) {
+    Assert.notNull(requestDetailsResolver, "RequestDetailsResolver must not be null.");
     Assert.notNull(ipAccessVoter, "IpAccessVoter must not be null.");
-    this.ipResolver = ipResolver;
+    this.requestDetailsResolver = requestDetailsResolver;
     this.ipAccessVoter = ipAccessVoter;
   }
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
-    String ip = ipResolver.resolve(request);
+    String ip = requestDetailsResolver.resolveRemoteAddr(request);
     if (!ipAccessVoter.vote(ip, request)) {
-      logger.warn("IP access denied: {} {}.", ip, HttpUtils.getUrl(request));
+      logger.warn("Denied {} {} [{}] {x-forwarded-for: {}}", HttpUtils.getMethod(request),
+          requestDetailsResolver.resolveUrl(request), ip, HttpUtils.getXForwardedFor(request));
       if (ipForbiddenHandler.onIpForbidden(request, response, ip)) {
         filterChain.doFilter(request, response);
       }

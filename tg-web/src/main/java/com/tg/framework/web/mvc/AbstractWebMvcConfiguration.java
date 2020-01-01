@@ -13,9 +13,8 @@ import com.tg.framework.commons.exception.ResourceNotFoundException;
 import com.tg.framework.commons.http.exception.HttpClientException;
 import com.tg.framework.commons.http.exception.RequestHeaderRequiredException;
 import com.tg.framework.commons.util.JSONUtils;
-import com.tg.framework.web.ip.IpResolver;
-import com.tg.framework.web.ip.support.DefaultIpResolver;
-import com.tg.framework.web.ip.support.IpResolverStrategy;
+import com.tg.framework.web.ip.RequestDetailsResolver;
+import com.tg.framework.web.ip.support.XForwardedRequestDetailsResolver;
 import com.tg.framework.web.mvc.formatter.CompositeDateFormatter;
 import com.tg.framework.web.mvc.formatter.LocalDateFormatter;
 import com.tg.framework.web.mvc.formatter.LocalDateTimeFormatter;
@@ -33,13 +32,13 @@ import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.ArrayUtils;
 import org.hibernate.validator.HibernateValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.ResourceBundleMessageSource;
@@ -62,15 +61,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 public abstract class AbstractWebMvcConfiguration implements WebMvcConfigurer {
 
-  private IpResolverStrategy ipResolverStrategy = IpResolverStrategy.AUTO;
-  private String ipResolverCustomHeaderName;
-  private Set<String> trustAgents;
-  private boolean trustAgentsAcceptWildcard;
-
   @Bean
-  public IpResolver ipResolver() {
-    return new DefaultIpResolver(ipResolverStrategy, ipResolverCustomHeaderName, trustAgents,
-        trustAgentsAcceptWildcard);
+  @ConfigurationProperties("tg.web.x-forwarded")
+  public RequestDetailsResolver requestDetailsResolver() {
+    return new XForwardedRequestDetailsResolver();
   }
 
   @Bean
@@ -119,63 +113,34 @@ public abstract class AbstractWebMvcConfiguration implements WebMvcConfigurer {
         sortArgumentResolver);
     pageableArgumentResolver.setPrefix("_");
     argumentResolvers.add(pageableArgumentResolver);
-    argumentResolvers.add(new RequestIpHandlerMethodArgumentResolver(ipResolver(), trustAgents,
-        trustAgentsAcceptWildcard));
+    argumentResolvers.add(new RequestIpHandlerMethodArgumentResolver(requestDetailsResolver()));
     argumentResolvers.add(new RequestHeaderHandlerMethodArgumentResolver());
     argumentResolvers.add(new UserAgentHandlerMethodArgumentResolver());
-    argumentResolvers.add(new RequestClientHandlerMethodArgumentResolver(ipResolver()));
+    argumentResolvers.add(new RequestClientHandlerMethodArgumentResolver(requestDetailsResolver()));
   }
 
-  public IpResolverStrategy getIpResolverStrategy() {
-    return ipResolverStrategy;
-  }
-
-  public void setIpResolverStrategy(IpResolverStrategy ipResolverStrategy) {
-    this.ipResolverStrategy = ipResolverStrategy;
-  }
-
-  public String getIpResolverCustomHeaderName() {
-    return ipResolverCustomHeaderName;
-  }
-
-  public void setIpResolverCustomHeaderName(String ipResolverCustomHeaderName) {
-    this.ipResolverCustomHeaderName = ipResolverCustomHeaderName;
-  }
-
-  public Set<String> getTrustAgents() {
-    return trustAgents;
-  }
-
-  public void setTrustAgents(Set<String> trustAgents) {
-    this.trustAgents = trustAgents;
-  }
-
-  public boolean isTrustAgentsAcceptWildcard() {
-    return trustAgentsAcceptWildcard;
-  }
-
-  public void setTrustAgentsAcceptWildcard(boolean trustAgentsAcceptWildcard) {
-    this.trustAgentsAcceptWildcard = trustAgentsAcceptWildcard;
-  }
 
   @RestControllerAdvice
   static class DefaultExceptionHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultExceptionHandler.class);
 
+    private static final String REQUEST_LOGGER_TEMPLATE = "%s %s [%s] {x-forwarded-for: %s}";
+    private static final String TAB = "\t";
+    private static final String DOT = ".";
+    private static final String COLON = ":";
+
     @Resource
-    private IpResolver ipResolver;
+    private RequestDetailsResolver requestDetailsResolver;
 
     private String getLoggerTemplate(HttpServletRequest request) {
-      return String
-          .format("%s %s [%s] [%s].", HttpUtils.getMethod(request), HttpUtils.getUrl(request),
-              ipResolver.resolve(request), HttpUtils.getContentType(request));
+      return String.format(REQUEST_LOGGER_TEMPLATE, HttpUtils.getMethod(request),
+          requestDetailsResolver.resolveUrl(request),
+          requestDetailsResolver.resolveRemoteAddr(request), HttpUtils.getXForwardedFor(request));
     }
 
     private String getLoggerTemplate(HttpServletRequest request, String more) {
-      return String
-          .format("%s %s [%s] [%s] %s.", HttpUtils.getMethod(request), HttpUtils.getUrl(request),
-              ipResolver.resolve(request), HttpUtils.getContentType(request), more);
+      return getLoggerTemplate(request) + System.lineSeparator() + TAB + more;
     }
 
     @ExceptionHandler(Throwable.class)
@@ -192,10 +157,10 @@ public abstract class AbstractWebMvcConfiguration implements WebMvcConfigurer {
         StringBuilder sb = new StringBuilder(objectError.getObjectName());
         if (objectError instanceof FieldError) {
           FieldError fieldError = (FieldError) objectError;
-          sb.append(".").append(fieldError.getField())
-              .append(":").append(fieldError.getDefaultMessage());
+          sb.append(DOT).append(fieldError.getField())
+              .append(COLON).append(fieldError.getDefaultMessage());
         } else {
-          sb.append(":").append(objectError.getDefaultMessage());
+          sb.append(COLON).append(objectError.getDefaultMessage());
         }
         return sb.toString();
       }).toArray(String[]::new);

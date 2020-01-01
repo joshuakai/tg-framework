@@ -2,7 +2,7 @@ package com.tg.framework.web.ip.interceptor;
 
 import com.tg.framework.web.ip.IpAccessVoter;
 import com.tg.framework.web.ip.IpForbiddenHandler;
-import com.tg.framework.web.ip.IpResolver;
+import com.tg.framework.web.ip.RequestDetailsResolver;
 import com.tg.framework.web.ip.support.DefaultIpForbiddenHandler;
 import com.tg.framework.web.util.HttpUtils;
 import javax.servlet.http.HttpServletRequest;
@@ -16,23 +16,25 @@ public class IpProtectingInterceptor implements HandlerInterceptor {
 
   private static Logger logger = LoggerFactory.getLogger(IpProtectingInterceptor.class);
 
-  private IpResolver ipResolver;
+  private RequestDetailsResolver requestDetailsResolver;
   private IpAccessVoter ipAccessVoter;
   private IpForbiddenHandler ipForbiddenHandler = new DefaultIpForbiddenHandler();
 
-  public IpProtectingInterceptor(IpResolver ipResolver, IpAccessVoter ipAccessVoter) {
-    Assert.notNull(ipResolver, "IpResolver must not be null.");
+  public IpProtectingInterceptor(RequestDetailsResolver requestDetailsResolver,
+      IpAccessVoter ipAccessVoter) {
+    Assert.notNull(requestDetailsResolver, "RequestDetailsResolver must not be null.");
     Assert.notNull(ipAccessVoter, "IpAccessVoter must not be null.");
-    this.ipResolver = ipResolver;
+    this.requestDetailsResolver = requestDetailsResolver;
     this.ipAccessVoter = ipAccessVoter;
   }
 
   @Override
   public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
       throws Exception {
-    String ip = ipResolver.resolve(request);
+    String ip = requestDetailsResolver.resolveRemoteAddr(request);
     if (!ipAccessVoter.vote(ip, request)) {
-      logger.warn("IP access denied: {} {}.", ip, HttpUtils.getUrl(request));
+      logger.warn("Denied {} {} [{}] {x-forwarded-for: {}}", HttpUtils.getMethod(request),
+          requestDetailsResolver.resolveUrl(request), ip, HttpUtils.getXForwardedFor(request));
       return ipForbiddenHandler.onIpForbidden(request, response, ip);
     }
     return true;
