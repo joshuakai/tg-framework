@@ -25,6 +25,8 @@ public class HttpUtils {
   public static final int HTTPS_PORT = 443;
   public static final String HTTP_SCHEME = "http";
   public static final String HTTPS_SCHEME = "https";
+  public static final String HTTP_URL_PREFIX = HTTP_SCHEME + "://";
+  public static final String HTTPS_URL_PREFIX = HTTPS_SCHEME + "://";
 
   public static final String LOCALHOST_IPV4 = "127.0.0.1";
   public static final String LOCALHOST_IPV6 = "0:0:0:0:0:0:0:1";
@@ -41,6 +43,7 @@ public class HttpUtils {
   public static final String X_FORWARDED_PREFIX_HEADER = "X-Forwarded-Prefix";
   public static final String X_FORWARDED_SEPARATOR = ",";
   public static final String URL_SEPARATOR = "/";
+  public static final String URL_HASH_SEPARATOR = "#";
   public static final String QUERY_STRING_SEPARATOR = "?";
 
   public static final String X_REAL_IP_HEADER = "X-Real-IP";
@@ -200,7 +203,7 @@ public class HttpUtils {
 
   public static String getProtocolPreferXForwardedProto(HttpServletRequest request) {
     return StringOptional.ofNullable(getXForwardedProtoAsProtocol(request))
-        .orElseGet(request::getScheme);
+        .orElseGet(() -> getProtocol(request));
   }
 
   public static String getHost(HttpServletRequest request) {
@@ -222,7 +225,7 @@ public class HttpUtils {
 
   public static String getHostPreferXForwardedHost(HttpServletRequest request) {
     return StringOptional.ofNullable(getXForwardedHostAsHost(request))
-        .orElseGet(request::getServerName);
+        .orElseGet(() -> getHost(request));
   }
 
   public static int getPort(HttpServletRequest request) {
@@ -234,6 +237,11 @@ public class HttpUtils {
 
   public static int getDefaultPort(String protocol) {
     return HTTPS_SCHEME.equals(protocol) ? HTTPS_PORT : HTTP_PORT;
+  }
+
+  public static boolean isDefaultPort(String protocol, int port) {
+    return port < 0 || (port == HTTP_PORT && HTTP_SCHEME.equals(protocol)) || (port == HTTPS_PORT
+        && HTTPS_SCHEME.equals(protocol));
   }
 
   public static String getXForwardedPort(HttpServletRequest request) {
@@ -250,7 +258,7 @@ public class HttpUtils {
   public static int getPortPreferXForwardedPort(HttpServletRequest request) {
     return Optional.ofNullable(getXForwardedPortAsPort(request))
         .filter(p -> p >= 0)
-        .orElseGet(request::getServerPort);
+        .orElseGet(() -> getPort(request));
   }
 
   public static String getRequestURI(HttpServletRequest request) {
@@ -263,9 +271,14 @@ public class HttpUtils {
     return getHeader(request, X_FORWARDED_PREFIX_HEADER);
   }
 
+  public static String getXForwardedPrefixAsPrefix(HttpServletRequest request) {
+    return StringOptional.ofNullable(getXForwardedPrefix(request))
+        .map(HttpUtils::getXForwardedOriginal)
+        .orElse(null);
+  }
+
   public static String getRequestURIPreferXForwardedPrefix(HttpServletRequest request) {
-    return StringOptional.ofNullable(getHeader(request, X_FORWARDED_PREFIX_HEADER))
-        .map(p -> p.replaceAll(X_FORWARDED_SEPARATOR, URL_SEPARATOR))
+    return StringOptional.ofNullable(getXForwardedPrefixAsPrefix(request))
         .map(p -> p + getRequestURI(request))
         .orElseGet(() -> getRequestURI(request));
   }
@@ -302,9 +315,13 @@ public class HttpUtils {
     }).orElse(StringUtils.EMPTY);
   }
 
-  public static boolean isDefaultPort(String protocol, int port) {
-    return port < 0 || (port == HTTP_PORT && HTTP_SCHEME.equals(protocol)) || (port == HTTPS_PORT
-        && HTTPS_SCHEME.equals(protocol));
+  public static String getHostFromUrl(String url) {
+    return StringOptional.ofNullable(url)
+        .map(u -> StringUtils.substringBefore(u.replace(HTTP_URL_PREFIX, StringUtils.EMPTY)
+            .replace(HTTPS_URL_PREFIX, StringUtils.EMPTY), URL_SEPARATOR))
+        .map(u -> StringUtils.substringBefore(u, URL_HASH_SEPARATOR))
+        .filter(StringUtils::isNotBlank)
+        .orElse(StringUtils.EMPTY);
   }
 
   public static String getUserAgentString(HttpServletRequest request) {
