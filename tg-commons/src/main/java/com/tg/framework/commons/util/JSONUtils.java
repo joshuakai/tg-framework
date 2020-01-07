@@ -144,7 +144,7 @@ public class JSONUtils {
 
   private static <T> T readValueAs(String json, TypeReference<T> typeReference) {
     try {
-      return transferObjectMapper().readValue(json, typeReference);
+      return transferObjectMapper().readerFor(typeReference).readValue(json);
     } catch (Exception e) {
       return null;
     }
