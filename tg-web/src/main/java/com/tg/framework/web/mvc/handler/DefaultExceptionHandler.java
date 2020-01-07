@@ -18,6 +18,7 @@ import com.tg.framework.web.util.HttpUtils;
 import java.util.Optional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.RestClientResponseException;
 
 @RestControllerAdvice
 public class DefaultExceptionHandler {
@@ -73,6 +75,12 @@ public class DefaultExceptionHandler {
       return sb.toString();
     }).toArray(String[]::new);
     return new ErrorDTO(ParamInvalidException.PRESENT_CODE, errors);
+  }
+
+  @ExceptionHandler(RestClientResponseException.class)
+  public ErrorDTO handleException(RestClientResponseException ex, HttpServletResponse response) {
+    response.setStatus(ex.getRawStatusCode());
+    return new ErrorDTO(ex.getStatusText(), ex.getResponseBodyAsString());
   }
 
   @ExceptionHandler(NestedException.class)
