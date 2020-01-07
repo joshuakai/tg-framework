@@ -78,8 +78,9 @@ public class DefaultExceptionHandler {
   }
 
   @ExceptionHandler(RestClientResponseException.class)
-  public ErrorDTO handleException(RestClientResponseException ex, HttpServletResponse response) {
-    response.setStatus(ex.getRawStatusCode());
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorDTO handleException(RestClientResponseException ex, HttpServletRequest request) {
+    LOGGER.error(getLoggerTemplate(request), ex);
     return new ErrorDTO(ex.getStatusText(), ex.getResponseBodyAsString());
   }
 
