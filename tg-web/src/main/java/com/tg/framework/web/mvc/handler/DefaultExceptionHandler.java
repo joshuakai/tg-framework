@@ -21,6 +21,8 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.BindException;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -71,10 +73,8 @@ public class DefaultExceptionHandler {
     return new ErrorDTO(ParamInvalidException.PRESENT_CODE, ex.getMessage());
   }
 
-  @ExceptionHandler(MethodArgumentNotValidException.class)
-  @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ErrorDTO handleException(MethodArgumentNotValidException ex) {
-    String[] errors = ex.getBindingResult().getAllErrors().stream().map(objectError -> {
+  private static String[] getErrors(BindingResult bindingResult) {
+    return bindingResult.getAllErrors().stream().map(objectError -> {
       StringBuilder sb = new StringBuilder(objectError.getObjectName());
       if (objectError instanceof FieldError) {
         FieldError fieldError = (FieldError) objectError;
@@ -85,7 +85,18 @@ public class DefaultExceptionHandler {
       }
       return sb.toString();
     }).toArray(String[]::new);
-    return new ErrorDTO(ParamInvalidException.PRESENT_CODE, errors);
+  }
+
+  @ExceptionHandler(BindException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorDTO handleException(BindException ex) {
+    return new ErrorDTO(ParamInvalidException.PRESENT_CODE, getErrors(ex.getBindingResult()));
+  }
+
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorDTO handleException(MethodArgumentNotValidException ex) {
+    return new ErrorDTO(ParamInvalidException.PRESENT_CODE, getErrors(ex.getBindingResult()));
   }
 
   @ExceptionHandler(RestClientException.class)
