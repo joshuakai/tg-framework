@@ -1,6 +1,5 @@
 package com.tg.framework.commons.util;
 
-import com.tg.framework.commons.lang.StringOptional;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -182,13 +181,14 @@ public class JavaTimeUtils {
     return format(date, timeFormat());
   }
 
-  public static Date parse(String str, DateFormat dateFormat, boolean throwException) {
-    return StringOptional.ofNullable(str)
+  public static Date parse(String str, DateFormat dateFormat, boolean throwsException) {
+    return Optional.ofNullable(str)
+        .filter(s -> s.trim().length() != 0)
         .flatMap(s -> Optional.ofNullable(dateFormat).map(df -> {
           try {
             return df.parse(s);
           } catch (ParseException e) {
-            if (throwException) {
+            if (throwsException) {
               throw new IllegalArgumentException(e);
             }
             return null;
@@ -486,13 +486,14 @@ public class JavaTimeUtils {
   }
 
   public static LocalDateTime parseLocalDateTime(String str, DateTimeFormatter dateTimeFormatter,
-      boolean throwException) {
-    return StringOptional.ofNullable(str)
+      boolean throwsException) {
+    return Optional.ofNullable(str)
+        .filter(s -> s.trim().length() != 0)
         .flatMap(s -> Optional.ofNullable(dateTimeFormatter).map(df -> {
           try {
             return LocalDateTime.parse(str, df);
           } catch (Exception e) {
-            if (throwException) {
+            if (throwsException) {
               throw new IllegalArgumentException(e);
             }
             return null;
@@ -521,13 +522,14 @@ public class JavaTimeUtils {
   }
 
   public static LocalDate parseLocalDate(String str, DateTimeFormatter dateTimeFormatter,
-      boolean throwException) {
-    return StringOptional.ofNullable(str)
+      boolean throwsException) {
+    return Optional.ofNullable(str)
+        .filter(s -> s.trim().length() != 0)
         .flatMap(s -> Optional.ofNullable(dateTimeFormatter).map(df -> {
           try {
             return LocalDate.parse(str, df);
           } catch (Exception e) {
-            if (throwException) {
+            if (throwsException) {
               throw new IllegalArgumentException(e);
             }
             return null;
@@ -556,13 +558,14 @@ public class JavaTimeUtils {
   }
 
   public static LocalTime parseLocalTime(String str, DateTimeFormatter dateTimeFormatter,
-      boolean throwException) {
-    return StringOptional.ofNullable(str)
+      boolean throwsException) {
+    return Optional.ofNullable(str)
+        .filter(s -> s.trim().length() != 0)
         .flatMap(s -> Optional.ofNullable(dateTimeFormatter).map(df -> {
           try {
             return LocalTime.parse(str, df);
           } catch (Exception e) {
-            if (throwException) {
+            if (throwsException) {
               throw new IllegalArgumentException(e);
             }
             return null;
@@ -591,13 +594,14 @@ public class JavaTimeUtils {
   }
 
   public static YearMonth parseYearMonth(String str, DateTimeFormatter dateTimeFormatter,
-      boolean throwException) {
-    return StringOptional.ofNullable(str)
+      boolean throwsException) {
+    return Optional.ofNullable(str)
+        .filter(s -> s.trim().length() != 0)
         .flatMap(s -> Optional.ofNullable(dateTimeFormatter).map(df -> {
           try {
             return YearMonth.parse(str, df);
           } catch (Exception e) {
-            if (throwException) {
+            if (throwsException) {
               throw new IllegalArgumentException(e);
             }
             return null;

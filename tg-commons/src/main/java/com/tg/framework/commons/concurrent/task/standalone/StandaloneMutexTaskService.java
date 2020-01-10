@@ -145,7 +145,7 @@ public class StandaloneMutexTaskService implements MutexTaskService {
     concurrentMutexTask.setTotalSteps(mainTotalSteps);
     concurrentMutexTask.setStartedAt(LocalDateTime.now());
     concurrentMutexTask
-        .setResults(Collections.synchronizedList(new ArrayList<>(mainTotalSteps + 1)));
+        .setResults(Collections.synchronizedList(new ArrayList<>(mainTotalSteps)));
     CompletableFuture.runAsync(() -> {
       final ConcurrentMutexTask task = concurrentMutexTask;
       final List<MutexTaskJob> preparingJobs = context.getPreparingJobs();

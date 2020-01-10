@@ -10,8 +10,9 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 public class AbstractWebMvcSecurityConfiguration extends AbstractWebMvcConfiguration {
 
   @Bean
+  @Override
   public DefaultExceptionHandler defaultExceptionHandler() {
-    return new SecurityExceptionHandler();
+    return new SecurityExceptionHandler(requestDetailsResolver);
   }
 
   @Override

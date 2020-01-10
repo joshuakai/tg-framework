@@ -12,7 +12,7 @@ public class DynamicDataSource extends AbstractRoutingDataSource {
   private static Logger logger = LoggerFactory.getLogger(DynamicDataSource.class);
 
   public DynamicDataSource(DataSource master, DataSource slave) {
-    Map<Object, Object> map = new HashMap<>(3);
+    Map<Object, Object> map = new HashMap<>(2);
     map.put(DynamicDataSourceLookupKey.MASTER, master);
     map.put(DynamicDataSourceLookupKey.SLAVE, slave);
     setTargetDataSources(map);

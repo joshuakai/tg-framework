@@ -1,6 +1,6 @@
 package com.tg.framework.commons.data.util;
 
-import com.tg.framework.commons.lang.StringOptional;
+import com.tg.framework.commons.util.OptionalUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -18,8 +18,8 @@ public class PredicateBuilder {
     this.predicates = new ArrayList<>();
   }
 
-  private PredicateBuilder(int maxSize) {
-    this.predicates = new ArrayList<>(maxSize + 1);
+  private PredicateBuilder(int initialCapacity) {
+    this.predicates = new ArrayList<>(initialCapacity);
   }
 
   public static Predicate[] empty() {
@@ -30,8 +30,8 @@ public class PredicateBuilder {
     return new PredicateBuilder();
   }
 
-  public static PredicateBuilder of(int maxSize) {
-    return new PredicateBuilder(maxSize);
+  public static PredicateBuilder of(int initialCapacity) {
+    return new PredicateBuilder(initialCapacity);
   }
 
   public PredicateBuilder addPredicate(Predicate predicate) {
@@ -62,7 +62,7 @@ public class PredicateBuilder {
   public PredicateBuilder addIfy(String value, Function<String, Predicate> mapper,
       boolean skipEmpty) {
     if (skipEmpty) {
-      StringOptional.ofNullable(value).map(mapper).ifPresent(this::addPredicate);
+      OptionalUtils.notEmpty(value).map(mapper).ifPresent(this::addPredicate);
     }
     Optional.ofNullable(value).map(mapper).ifPresent(this::addPredicate);
     return this;
@@ -75,7 +75,7 @@ public class PredicateBuilder {
   public PredicateBuilder addStartsWithIfy(String value, Function<String, Predicate> mapper,
       boolean skipEmpty) {
     if (skipEmpty) {
-      StringOptional.ofNullable(value).map(SQLUtils::startsWith).map(mapper)
+      OptionalUtils.notEmpty(value).map(SQLUtils::startsWith).map(mapper)
           .ifPresent(this::addPredicate);
     }
     Optional.ofNullable(value).map(SQLUtils::startsWith).map(mapper).ifPresent(this::addPredicate);
@@ -89,7 +89,7 @@ public class PredicateBuilder {
   public PredicateBuilder addEndsWithIfy(String value, Function<String, Predicate> mapper,
       boolean skipEmpty) {
     if (skipEmpty) {
-      StringOptional.ofNullable(value).map(SQLUtils::endsWith).map(mapper)
+      OptionalUtils.notEmpty(value).map(SQLUtils::endsWith).map(mapper)
           .ifPresent(this::addPredicate);
     }
     Optional.ofNullable(value).map(SQLUtils::endsWith).map(mapper).ifPresent(this::addPredicate);
@@ -103,7 +103,7 @@ public class PredicateBuilder {
   public PredicateBuilder addContainsIfy(String value, Function<String, Predicate> mapper,
       boolean skipEmpty) {
     if (skipEmpty) {
-      StringOptional.ofNullable(value).map(SQLUtils::contains).map(mapper)
+      OptionalUtils.notEmpty(value).map(SQLUtils::contains).map(mapper)
           .ifPresent(this::addPredicate);
     }
     Optional.ofNullable(value).map(SQLUtils::endsWith).map(mapper).ifPresent(this::addPredicate);
