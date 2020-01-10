@@ -10,7 +10,7 @@ import com.tg.framework.commons.concurrent.task.exception.TaskMutexException;
 import com.tg.framework.commons.concurrent.task.support.SimpleMutexTaskBuilder;
 import com.tg.framework.commons.concurrent.task.support.SimpleMutexTaskJobResult;
 import com.tg.framework.commons.concurrent.task.support.SimpleMutexTaskJobResultBuilder;
-import com.tg.framework.commons.lang.CollectionOptional;
+import com.tg.framework.commons.util.OptionalUtils;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -186,8 +186,9 @@ public class RedisMutexTaskService implements MutexTaskService {
           preparingCanceller, executorService, false, finishedStepsKey);
 
       List<SimpleMutexTaskJobResult> results = redisTemplate.opsForList().range(resultsKey, 0, -1);
-      if (CollectionOptional.ofNullable(results)
-          .map(rs -> rs.stream().allMatch(MutexTaskJobResult::isSucceed)).orElse(true)) {
+
+      if (OptionalUtils.notEmpty(results).map(List::stream)
+          .map(stream -> stream.allMatch(MutexTaskJobResult::isSucceed)).orElse(true)) {
         handleJobs(redisMutexTask, redisTemplate, resultsKey, mainJobs, mainFeatures, mainCanceller,
             executorService, true, finishedStepsKey);
         handleJobs(redisMutexTask, redisTemplate, resultsKey, finishingJobs, finishingFeatures,

@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Optional;
 
 public class ReflectionUtils {
@@ -11,7 +12,7 @@ public class ReflectionUtils {
   private ReflectionUtils() {
   }
 
-  public static Optional<Method> getMethod(Class<?> clazz, String name,
+  public static Method getMethod(Class<?> clazz, String name,
       Class<?>... parameterTypes) {
     Method method = null;
     try {
@@ -21,18 +22,21 @@ public class ReflectionUtils {
         return getMethod(clazz.getSuperclass(), name);
       }
     }
-    return Optional.ofNullable(method);
+    return method;
   }
 
-  public static <T> Optional<Class<T>> getGenericType(Class<?> clazz, int position) {
-    return Optional.ofNullable(clazz)
-        .map(c -> (ParameterizedType) clazz.getGenericSuperclass())
-        .map(ParameterizedType::getActualTypeArguments)
-        .filter(ts -> ts.length > position)
-        .map(ts -> (Class<T>) ts[position]);
+  @SuppressWarnings("unchecked")
+  public static <T> Class<T> getGenericType(Class<?> clazz, int position) {
+    if (clazz != null && position >= 0) {
+      Type[] types = ((ParameterizedType) clazz.getGenericSuperclass()).getActualTypeArguments();
+      if (types != null && types.length > position) {
+        return (Class<T>) types[position];
+      }
+    }
+    return null;
   }
 
-  public static <T> Optional<Class<T>> getGenericType(Class<?> clazz) {
+  public static <T> Class<T> getGenericType(Class<?> clazz) {
     return getGenericType(clazz, 0);
   }
 
@@ -47,10 +51,12 @@ public class ReflectionUtils {
           argTypes[i] = args[i].getClass();
         }
         Constructor<T> constructor = clazz.getConstructor(argTypes);
-        if (constructor == null && useDefaultConstructor) {
+        if (constructor != null) {
+          throw constructor.newInstance(args);
+        } else if (useDefaultConstructor) {
           throw clazz.newInstance();
         }
-        throw constructor.newInstance(args);
+        throw new IllegalAccessException();
       }
     } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
       throw new RuntimeException(e);

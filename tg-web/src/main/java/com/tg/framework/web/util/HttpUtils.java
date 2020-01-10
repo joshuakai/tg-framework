@@ -1,17 +1,21 @@
 package com.tg.framework.web.util;
 
-import com.tg.framework.commons.lang.StringOptional;
+import com.tg.framework.commons.util.OptionalUtils;
 import eu.bitwalker.useragentutils.DeviceType;
 import eu.bitwalker.useragentutils.OperatingSystem;
 import eu.bitwalker.useragentutils.UserAgent;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.X509TrustManager;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.collections4.CollectionUtils;
@@ -89,14 +93,14 @@ public class HttpUtils {
   }
 
   public static String convertLocalhost(String ip, boolean preferOutbound) {
-    return StringOptional.ofNullable(ip)
+    return OptionalUtils.notEmpty(ip)
         .filter(HttpUtils::isLocalhost)
         .map(s -> preferOutbound ? getLocalHostAddressPreferOutbound() : getLocalHostAddress())
         .orElse(ip);
   }
 
   public static String convertLocalhost2Ipv4(String ip) {
-    return StringOptional.ofNullable(ip)
+    return OptionalUtils.notEmpty(ip)
         .filter(HttpUtils::isLocalhost)
         .map(s -> LOCALHOST_IPV4)
         .orElse(ip);
@@ -119,7 +123,7 @@ public class HttpUtils {
 
   public static String getHeader(HttpServletRequest request, String name) {
     return Optional.ofNullable(request)
-        .flatMap(req -> StringOptional.ofNullable(name).map(req::getHeader))
+        .flatMap(req -> OptionalUtils.notEmpty(name).map(req::getHeader))
         .map(StringUtils::trim)
         .filter(StringUtils::isNotBlank)
         .orElse(null);
@@ -151,7 +155,7 @@ public class HttpUtils {
   }
 
   public static String getXForwardedOriginal(String value) {
-    return StringOptional.ofNullable(value)
+    return OptionalUtils.notEmpty(value)
         .map(v -> !v.contains(X_FORWARDED_SEPARATOR) ? v : v.split(X_FORWARDED_SEPARATOR)[0])
         .map(String::trim)
         .filter(StringUtils::isNotEmpty)
@@ -159,7 +163,7 @@ public class HttpUtils {
   }
 
   public static String getXForwardedForAsRemoteAddr(HttpServletRequest request) {
-    return StringOptional.ofNullable(getXForwardedFor(request))
+    return OptionalUtils.notEmpty(getXForwardedFor(request))
         .map(HttpUtils::getXForwardedOriginal)
         .map(HttpUtils::convertLocalhost)
         .orElse(null);
@@ -174,13 +178,13 @@ public class HttpUtils {
   }
 
   public static String getRemoteAddrPreferXRealIp(HttpServletRequest request) {
-    return StringOptional.ofNullable(getXRealIp(request))
+    return OptionalUtils.notEmpty(getXRealIp(request))
         .filter(ip -> !UNKNOWN.equalsIgnoreCase(ip))
         .orElseGet(() -> getRemoteAddr(request));
   }
 
   public static String getRemoteAddrPreferXForwardedFor(HttpServletRequest request) {
-    return StringOptional.ofNullable(getXForwardedForAsRemoteAddr(request))
+    return OptionalUtils.notEmpty(getXForwardedForAsRemoteAddr(request))
         .filter(ip -> !UNKNOWN.equalsIgnoreCase(ip))
         .orElseGet(() -> getRemoteAddr(request));
   }
@@ -196,13 +200,13 @@ public class HttpUtils {
   }
 
   public static String getXForwardedProtoAsProtocol(HttpServletRequest request) {
-    return StringOptional.ofNullable(getXForwardedProto(request))
+    return OptionalUtils.notEmpty(getXForwardedProto(request))
         .map(HttpUtils::getXForwardedOriginal)
         .orElse(null);
   }
 
   public static String getProtocolPreferXForwardedProto(HttpServletRequest request) {
-    return StringOptional.ofNullable(getXForwardedProtoAsProtocol(request))
+    return OptionalUtils.notEmpty(getXForwardedProtoAsProtocol(request))
         .orElseGet(() -> getProtocol(request));
   }
 
@@ -218,13 +222,13 @@ public class HttpUtils {
   }
 
   public static String getXForwardedHostAsHost(HttpServletRequest request) {
-    return StringOptional.ofNullable(getXForwardedHost(request))
+    return OptionalUtils.notEmpty(getXForwardedHost(request))
         .map(HttpUtils::getXForwardedOriginal)
         .orElse(null);
   }
 
   public static String getHostPreferXForwardedHost(HttpServletRequest request) {
-    return StringOptional.ofNullable(getXForwardedHostAsHost(request))
+    return OptionalUtils.notEmpty(getXForwardedHostAsHost(request))
         .orElseGet(() -> getHost(request));
   }
 
@@ -249,7 +253,7 @@ public class HttpUtils {
   }
 
   public static Integer getXForwardedPortAsPort(HttpServletRequest request) {
-    return StringOptional.ofNullable(getXForwardedPort(request))
+    return OptionalUtils.notEmpty(getXForwardedPort(request))
         .map(HttpUtils::getXForwardedOriginal)
         .map(Integer::valueOf)
         .orElse(null);
@@ -272,13 +276,13 @@ public class HttpUtils {
   }
 
   public static String getXForwardedPrefixAsPrefix(HttpServletRequest request) {
-    return StringOptional.ofNullable(getXForwardedPrefix(request))
+    return OptionalUtils.notEmpty(getXForwardedPrefix(request))
         .map(HttpUtils::getXForwardedOriginal)
         .orElse(null);
   }
 
   public static String getRequestURIPreferXForwardedPrefix(HttpServletRequest request) {
-    return StringOptional.ofNullable(getXForwardedPrefixAsPrefix(request))
+    return OptionalUtils.notEmpty(getXForwardedPrefixAsPrefix(request))
         .map(p -> p + getRequestURI(request))
         .orElseGet(() -> getRequestURI(request));
   }
@@ -296,7 +300,7 @@ public class HttpUtils {
       } else {
         sb.append(req.getRequestURL());
       }
-      StringOptional.ofNullable(req.getQueryString())
+      OptionalUtils.notEmpty(req.getQueryString())
           .ifPresent(qs -> sb.append(QUERY_STRING_SEPARATOR).append(qs));
       return sb.toString();
     }).orElse(StringUtils.EMPTY);
@@ -309,14 +313,14 @@ public class HttpUtils {
       String uri = getRequestURIPreferXForwardedPrefix(req);
       StringBuilder sb = new StringBuilder(
           String.format(FORMATTER_HTTP_PROTOCOL_HOST, protocol, host) + uri);
-      StringOptional.ofNullable(req.getQueryString())
+      OptionalUtils.notEmpty(req.getQueryString())
           .ifPresent(qs -> sb.append(QUERY_STRING_SEPARATOR).append(qs));
       return sb.toString();
     }).orElse(StringUtils.EMPTY);
   }
 
   public static String getHostFromUrl(String url) {
-    return StringOptional.ofNullable(url)
+    return OptionalUtils.notEmpty(url)
         .map(u -> StringUtils.substringBefore(u.replace(HTTP_URL_PREFIX, StringUtils.EMPTY)
             .replace(HTTPS_URL_PREFIX, StringUtils.EMPTY), URL_SEPARATOR))
         .map(u -> StringUtils.substringBefore(u, URL_HASH_SEPARATOR))

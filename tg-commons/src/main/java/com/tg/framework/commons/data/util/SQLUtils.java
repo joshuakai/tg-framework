@@ -1,6 +1,6 @@
 package com.tg.framework.commons.data.util;
 
-import com.tg.framework.commons.lang.StringOptional;
+import com.tg.framework.commons.util.OptionalUtils;
 
 public class SQLUtils {
 
@@ -10,15 +10,15 @@ public class SQLUtils {
   }
 
   public static String startsWith(String str) {
-    return StringOptional.ofNullable(str).map(s -> s + WILDCARD).orElse(WILDCARD);
+    return OptionalUtils.notEmpty(str).map(s -> s + WILDCARD).orElse(WILDCARD);
   }
 
   public static String endsWith(String str) {
-    return StringOptional.ofNullable(str).map(s -> WILDCARD + s).orElse(WILDCARD);
+    return OptionalUtils.notEmpty(str).map(s -> WILDCARD + s).orElse(WILDCARD);
   }
 
   public static String contains(String str) {
-    return StringOptional.ofNullable(str).map(s -> WILDCARD + s + WILDCARD).orElse(WILDCARD);
+    return OptionalUtils.notEmpty(str).map(s -> WILDCARD + s + WILDCARD).orElse(WILDCARD);
   }
 
 }

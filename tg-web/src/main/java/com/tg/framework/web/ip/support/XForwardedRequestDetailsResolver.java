@@ -12,6 +12,13 @@ public class XForwardedRequestDetailsResolver implements RequestDetailsResolver 
   private boolean proxyWhitelistAcceptWildcard;
   private boolean considerNoneAsTrustAll;
 
+  public XForwardedRequestDetailsResolver(Set<String> proxyWhitelist,
+      boolean proxyWhitelistAcceptWildcard, boolean considerNoneAsTrustAll) {
+    this.proxyWhitelist = proxyWhitelist;
+    this.proxyWhitelistAcceptWildcard = proxyWhitelistAcceptWildcard;
+    this.considerNoneAsTrustAll = considerNoneAsTrustAll;
+  }
+
   private boolean isProxyTrusted(String ip) {
     if (HttpUtils.isLocalhost(ip)) {
       return true;
@@ -75,27 +82,4 @@ public class XForwardedRequestDetailsResolver implements RequestDetailsResolver 
     return HttpUtils.getUrlPreferXForwarded(request);
   }
 
-  public Set<String> getProxyWhitelist() {
-    return proxyWhitelist;
-  }
-
-  public void setProxyWhitelist(Set<String> proxyWhitelist) {
-    this.proxyWhitelist = proxyWhitelist;
-  }
-
-  public boolean isProxyWhitelistAcceptWildcard() {
-    return proxyWhitelistAcceptWildcard;
-  }
-
-  public void setProxyWhitelistAcceptWildcard(boolean proxyWhitelistAcceptWildcard) {
-    this.proxyWhitelistAcceptWildcard = proxyWhitelistAcceptWildcard;
-  }
-
-  public boolean isConsiderNoneAsTrustAll() {
-    return considerNoneAsTrustAll;
-  }
-
-  public void setConsiderNoneAsTrustAll(boolean considerNoneAsTrustAll) {
-    this.considerNoneAsTrustAll = considerNoneAsTrustAll;
-  }
 }

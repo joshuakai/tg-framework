@@ -2,12 +2,10 @@ package com.tg.framework.commons.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyFactory;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -18,14 +16,16 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * TODO AES DES...
+ */
 public class CryptoUtils {
 
-  private static final String ALGORITHM_MD5 = "MD5";
-  private static final String ALGORITHM_MD5_FORMATER = "%032x";
-
   private static final String ALGORITHM_RSA = "RSA";
+
   private static final int ALGORITHM_RSA_MAX_ENCRYPT_BLOCK = 117;
   private static final int ALGORITHM_RSA_MAX_DECRYPT_BLOCK = 128;
 
@@ -33,12 +33,7 @@ public class CryptoUtils {
   }
 
   public static String encryptByMD5(byte[] bytes) {
-    try {
-      return String.format(ALGORITHM_MD5_FORMATER,
-          new BigInteger(1, MessageDigest.getInstance(ALGORITHM_MD5).digest(bytes)));
-    } catch (NoSuchAlgorithmException e) {
-      throw new IllegalStateException(e);
-    }
+    return DigestUtils.md5Hex(bytes);
   }
 
   public static String encryptByMD5(String str, String charset) {
@@ -254,7 +249,7 @@ public class CryptoUtils {
   }
 
   private static byte[] getRSAKeyBytes(String key) {
-    return decodeByBase64(key.replaceAll("\n", ""));
+    return decodeByBase64(key.replaceAll(System.lineSeparator(), StringUtils.EMPTY));
   }
 
 }

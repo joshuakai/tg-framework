@@ -1,6 +1,6 @@
 package com.tg.framework.commons.util;
 
-import com.tg.framework.commons.lang.StringOptional;
+import com.tg.framework.commons.util.OptionalUtils;
 import java.util.Arrays;
 
 public class MaskUtils {
@@ -17,7 +17,7 @@ public class MaskUtils {
 
   public static String maskLeft(String rawValue, int minMaskLength, int maxRightLength, char symbol,
       int symbolLength, String defaultValue) {
-    return StringOptional.ofNullable(rawValue).map(str -> {
+    return OptionalUtils.notEmpty(rawValue).map(str -> {
       int len = str.length();
       if (len <= minMaskLength) {
         return getSymbols(symbol, symbolLength);
@@ -44,7 +44,7 @@ public class MaskUtils {
 
   public static String maskCenter(String rawValue, int minMaskLength, int maxLeftLength,
       int maxRightLength, char symbol, int symbolLength, String defaultValue) {
-    return StringOptional.ofNullable(rawValue).map(str -> {
+    return OptionalUtils.notEmpty(rawValue).map(str -> {
       int len = str.length();
       if (len <= minMaskLength) {
         return getSymbols(symbol, symbolLength);
@@ -81,7 +81,7 @@ public class MaskUtils {
 
   public static String maskRight(String rawValue, int minMaskLength, int maxLeftLength, char symbol,
       int symbolLength, String defaultValue) {
-    return StringOptional.ofNullable(rawValue).map(str -> {
+    return OptionalUtils.notEmpty(rawValue).map(str -> {
       int len = str.length();
       if (len <= minMaskLength) {
         return getSymbols(symbol, symbolLength);

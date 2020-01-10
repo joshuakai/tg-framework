@@ -12,13 +12,23 @@ public class SerializationUtils {
   }
 
   public static byte[] serialize(Object object) throws IOException {
-    ByteArrayOutputStream bao = new ByteArrayOutputStream();
-    new ObjectOutputStream(bao).writeObject(object);
-    return bao.toByteArray();
+    try (
+        ByteArrayOutputStream bao = new ByteArrayOutputStream();
+        ObjectOutputStream oo = new ObjectOutputStream(bao)
+    ) {
+      oo.writeObject(object);
+      return bao.toByteArray();
+    }
   }
 
+  @SuppressWarnings("unchecked")
   public static <T> T deserialize(byte[] bytes) throws IOException, ClassNotFoundException {
-    return (T) new ObjectInputStream(new ByteArrayInputStream(bytes)).readObject();
+    try (
+        ByteArrayInputStream bai = new ByteArrayInputStream(bytes);
+        ObjectInputStream oi = new ObjectInputStream(bai)
+    ) {
+      return (T) oi.readObject();
+    }
   }
 
 }

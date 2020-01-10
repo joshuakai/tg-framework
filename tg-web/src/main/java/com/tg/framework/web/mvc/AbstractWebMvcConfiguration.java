@@ -2,7 +2,7 @@ package com.tg.framework.web.mvc;
 
 import com.tg.framework.commons.util.JSONUtils;
 import com.tg.framework.web.ip.RequestDetailsResolver;
-import com.tg.framework.web.ip.support.XForwardedRequestDetailsResolver;
+import com.tg.framework.web.ip.support.DefaultRequestDetailsResolver;
 import com.tg.framework.web.mvc.formatter.CompositeDateFormatter;
 import com.tg.framework.web.mvc.formatter.LocalDateFormatter;
 import com.tg.framework.web.mvc.formatter.LocalDateTimeFormatter;
@@ -12,14 +12,13 @@ import com.tg.framework.web.mvc.resolver.RequestClientHandlerMethodArgumentResol
 import com.tg.framework.web.mvc.resolver.RequestHeaderHandlerMethodArgumentResolver;
 import com.tg.framework.web.mvc.resolver.RequestIpHandlerMethodArgumentResolver;
 import com.tg.framework.web.mvc.resolver.UserAgentHandlerMethodArgumentResolver;
-import com.tg.framework.web.util.RestTemplateUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
 import org.hibernate.validator.HibernateValidator;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.support.ResourceBundleMessageSource;
@@ -30,26 +29,17 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 public abstract class AbstractWebMvcConfiguration implements WebMvcConfigurer {
 
-  @Bean
-  @ConfigurationProperties("tg.web.x-forwarded")
-  public RequestDetailsResolver requestDetailsResolver() {
-    return new XForwardedRequestDetailsResolver();
-  }
+  @Autowired(required = false)
+  protected RequestDetailsResolver requestDetailsResolver = new DefaultRequestDetailsResolver();
 
   @Bean
   public DefaultExceptionHandler defaultExceptionHandler() {
-    return new DefaultExceptionHandler();
-  }
-
-  @Bean
-  public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter() {
-    return new MappingJackson2HttpMessageConverter(JSONUtils.transferObjectMapper());
+    return new DefaultExceptionHandler(requestDetailsResolver);
   }
 
   @Bean
@@ -67,14 +57,12 @@ public abstract class AbstractWebMvcConfiguration implements WebMvcConfigurer {
     return validator;
   }
 
-  @Bean("defaultRestTemplate")
-  public RestTemplate defaultRestTemplate() {
-    return RestTemplateUtils.buildDefaultRestTemplate(mappingJackson2HttpMessageConverter());
-  }
-
   @Override
   public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-    converters.add(mappingJackson2HttpMessageConverter());
+    converters.stream()
+        .filter(c -> c instanceof MappingJackson2HttpMessageConverter)
+        .forEach(c -> ((MappingJackson2HttpMessageConverter) c)
+            .setObjectMapper(JSONUtils.transferObjectMapper()));
   }
 
   @Override
@@ -93,10 +81,11 @@ public abstract class AbstractWebMvcConfiguration implements WebMvcConfigurer {
         sortArgumentResolver);
     pageableArgumentResolver.setPrefix("_");
     argumentResolvers.add(pageableArgumentResolver);
-    argumentResolvers.add(new RequestIpHandlerMethodArgumentResolver(requestDetailsResolver()));
     argumentResolvers.add(new RequestHeaderHandlerMethodArgumentResolver());
     argumentResolvers.add(new UserAgentHandlerMethodArgumentResolver());
-    argumentResolvers.add(new RequestClientHandlerMethodArgumentResolver(requestDetailsResolver()));
+    argumentResolvers.add(new RequestIpHandlerMethodArgumentResolver(requestDetailsResolver));
+    argumentResolvers.add(new RequestClientHandlerMethodArgumentResolver(requestDetailsResolver));
   }
+
 
 }

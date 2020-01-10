@@ -1,8 +1,7 @@
 package com.tg.framework.web.upload.support;
 
 import com.tg.framework.commons.exception.DomainObjectRequiredException;
-import com.tg.framework.commons.lang.ArrayOptional;
-import com.tg.framework.commons.lang.StringOptional;
+import com.tg.framework.commons.util.OptionalUtils;
 import com.tg.framework.web.upload.FileUploadService;
 import com.tg.framework.web.upload.FilenameResolver;
 import java.io.File;
@@ -53,7 +52,7 @@ public class DefaultFileUploadService implements FileUploadService {
 
   @Override
   public String[] store(MultipartFile[] multipartFiles, String requestIp) {
-    ArrayOptional.ofNullable(multipartFiles).orElseThrow(DomainObjectRequiredException::new);
+    OptionalUtils.notEmpty(multipartFiles).orElseThrow(DomainObjectRequiredException::new);
     return Stream.of(multipartFiles).map(multipartFile -> store(multipartFile, requestIp))
         .toArray(String[]::new);
   }
@@ -90,14 +89,13 @@ public class DefaultFileUploadService implements FileUploadService {
   }
 
   private boolean isMimeTypeAccept(String mimeType) {
-    return StringOptional.ofNullable(mimeType).map(mt -> settings.getAcceptMimeTypes().stream()
+    return OptionalUtils.notEmpty(mimeType).map(mt -> settings.getAcceptMimeTypes().stream()
         .anyMatch(acceptMimeType -> StringUtils.equalsIgnoreCase(acceptMimeType, mt)))
         .orElse(false);
   }
 
   private boolean isFileNameAccept(String filename) {
-    return StringUtils.isNotBlank(filename) && StringOptional
-        .ofNullable(settings.getFilenamePattern())
+    return StringUtils.isNotBlank(filename) && OptionalUtils.notEmpty(settings.getFilenamePattern())
         .map(pattern -> Pattern.matches(pattern, filename)).orElse(true);
   }
 }

@@ -1,0 +1,1 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.tg.framework.web.boot.WebAutoConfigure

@@ -1,5 +1,6 @@
 package com.tg.framework.web.mvc.handler;
 
+import com.tg.framework.web.ip.RequestDetailsResolver;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -8,6 +9,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class SecurityExceptionHandler extends DefaultExceptionHandler {
+
+  public SecurityExceptionHandler(
+      RequestDetailsResolver requestDetailsResolver) {
+    super(requestDetailsResolver);
+  }
 
   @ExceptionHandler(AuthenticationException.class)
   @ResponseStatus(HttpStatus.UNAUTHORIZED)
