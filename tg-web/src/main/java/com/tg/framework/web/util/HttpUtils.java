@@ -323,6 +323,10 @@ public class HttpUtils {
     }).orElse(StringUtils.EMPTY);
   }
 
+  public static void main(String[] args) {
+    System.out.println(getHostFromUrl("http://test-gateway.yibofafa666.com"));
+  }
+
   public static String getHostFromUrl(String url) {
     return OptionalUtils.notEmpty(url)
         .map(u -> StringUtils.substringBefore(u.replace(HTTP_URL_PREFIX, StringUtils.EMPTY)
