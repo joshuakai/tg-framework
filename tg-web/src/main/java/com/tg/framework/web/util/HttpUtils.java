@@ -4,11 +4,13 @@ import com.tg.framework.commons.util.OptionalUtils;
 import eu.bitwalker.useragentutils.DeviceType;
 import eu.bitwalker.useragentutils.OperatingSystem;
 import eu.bitwalker.useragentutils.UserAgent;
+import java.lang.reflect.Array;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -411,10 +413,16 @@ public class HttpUtils {
         .ifPresent(params -> params.forEach((k, v) -> {
           if (v == null) {
             nameValuePairs.add(new BasicNameValuePair(k, null));
-          } else if (v instanceof List) {
+          } else if (v instanceof Collection) {
             //noinspection unchecked
-            ((List) v).forEach(sb -> nameValuePairs.add(new BasicNameValuePair(k,
+            ((Collection) v).forEach(sb -> nameValuePairs.add(new BasicNameValuePair(k,
                 Optional.ofNullable(sb).map(Object::toString).orElse(null))));
+          } else if (v.getClass().isArray()) {
+            int length = Array.getLength(v);
+            for (int i = 0; i < length; i++) {
+              nameValuePairs.add(new BasicNameValuePair(k,
+                  Optional.ofNullable(Array.get(v, i)).map(Object::toString).orElse(null)));
+            }
           } else {
             nameValuePairs.add(new BasicNameValuePair(k, v.toString()));
           }
