@@ -6,6 +6,7 @@ import com.tg.framework.beans.http.SimpleResponseEntityBuilder;
 import com.tg.framework.beans.http.SimpleResponseResult;
 import com.tg.framework.beans.http.SimpleResponseResultBuilder;
 import com.tg.framework.commons.util.OptionalUtils;
+import java.util.Optional;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -28,7 +29,7 @@ public class RestTemplateUtils {
         .orElseThrow(() -> new IllegalArgumentException(request.getMethod()));
 
     HttpHeaders headers = new HttpHeaders();
-    request.getHeaders().forEach(headers::addAll);
+    Optional.ofNullable(request.getHeaders()).ifPresent(map -> map.forEach(headers::addAll));
     OptionalUtils.notEmpty(request.getContentType()).map(MediaType::parseMediaType)
         .ifPresent(headers::setContentType);
 
