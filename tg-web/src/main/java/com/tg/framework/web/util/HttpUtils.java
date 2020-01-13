@@ -4,22 +4,26 @@ import com.tg.framework.commons.util.OptionalUtils;
 import eu.bitwalker.useragentutils.DeviceType;
 import eu.bitwalker.useragentutils.OperatingSystem;
 import eu.bitwalker.useragentutils.UserAgent;
+import java.lang.reflect.Array;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.X509TrustManager;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.message.BasicNameValuePair;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -401,6 +405,33 @@ public class HttpUtils {
   public static boolean isIpAcceptable(String ip, Set<String> ipWhitelist,
       Set<String> ipBlacklist) {
     return isIpAcceptable(ip, ipWhitelist, ipBlacklist, true, true);
+  }
+
+  public static String toURLEncodedString(Map<String, ?> parameters, String charset) {
+    List<NameValuePair> nameValuePairs = new ArrayList<>();
+    OptionalUtils.notEmpty(parameters)
+        .ifPresent(params -> params.forEach((k, v) -> {
+          if (v == null) {
+            nameValuePairs.add(new BasicNameValuePair(k, null));
+          } else if (v instanceof Collection) {
+            //noinspection unchecked
+            ((Collection) v).forEach(sb -> nameValuePairs.add(new BasicNameValuePair(k,
+                Optional.ofNullable(sb).map(Object::toString).orElse(null))));
+          } else if (v.getClass().isArray()) {
+            int length = Array.getLength(v);
+            for (int i = 0; i < length; i++) {
+              nameValuePairs.add(new BasicNameValuePair(k,
+                  Optional.ofNullable(Array.get(v, i)).map(Object::toString).orElse(null)));
+            }
+          } else {
+            nameValuePairs.add(new BasicNameValuePair(k, v.toString()));
+          }
+        }));
+    return URLEncodedUtils.format(nameValuePairs, charset);
+  }
+
+  public static String toURLEncodedString(Map<String, ?> parameters) {
+    return toURLEncodedString(parameters, StandardCharsets.UTF_8.name());
   }
 
 }
