@@ -1,20 +1,20 @@
 package com.tg.framework.beans.http;
 
 import java.io.Serializable;
+import java.util.List;
 
 public abstract class SimpleHttpEntity implements Serializable {
 
   private static final long serialVersionUID = -7976283146776014262L;
 
-  protected MultiValueMap<String, String> headers;
+  protected List<NameValuePair> headers;
   protected String body;
 
-  public MultiValueMap<String, String> getHeaders() {
+  public List<NameValuePair> getHeaders() {
     return headers;
   }
 
-  public void setHeaders(
-      MultiValueMap<String, String> headers) {
+  public void setHeaders(List<NameValuePair> headers) {
     this.headers = headers;
   }
 
