@@ -220,7 +220,7 @@ public class StandaloneMutexTaskService implements MutexTaskService {
           return CompletableFuture
               .runAsync(
                   () -> {
-                    MutexTaskJobStatus status = job.getExecutor().execute(canceller);
+                    MutexTaskJobStatus status = job.getExecutor().apply(canceller);
                     builder.withSucceed(status.isSucceed()).withMessage(status.getMessage());
                     logger.debug("Succeed to execute job {} {}.", task, job);
                   },

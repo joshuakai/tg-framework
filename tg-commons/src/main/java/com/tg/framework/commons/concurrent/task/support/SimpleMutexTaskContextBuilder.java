@@ -1,9 +1,11 @@
 package com.tg.framework.commons.concurrent.task.support;
 
 import com.tg.framework.commons.concurrent.task.MutexTaskJob;
-import com.tg.framework.commons.concurrent.task.MutexTaskJobExecutor;
+import com.tg.framework.commons.concurrent.task.MutexTaskJobStatus;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -74,17 +76,15 @@ public final class SimpleMutexTaskContextBuilder {
     return this;
   }
 
-  public SimpleMutexTaskContextBuilder appendPreparingJob(String title,
-      MutexTaskJobExecutor executor) {
+  public SimpleMutexTaskContextBuilder appendPreparingJob(String title, Function<Callable<Void>, MutexTaskJobStatus> executor) {
     return appendPreparingJob(new SimpleMutexTaskJob(title, executor));
   }
 
-  public SimpleMutexTaskContextBuilder appendMainJob(String title, MutexTaskJobExecutor executor) {
+  public SimpleMutexTaskContextBuilder appendMainJob(String title, Function<Callable<Void>, MutexTaskJobStatus> executor) {
     return appendMainJob(new SimpleMutexTaskJob(title, executor));
   }
 
-  public SimpleMutexTaskContextBuilder appendFinishingJob(String title,
-      MutexTaskJobExecutor executor) {
+  public SimpleMutexTaskContextBuilder appendFinishingJob(String title, Function<Callable<Void>, MutexTaskJobStatus> executor) {
     return appendFinishingJob(new SimpleMutexTaskJob(title, executor));
   }
 

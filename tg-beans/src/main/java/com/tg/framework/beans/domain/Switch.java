@@ -13,4 +13,8 @@ public enum Switch {
     return value;
   }
 
+  public boolean matches(Integer value) {
+    return value != null && this.value == value;
+  }
+
 }

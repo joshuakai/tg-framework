@@ -55,6 +55,8 @@ public class JSONUtils {
         .registerModule(new ParameterNamesModule())
         .registerModule(new Jdk8Module())
         .registerModule(buildJavaTimeModule())
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .configure(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES, false)
         .setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY)
         .enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
 
@@ -368,10 +370,37 @@ public class JSONUtils {
     return toMap(transferObjectMapper(), json, defaultValue);
   }
 
+  public static Map<String, String> toStringMap(ObjectMapper om, String json) {
+    return toMap(om, json, String.class);
+  }
+
+  public static Map<String, String> toStringMap(String json) {
+    return toStringMap(transferObjectMapper(), json);
+  }
+
+  public static Optional<Map<String, String>> optional2StringMap(ObjectMapper om, String json) {
+    return optional2Map(om, json, String.class);
+  }
+
+  public static Optional<Map<String, String>> optional2StringMap(String json) {
+    return optional2StringMap(transferObjectMapper(), json);
+  }
+
+  public static Map<String, String> toStringMap(ObjectMapper om, String json,
+      Map<String, String> defaultValue) {
+    return toMap(om, json, String.class, defaultValue);
+  }
+
+  public static Map<String, String> toStringMap(String json, Map<String, String> defaultValue) {
+    return toStringMap(transferObjectMapper(), json, defaultValue);
+  }
+
   public static <T> List<T> readList(ObjectMapper om, String json, Class<T> clazz)
       throws IOException {
-    return readValue(om, json, new TypeReference<List<T>>() {
-    });
+    if (om != null && json != null && json.trim().length() != 0 && clazz != null) {
+      return om.readerFor(om.getTypeFactory().constructCollectionType(List.class, clazz)).readValue(json);
+    }
+    return null;
   }
 
   public static <T> List<T> readList(String json, Class<T> clazz) throws IOException {
@@ -409,8 +438,10 @@ public class JSONUtils {
 
   public static <T> Set<T> readSet(ObjectMapper om, String json, Class<T> clazz)
       throws IOException {
-    return readValue(om, json, new TypeReference<Set<T>>() {
-    });
+    if (om != null && json != null && json.trim().length() != 0 && clazz != null) {
+      return om.readerFor(om.getTypeFactory().constructCollectionType(Set.class, clazz)).readValue(json);
+    }
+    return null;
   }
 
   public static <T> Set<T> readSet(String json, Class<T> clazz) throws IOException {
@@ -448,8 +479,10 @@ public class JSONUtils {
 
 
   public static <T> T[] readArray(ObjectMapper om, String json, Class<T> clazz) throws IOException {
-    return readValue(om, json, new TypeReference<T[]>() {
-    });
+    if (om != null && json != null && json.trim().length() != 0 && clazz != null) {
+      return om.readerFor(om.getTypeFactory().constructArrayType(clazz)).readValue(json);
+    }
+    return null;
   }
 
   public static <T> T[] readArray(String json, Class<T> clazz) throws IOException {
@@ -512,7 +545,8 @@ public class JSONUtils {
   }
 
   public static String getAsText(JsonNode jsonNode, String fieldName, String defaultValue) {
-    return optionalGetJsonNode(jsonNode, fieldName).map(jn -> jn.isTextual() ? jn.textValue() : jn.toString()).orElse(defaultValue);
+    return optionalGetJsonNode(jsonNode, fieldName)
+        .map(jn -> jn.isTextual() ? jn.textValue() : jn.toString()).orElse(defaultValue);
   }
 
   public static String getAsText(JsonNode jsonNode, String fieldName) {
@@ -520,7 +554,8 @@ public class JSONUtils {
   }
 
   public static Optional<String> optionalGetAsText(JsonNode jsonNode, String fieldName) {
-    return optionalGetJsonNode(jsonNode, fieldName).map(jn -> jn.isTextual() ? jn.textValue() : jn.toString());
+    return optionalGetJsonNode(jsonNode, fieldName)
+        .map(jn -> jn.isTextual() ? jn.textValue() : jn.toString());
   }
 
   public static boolean getBoolean(JsonNode jsonNode, String fieldName, boolean defaultValue) {
