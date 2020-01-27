@@ -16,6 +16,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CachingConfigurerSupport;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -36,6 +37,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @ConditionalOnClass({CacheManager.class, RedisClient.class, RedisTemplate.class})
 @ConditionalOnProperty(prefix = "tg.cache", value = "enabled", matchIfMissing = true)
 @EnableConfigurationProperties(CacheProperties.class)
+@EnableCaching
 public class CacheAutoConfigure extends CachingConfigurerSupport {
 
   @Resource

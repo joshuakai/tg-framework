@@ -63,8 +63,9 @@ public class PredicateBuilder {
       boolean skipEmpty) {
     if (skipEmpty) {
       OptionalUtils.notEmpty(value).map(mapper).ifPresent(this::addPredicate);
+    } else {
+      Optional.ofNullable(value).map(mapper).ifPresent(this::addPredicate);
     }
-    Optional.ofNullable(value).map(mapper).ifPresent(this::addPredicate);
     return this;
   }
 
@@ -77,8 +78,10 @@ public class PredicateBuilder {
     if (skipEmpty) {
       OptionalUtils.notEmpty(value).map(SQLUtils::startsWith).map(mapper)
           .ifPresent(this::addPredicate);
+    } else {
+      Optional.ofNullable(value).map(SQLUtils::startsWith).map(mapper)
+          .ifPresent(this::addPredicate);
     }
-    Optional.ofNullable(value).map(SQLUtils::startsWith).map(mapper).ifPresent(this::addPredicate);
     return this;
   }
 
@@ -91,8 +94,9 @@ public class PredicateBuilder {
     if (skipEmpty) {
       OptionalUtils.notEmpty(value).map(SQLUtils::endsWith).map(mapper)
           .ifPresent(this::addPredicate);
+    } else {
+      Optional.ofNullable(value).map(SQLUtils::endsWith).map(mapper).ifPresent(this::addPredicate);
     }
-    Optional.ofNullable(value).map(SQLUtils::endsWith).map(mapper).ifPresent(this::addPredicate);
     return this;
   }
 
@@ -105,8 +109,9 @@ public class PredicateBuilder {
     if (skipEmpty) {
       OptionalUtils.notEmpty(value).map(SQLUtils::contains).map(mapper)
           .ifPresent(this::addPredicate);
+    } else {
+      Optional.ofNullable(value).map(SQLUtils::contains).map(mapper).ifPresent(this::addPredicate);
     }
-    Optional.ofNullable(value).map(SQLUtils::endsWith).map(mapper).ifPresent(this::addPredicate);
     return this;
   }
 

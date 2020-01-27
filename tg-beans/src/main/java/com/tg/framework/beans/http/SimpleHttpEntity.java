@@ -3,7 +3,7 @@ package com.tg.framework.beans.http;
 import java.io.Serializable;
 import java.util.List;
 
-public abstract class SimpleHttpEntity implements Serializable {
+public class SimpleHttpEntity implements Serializable {
 
   private static final long serialVersionUID = -7976283146776014262L;
 

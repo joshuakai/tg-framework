@@ -1,6 +1,5 @@
 package com.tg.framework.commons.concurrent.lock;
 
-import com.google.common.base.MoreObjects;
 import com.tg.framework.commons.concurrent.lock.exception.LockMutexException;
 import com.tg.framework.commons.concurrent.lock.exception.LockTimeoutException;
 
@@ -13,14 +12,15 @@ public class LockContext {
   private LockTimeoutStrategy timeoutStrategy;
   private Class<? extends LockTimeoutException> timeoutException;
   private long sleepMillis;
+  private long unlockDelay;
 
   public LockContext() {
   }
 
-  public LockContext(String key, boolean mutex,
-      Class<? extends LockMutexException> mutexException, long timeoutMillis,
-      LockTimeoutStrategy timeoutStrategy,
-      Class<? extends LockTimeoutException> timeoutException, long sleepMillis) {
+  public LockContext(String key, boolean mutex, Class<? extends LockMutexException> mutexException,
+      long timeoutMillis, LockTimeoutStrategy timeoutStrategy,
+      Class<? extends LockTimeoutException> timeoutException, long sleepMillis,
+      long unlockDelay) {
     this.key = key;
     this.mutex = mutex;
     this.mutexException = mutexException;
@@ -28,6 +28,7 @@ public class LockContext {
     this.timeoutStrategy = timeoutStrategy;
     this.timeoutException = timeoutException;
     this.sleepMillis = sleepMillis;
+    this.unlockDelay = unlockDelay;
   }
 
   public String getKey() {
@@ -89,16 +90,25 @@ public class LockContext {
     this.sleepMillis = sleepMillis;
   }
 
+  public long getUnlockDelay() {
+    return unlockDelay;
+  }
+
+  public void setUnlockDelay(long unlockDelay) {
+    this.unlockDelay = unlockDelay;
+  }
+
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this)
-        .add("key", key)
-        .add("mutex", mutex)
-        .add("mutexException", mutexException)
-        .add("timeoutMillis", timeoutMillis)
-        .add("timeoutStrategy", timeoutStrategy)
-        .add("timeoutException", timeoutException)
-        .add("sleepMillis", sleepMillis)
-        .toString();
+    return "LockContext{" +
+        "key='" + key + '\'' +
+        ", mutex=" + mutex +
+        ", mutexException=" + mutexException +
+        ", timeoutMillis=" + timeoutMillis +
+        ", timeoutStrategy=" + timeoutStrategy +
+        ", timeoutException=" + timeoutException +
+        ", sleepMillis=" + sleepMillis +
+        ", unlockDelay=" + unlockDelay +
+        '}';
   }
 }

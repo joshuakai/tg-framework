@@ -1,15 +1,16 @@
 package com.tg.framework.commons.concurrent.task.support;
 
 import com.tg.framework.commons.concurrent.task.MutexTaskJob;
-import com.tg.framework.commons.concurrent.task.MutexTaskJobExecutor;
+import com.tg.framework.commons.concurrent.task.MutexTaskJobStatus;
+import java.util.concurrent.Callable;
+import java.util.function.Function;
 
 public class SimpleMutexTaskJob implements MutexTaskJob {
 
   private String title;
-  private MutexTaskJobExecutor executor;
+  private Function<Callable<Void>, MutexTaskJobStatus> executor;
 
-  public SimpleMutexTaskJob(String title,
-      MutexTaskJobExecutor executor) {
+  public SimpleMutexTaskJob(String title, Function<Callable<Void>, MutexTaskJobStatus> executor) {
     this.title = title;
     this.executor = executor;
   }
@@ -24,11 +25,11 @@ public class SimpleMutexTaskJob implements MutexTaskJob {
   }
 
   @Override
-  public MutexTaskJobExecutor getExecutor() {
+  public Function<Callable<Void>, MutexTaskJobStatus> getExecutor() {
     return executor;
   }
 
-  public void setExecutor(MutexTaskJobExecutor executor) {
+  public void setExecutor(Function<Callable<Void>, MutexTaskJobStatus> executor) {
     this.executor = executor;
   }
 

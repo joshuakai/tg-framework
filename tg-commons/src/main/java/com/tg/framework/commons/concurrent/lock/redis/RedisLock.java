@@ -1,8 +1,8 @@
 package com.tg.framework.commons.concurrent.lock.redis;
 
+import com.tg.framework.commons.concurrent.lock.LockTimeoutStrategy;
 import com.tg.framework.commons.concurrent.lock.exception.LockMutexException;
 import com.tg.framework.commons.concurrent.lock.exception.LockTimeoutException;
-import com.tg.framework.commons.concurrent.lock.LockTimeoutStrategy;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -30,5 +30,7 @@ public @interface RedisLock {
   Class<? extends LockTimeoutException> timeoutException() default LockTimeoutException.class;
 
   long sleepMillis() default 100L;
+
+  long unlockDelay() default 0L;
 
 }

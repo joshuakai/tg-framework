@@ -12,6 +12,7 @@ import com.tg.framework.web.mvc.resolver.RequestClientHandlerMethodArgumentResol
 import com.tg.framework.web.mvc.resolver.RequestHeaderHandlerMethodArgumentResolver;
 import com.tg.framework.web.mvc.resolver.RequestIpHandlerMethodArgumentResolver;
 import com.tg.framework.web.mvc.resolver.UserAgentHandlerMethodArgumentResolver;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -26,6 +27,7 @@ import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.data.web.SortHandlerMethodArgumentResolver;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.validation.Validator;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
@@ -59,10 +61,13 @@ public abstract class AbstractWebMvcConfiguration implements WebMvcConfigurer {
 
   @Override
   public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-    converters.stream()
-        .filter(c -> c instanceof MappingJackson2HttpMessageConverter)
-        .forEach(c -> ((MappingJackson2HttpMessageConverter) c)
-            .setObjectMapper(JSONUtils.transferObjectMapper()));
+    converters.forEach(c -> {
+      if (c instanceof StringHttpMessageConverter) {
+        ((StringHttpMessageConverter) c).setDefaultCharset(StandardCharsets.UTF_8);
+      } else if (c instanceof MappingJackson2HttpMessageConverter) {
+        ((MappingJackson2HttpMessageConverter) c).setObjectMapper(JSONUtils.transferObjectMapper());
+      }
+    });
   }
 
   @Override
