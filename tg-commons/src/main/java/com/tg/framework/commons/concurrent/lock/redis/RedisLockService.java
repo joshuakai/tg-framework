@@ -1,9 +1,9 @@
 package com.tg.framework.commons.concurrent.lock.redis;
 
 import com.tg.framework.commons.concurrent.lock.LockContext;
-import com.tg.framework.commons.concurrent.lock.exception.LockException;
 import com.tg.framework.commons.concurrent.lock.LockService;
 import com.tg.framework.commons.concurrent.lock.LockTimeoutStrategy;
+import com.tg.framework.commons.concurrent.lock.exception.LockException;
 import com.tg.framework.commons.util.ReflectionUtils;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -33,9 +33,13 @@ public class RedisLockService implements LockService {
   }
 
   @Override
-  public void unlock(String key, Object lock) {
+  public void unlock(String key, Object lock, long delay) {
     if (Objects.equals(redisTemplate.opsForValue().get(key), lock)) {
-      redisTemplate.delete(key);
+      if (delay > 0L) {
+        redisTemplate.expire(key, delay, TimeUnit.MILLISECONDS);
+      } else {
+        redisTemplate.delete(key);
+      }
     }
   }
 
