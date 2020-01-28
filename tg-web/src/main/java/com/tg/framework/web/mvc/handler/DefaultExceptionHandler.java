@@ -48,13 +48,13 @@ public class DefaultExceptionHandler {
     this.requestDetailsResolver = requestDetailsResolver;
   }
 
-  private String getLoggerTemplate(HttpServletRequest request) {
+  protected String getLoggerTemplate(HttpServletRequest request) {
     return String.format(REQUEST_LOGGER_TEMPLATE, HttpUtils.getMethod(request),
         requestDetailsResolver.resolveUrl(request),
         requestDetailsResolver.resolveRemoteAddr(request), HttpUtils.getXForwardedFor(request));
   }
 
-  private String getLoggerTemplate(HttpServletRequest request, String more) {
+  protected String getLoggerTemplate(HttpServletRequest request, String more) {
     return getLoggerTemplate(request) + System.lineSeparator() + TAB + more;
   }
 
