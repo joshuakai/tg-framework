@@ -1,7 +1,11 @@
 package com.tg.framework.web.boot.lock;
 
+import com.tg.framework.commons.concurrent.lock.IdentityLock;
 import com.tg.framework.commons.concurrent.lock.redis.RedisLockAspect;
 import com.tg.framework.commons.concurrent.lock.redis.RedisLockService;
+import java.util.stream.Stream;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -16,10 +20,23 @@ import org.springframework.data.redis.core.RedisTemplate;
 @EnableConfigurationProperties(RedisLockProperties.class)
 public class RedisLockAutoConfigure {
 
+  @Value("${spring.application.name:}")
+  private String applicationName;
+  @Value("${spring.cloud.consul.discovery.instance-id:}")
+  private String consulInstanceId;
+
   @Bean
   @ConditionalOnMissingBean
-  public RedisLockService redisLockService(RedisTemplate<String, Long> redisTemplate) {
-    return new RedisLockService(redisTemplate);
+  public RedisLockService redisLockService(RedisTemplate<String, IdentityLock> redisTemplate,
+      RedisLockProperties redisLockProperties) {
+    RedisLockService redisLockService = new RedisLockService(redisTemplate);
+    redisLockService.setInstanceId(resolveInstanceId(redisLockProperties.getInstanceId()));
+    return redisLockService;
+  }
+
+  private String resolveInstanceId(String instanceId) {
+    return Stream.of(instanceId, consulInstanceId, applicationName).filter(StringUtils::isNotEmpty)
+        .findFirst().orElse(null);
   }
 
   @Bean

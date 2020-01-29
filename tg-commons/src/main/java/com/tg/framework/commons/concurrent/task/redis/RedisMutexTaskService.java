@@ -1,5 +1,6 @@
 package com.tg.framework.commons.concurrent.task.redis;
 
+import com.tg.framework.commons.concurrent.lock.IdentityLock;
 import com.tg.framework.commons.concurrent.task.MutexTask;
 import com.tg.framework.commons.concurrent.task.MutexTaskContext;
 import com.tg.framework.commons.concurrent.task.MutexTaskJob;
@@ -26,7 +27,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +51,7 @@ public class RedisMutexTaskService implements MutexTaskService {
   private ExecutorService executorService;
   private RedisTemplate redisTemplate;
   private String keyPrefix;
+  private String instanceId;
 
   public RedisMutexTaskService(RedisTemplate redisTemplate, ExecutorService executorService) {
     this(redisTemplate, DEFAULT_KEY_PREFIX, executorService);
@@ -68,9 +69,10 @@ public class RedisMutexTaskService implements MutexTaskService {
 
   @SuppressWarnings({"unchecked", "ConstantConditions"})
   @Override
-  public Long tryStarting(String key, String title, String startedBy, long historyKeepMillis)
+  public IdentityLock tryStarting(String key, String title, String startedBy,
+      long historyKeepMillis)
       throws TaskMutexException {
-    Long lock = RandomUtils.nextLong();
+    IdentityLock lock = new IdentityLock(System.currentTimeMillis(), instanceId);
     RedisMutexTask task = new RedisMutexTask(key, lock, title, startedBy, historyKeepMillis);
     if (BooleanUtils
         .isNotTrue(redisTemplate.opsForValue().setIfAbsent(formatKey(key, CURRENT_SUFFIX), task))) {
@@ -115,7 +117,7 @@ public class RedisMutexTaskService implements MutexTaskService {
     }
   }
 
-  private static void validateParams(String key, Long lock, MutexTaskContext context)
+  private static void validateParams(String key, IdentityLock lock, MutexTaskContext context)
       throws TaskMutexException {
     if (StringUtils.isBlank(key)) {
       throw new TaskMutexException("key must not be empty.", key);
@@ -132,7 +134,7 @@ public class RedisMutexTaskService implements MutexTaskService {
   }
 
   @SuppressWarnings("unchecked")
-  private RedisMutexTask ensureTask(String key, Long lock) throws TaskMutexException {
+  private RedisMutexTask ensureTask(String key, IdentityLock lock) throws TaskMutexException {
     RedisMutexTask redisMutexTask = (RedisMutexTask) redisTemplate.opsForValue()
         .get(formatKey(key, CURRENT_SUFFIX));
     if (redisMutexTask == null || !Objects.equals(redisMutexTask.getLock(), lock)) {
@@ -147,7 +149,7 @@ public class RedisMutexTaskService implements MutexTaskService {
   }
 
   @SuppressWarnings("unchecked")
-  private MutexTask innerStart(RedisMutexTask redisMutexTask, String key, Long lock,
+  private MutexTask innerStart(RedisMutexTask redisMutexTask, String key, IdentityLock lock,
       MutexTaskContext context) {
     final String currentKey = formatKey(key, CURRENT_SUFFIX);
     final String currentStartedKey = formatKey(key, CURRENT_STARTED_SUFFIX);
@@ -203,14 +205,15 @@ public class RedisMutexTaskService implements MutexTaskService {
   }
 
   @Override
-  public MutexTask start(String key, Long lock, MutexTaskContext context)
+  public MutexTask start(String key, IdentityLock lock, MutexTaskContext context)
       throws TaskMutexException {
     validateParams(key, lock, context);
     return innerStart(ensureTask(key, lock), key, lock, context);
   }
 
   @Override
-  public CompletableFuture<MutexTask> startAsync(String key, Long lock, MutexTaskContext context)
+  public CompletableFuture<MutexTask> startAsync(String key, IdentityLock lock,
+      MutexTaskContext context)
       throws TaskMutexException {
     validateParams(key, lock, context);
     final RedisMutexTask redisMutexTask = ensureTask(key, lock);
@@ -218,10 +221,12 @@ public class RedisMutexTaskService implements MutexTaskService {
         .supplyAsync(() -> innerStart(redisMutexTask, key, lock, context), executorService);
   }
 
-  @SuppressWarnings("unchecked")
-  @Override
-  public boolean forceRelease(String key) {
-    return BooleanUtils.isTrue(redisTemplate.delete(formatKey(key, CURRENT_SUFFIX)));
+  public String getInstanceId() {
+    return instanceId;
+  }
+
+  public void setInstanceId(String instanceId) {
+    this.instanceId = instanceId;
   }
 
   @SuppressWarnings("unchecked")
@@ -272,7 +277,7 @@ public class RedisMutexTaskService implements MutexTaskService {
   @SuppressWarnings("unchecked")
   private void finish(RedisTemplate redisTemplate, String currentKey, int totalSteps,
       String currentStartedKey, String finishedStepsKey, String resultsKey, String previousKey,
-      Long lock) {
+      IdentityLock lock) {
     RedisMutexTask task = (RedisMutexTask) redisTemplate.opsForValue().get(currentKey);
     if (task == null || !Objects.equals(task.getLock(), lock)) {
       redisTemplate.delete(resultsKey);
@@ -317,7 +322,7 @@ public class RedisMutexTaskService implements MutexTaskService {
       List<SimpleMutexTaskJobResult> results) {
     return SimpleMutexTaskBuilder.aSimpleMutexTask()
         .withKey(task.getKey())
-        .withLock(task.getLock())
+        .withLock(Optional.ofNullable(task.getLock()).map(IdentityLock::getValue).orElse(null))
         .withTitle(task.getTitle())
         .withStartedBy(task.getStartedBy())
         .withStartedAt(task.getStartedAt())
@@ -336,7 +341,7 @@ public class RedisMutexTaskService implements MutexTaskService {
     private static final long serialVersionUID = -3917357235008072852L;
 
     private String key;
-    private Long lock;
+    private IdentityLock lock;
     private String title;
     private String startedBy;
     private LocalDateTime startedAt;
@@ -349,7 +354,7 @@ public class RedisMutexTaskService implements MutexTaskService {
     public RedisMutexTask() {
     }
 
-    public RedisMutexTask(String key, Long lock, String title, String startedBy,
+    public RedisMutexTask(String key, IdentityLock lock, String title, String startedBy,
         long historyKeepMillis) {
       this.key = key;
       this.lock = lock;
@@ -366,11 +371,11 @@ public class RedisMutexTaskService implements MutexTaskService {
       this.key = key;
     }
 
-    public Long getLock() {
+    public IdentityLock getLock() {
       return lock;
     }
 
-    public void setLock(Long lock) {
+    public void setLock(IdentityLock lock) {
       this.lock = lock;
     }
 

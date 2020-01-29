@@ -6,6 +6,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
@@ -18,18 +21,17 @@ import org.springframework.security.oauth2.provider.token.DefaultTokenServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.redis.RedisTokenStore;
 
+@SuppressWarnings("unchecked")
 public abstract class AbstractAuthorizationServerConfig extends
     AuthorizationServerConfigurerAdapter {
 
   @Resource
-  protected RedisConnectionFactory connectionFactory;
-  @Resource(name = "jdkSerializationRedisTemplate")
-  private RedisTemplate<String, OAuth2Authentication> redisTemplate;
+  protected RedisConnectionFactory redisConnectionFactory;
 
   @Bean
   @Primary
   public TokenStore tokenStore() {
-    return new RedisTokenStore(connectionFactory);
+    return new RedisTokenStore(redisConnectionFactory);
   }
 
   @Bean
@@ -42,7 +44,8 @@ public abstract class AbstractAuthorizationServerConfig extends
   }
 
   @Bean
-  public AuthorizationCodeServices authorizationCodeServices() {
+  public AuthorizationCodeServices authorizationCodeServices(
+      RedisTemplate<String, OAuth2Authentication> redisTemplate) {
     return new RandomValueAuthorizationCodeServices() {
 
       private static final String REDIS_KEY_TEMPLATE = "authorization_code_to_access:%s";
@@ -72,7 +75,8 @@ public abstract class AbstractAuthorizationServerConfig extends
   public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
     endpoints.authenticationManager(authenticationManager());
     endpoints.tokenStore(tokenStore());
-    endpoints.authorizationCodeServices(authorizationCodeServices());
+    endpoints.authorizationCodeServices(
+        authorizationCodeServices(authorizationCodeServiceRedisTemplate()));
   }
 
   @Override
@@ -82,5 +86,17 @@ public abstract class AbstractAuthorizationServerConfig extends
 
   protected AuthenticationManager authenticationManager() {
     return null;
+  }
+
+  protected RedisTemplate authorizationCodeServiceRedisTemplate() {
+    StringRedisSerializer keySerializer = new StringRedisSerializer();
+    JdkSerializationRedisSerializer valueSerializer = new JdkSerializationRedisSerializer();
+    StringRedisTemplate redisTemplate = new StringRedisTemplate(redisConnectionFactory);
+    redisTemplate.setKeySerializer(keySerializer);
+    redisTemplate.setHashKeySerializer(keySerializer);
+    redisTemplate.setValueSerializer(valueSerializer);
+    redisTemplate.setHashValueSerializer(valueSerializer);
+    redisTemplate.afterPropertiesSet();
+    return redisTemplate;
   }
 }
