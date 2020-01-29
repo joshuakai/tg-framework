@@ -14,6 +14,9 @@ public class NameValuePair implements Serializable {
   @Length(max = 255)
   private String value;
 
+  public NameValuePair() {
+  }
+
   public NameValuePair(String name, String value) {
     this.name = name;
     this.value = value;
