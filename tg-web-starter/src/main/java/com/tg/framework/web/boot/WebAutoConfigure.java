@@ -7,6 +7,7 @@ import com.tg.framework.web.boot.http.RestTemplateAutoConfigure;
 import com.tg.framework.web.boot.http.XForwardedAutoConfigure;
 import com.tg.framework.web.boot.jdbc.DynamicDataSourceAutoConfigure;
 import com.tg.framework.web.boot.lock.RedisLockAutoConfigure;
+import com.tg.framework.web.boot.lock.ScheduledClusterAutoConfigure;
 import com.tg.framework.web.boot.mvc.SecurityWebMvcAutoConfigure;
 import com.tg.framework.web.boot.mvc.WebMvcAutoConfigure;
 import com.tg.framework.web.boot.task.RedisMutexTaskAutoConfigure;
@@ -24,6 +25,7 @@ import org.springframework.context.annotation.Import;
     HttpClientAutoConfigure.class,
     RestTemplateAutoConfigure.class,
     RedisLockAutoConfigure.class,
+    ScheduledClusterAutoConfigure.class,
     RedisMutexTaskAutoConfigure.class,
     WebMvcAutoConfigure.class,
     SecurityWebMvcAutoConfigure.class

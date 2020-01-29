@@ -1,20 +1,24 @@
 package com.tg.framework.commons.concurrent.lock.redis;
 
-import com.tg.framework.commons.concurrent.lock.LockAspectSupport;
+import com.tg.framework.commons.concurrent.lock.IdentityLock;
 import com.tg.framework.commons.concurrent.lock.LockContext;
+import com.tg.framework.commons.expression.AbstractExpressionAspect;
 import java.lang.reflect.Method;
 import java.util.Optional;
+import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.util.Assert;
 
 @Aspect
-public class RedisLockAspect extends LockAspectSupport<RedisLockService> {
+public class RedisLockAspect extends AbstractExpressionAspect {
 
   private static final String DEFAULT_KEY_PREFIX = "locks:";
   private static final long DEFAULT_TIMEOUT_MILLIS = -1L;
 
+  private RedisLockService redisLockService;
   private String keyPrefix;
   private long defaultTimeoutMillis;
 
@@ -32,27 +36,36 @@ public class RedisLockAspect extends LockAspectSupport<RedisLockService> {
 
   public RedisLockAspect(RedisLockService redisLockService, String keyPrefix,
       long defaultTimeoutMillis) {
-    super(redisLockService);
+    Assert.notNull(redisLockService, "RedisLockService must not be null.");
+    Assert.isTrue(StringUtils.isNotBlank(keyPrefix), "Key prefix must not be empty.");
+    Assert.isTrue(defaultTimeoutMillis >= DEFAULT_TIMEOUT_MILLIS,
+        "Default timeout millis must be greater than -1L.");
+    this.redisLockService = redisLockService;
     this.keyPrefix = keyPrefix;
     this.defaultTimeoutMillis = defaultTimeoutMillis;
   }
 
   @Around("@annotation(com.tg.framework.commons.concurrent.lock.redis.RedisLock)")
   public Object around(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
-    return doAspect(proceedingJoinPoint);
+    Method method = ((MethodSignature) proceedingJoinPoint.getSignature()).getMethod();
+    RedisLock redisLock = method.getAnnotation(RedisLock.class);
+    LockContext context = getLockContext(method, proceedingJoinPoint.getArgs(), redisLock);
+    IdentityLock lock = redisLockService.tryLock(context);
+    try {
+      return proceedingJoinPoint.proceed();
+    } finally {
+      redisLockService.unlock(context.getKey(), lock, redisLock.releaseDelay());
+    }
   }
 
-  @Override
-  protected LockContext getLockContext(ProceedingJoinPoint proceedingJoinPoint) {
-    Method method = ((MethodSignature) proceedingJoinPoint.getSignature()).getMethod();
-    RedisLock lock = method.getAnnotation(RedisLock.class);
-    String key = Optional.ofNullable(keyPrefix).map(p -> p + lock.key()).orElse(lock.key());
-    key = lock.useExpression() ? getExpressionValue(key, method, proceedingJoinPoint.getArgs(),
-        String.class) : key;
-    long timeoutMillis =
-        lock.timeout() == -1L ? defaultTimeoutMillis : lock.timeUnit().toMillis(lock.timeout());
-    return new LockContext(key, lock.mutex(), lock.mutexException(), timeoutMillis,
-        lock.timeoutStrategy(), lock.timeoutException(), lock.sleepMillis(), lock.unlockDelay());
+  private LockContext getLockContext(Method method, Object[] args, RedisLock redisLock) {
+    String key = Optional.ofNullable(keyPrefix).map(p -> p + redisLock.key())
+        .orElse(redisLock.key());
+    key = redisLock.useExpression() ? getExpressionValue(key, method, args, String.class) : key;
+    long timeoutMillis = redisLock.timeout() == -1L ? defaultTimeoutMillis
+        : redisLock.timeUnit().toMillis(redisLock.timeout());
+    return new LockContext(key, redisLock.mutex(), redisLock.mutexException(), timeoutMillis,
+        redisLock.timeoutException(), redisLock.sleepMillis());
   }
 
   public String getKeyPrefix() {

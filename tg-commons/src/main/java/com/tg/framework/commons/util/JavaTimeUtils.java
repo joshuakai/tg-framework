@@ -265,7 +265,7 @@ public class JavaTimeUtils {
   }
 
 
-  public static Date innerStartOfDay(Calendar calendar) {
+  private static Date innerStartOfDay(Calendar calendar) {
     calendar.set(Calendar.HOUR_OF_DAY, 0);
     calendar.set(Calendar.MINUTE, 0);
     calendar.set(Calendar.SECOND, 0);
@@ -273,7 +273,7 @@ public class JavaTimeUtils {
     return calendar.getTime();
   }
 
-  public static Date innerEndOfDay(Calendar calendar) {
+  private static Date innerEndOfDay(Calendar calendar) {
     calendar.set(Calendar.HOUR_OF_DAY, 23);
     calendar.set(Calendar.MINUTE, 59);
     calendar.set(Calendar.SECOND, 59);
@@ -665,11 +665,11 @@ public class JavaTimeUtils {
     return parseYearWeek(str, yearWeekFormatter(locale));
   }
 
-  public static LocalDateTime innerStartOfDay(LocalDateTime localDateTime) {
+  private static LocalDateTime innerStartOfDay(LocalDateTime localDateTime) {
     return localDateTime.withHour(0).withMinute(0).withSecond(0).withNano(0);
   }
 
-  public static LocalDateTime innerEndOfDay(LocalDateTime localDateTime) {
+  private static LocalDateTime innerEndOfDay(LocalDateTime localDateTime) {
     return localDateTime.withHour(23).withMinute(59).withSecond(59).withNano(999999999);
   }
 

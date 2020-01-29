@@ -9,26 +9,21 @@ public class LockContext {
   private boolean mutex;
   private Class<? extends LockMutexException> mutexException;
   private long timeoutMillis;
-  private LockTimeoutStrategy timeoutStrategy;
   private Class<? extends LockTimeoutException> timeoutException;
   private long sleepMillis;
-  private long unlockDelay;
 
   public LockContext() {
   }
 
   public LockContext(String key, boolean mutex, Class<? extends LockMutexException> mutexException,
-      long timeoutMillis, LockTimeoutStrategy timeoutStrategy,
-      Class<? extends LockTimeoutException> timeoutException, long sleepMillis,
-      long unlockDelay) {
+      long timeoutMillis, Class<? extends LockTimeoutException> timeoutException,
+      long sleepMillis) {
     this.key = key;
     this.mutex = mutex;
     this.mutexException = mutexException;
     this.timeoutMillis = timeoutMillis;
-    this.timeoutStrategy = timeoutStrategy;
     this.timeoutException = timeoutException;
     this.sleepMillis = sleepMillis;
-    this.unlockDelay = unlockDelay;
   }
 
   public String getKey() {
@@ -64,15 +59,6 @@ public class LockContext {
     this.timeoutMillis = timeoutMillis;
   }
 
-  public LockTimeoutStrategy getTimeoutStrategy() {
-    return timeoutStrategy;
-  }
-
-  public void setTimeoutStrategy(
-      LockTimeoutStrategy timeoutStrategy) {
-    this.timeoutStrategy = timeoutStrategy;
-  }
-
   public Class<? extends LockTimeoutException> getTimeoutException() {
     return timeoutException;
   }
@@ -90,14 +76,6 @@ public class LockContext {
     this.sleepMillis = sleepMillis;
   }
 
-  public long getUnlockDelay() {
-    return unlockDelay;
-  }
-
-  public void setUnlockDelay(long unlockDelay) {
-    this.unlockDelay = unlockDelay;
-  }
-
   @Override
   public String toString() {
     return "LockContext{" +
@@ -105,10 +83,8 @@ public class LockContext {
         ", mutex=" + mutex +
         ", mutexException=" + mutexException +
         ", timeoutMillis=" + timeoutMillis +
-        ", timeoutStrategy=" + timeoutStrategy +
         ", timeoutException=" + timeoutException +
         ", sleepMillis=" + sleepMillis +
-        ", unlockDelay=" + unlockDelay +
         '}';
   }
 }

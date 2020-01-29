@@ -6,9 +6,7 @@ import io.lettuce.core.RedisClient;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import javax.annotation.Resource;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -20,17 +18,15 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager.RedisCacheManagerBuilder;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.RedisSerializationContext.SerializationPair;
-import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
@@ -45,17 +41,16 @@ public class CacheAutoConfigure extends CachingConfigurerSupport {
   @Resource
   private CacheProperties cacheProperties;
 
-  private RedisSerializer<String> keySerializer = new StringRedisSerializer();
-  private RedisSerializer<?> valueSerializer = new GenericJackson2JsonRedisSerializer(
+  private StringRedisSerializer keySerializer = new StringRedisSerializer();
+  private GenericJackson2JsonRedisSerializer valueSerializer = new GenericJackson2JsonRedisSerializer(
       JSONUtils.serializationObjectMapper());
-  private RedisSerializer<?> jdkSerializationValueSerializer = new JdkSerializationRedisSerializer();
 
   @Override
   public KeyGenerator keyGenerator() {
     return (target, method, params) -> {
       StringBuilder sb = new StringBuilder().append(target.getClass().getName())
           .append(method.getName());
-      Optional.ofNullable(params).ifPresent(ps -> Stream.of(ps).forEach(p -> sb.append(p)));
+      StreamUtils.safety2Stream(params).forEach(sb::append);
       return sb.toString();
     };
   }
@@ -87,21 +82,8 @@ public class CacheAutoConfigure extends CachingConfigurerSupport {
   }
 
   @Bean
-  @ConditionalOnMissingBean
-  public RedisTemplate redisTemplate(LettuceConnectionFactory redisConnectionFactory) {
-    return buildRedisTemplate(redisConnectionFactory, keySerializer, valueSerializer);
-  }
-
-  @Bean("jdkSerializationRedisTemplate")
-  @ConditionalOnMissingBean(name = "jdkSerializationRedisTemplate")
-  public RedisTemplate jdkSerializationRedisTemplate(
-      LettuceConnectionFactory redisConnectionFactory) {
-    return buildRedisTemplate(redisConnectionFactory, keySerializer,
-        jdkSerializationValueSerializer);
-  }
-
-  private static RedisTemplate buildRedisTemplate(RedisConnectionFactory redisConnectionFactory,
-      RedisSerializer<?> keySerializer, RedisSerializer<?> valueSerializer) {
+  @Primary
+  public RedisTemplate<String, ?> redisTemplate(LettuceConnectionFactory redisConnectionFactory) {
     StringRedisTemplate redisTemplate = new StringRedisTemplate(redisConnectionFactory);
     redisTemplate.setKeySerializer(keySerializer);
     redisTemplate.setHashKeySerializer(keySerializer);
@@ -110,6 +92,5 @@ public class CacheAutoConfigure extends CachingConfigurerSupport {
     redisTemplate.afterPropertiesSet();
     return redisTemplate;
   }
-
 
 }
