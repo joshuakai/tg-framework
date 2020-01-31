@@ -9,6 +9,7 @@ import com.tg.framework.commons.exception.NestedException;
 import com.tg.framework.commons.exception.NestedRuntimeException;
 import com.tg.framework.commons.exception.ParamException;
 import com.tg.framework.commons.exception.ParamInvalidException;
+import com.tg.framework.commons.exception.ParamRequiredException;
 import com.tg.framework.commons.exception.ResourceNotFoundException;
 import com.tg.framework.commons.http.exception.RequestHeaderRequiredException;
 import com.tg.framework.web.ip.RequestDetailsResolver;
@@ -25,6 +26,12 @@ import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingMatrixVariableException;
+import org.springframework.web.bind.MissingPathVariableException;
+import org.springframework.web.bind.MissingRequestCookieException;
+import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -71,6 +78,42 @@ public class DefaultExceptionHandler {
   public ErrorDTO handleException(Exception ex, HttpServletRequest request) {
     LOGGER.error(getLoggerTemplate(request), ex);
     return new ErrorDTO(ParamInvalidException.PRESENT_CODE, ex.getMessage());
+  }
+
+  @ExceptionHandler(MissingServletRequestParameterException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorDTO handleException(MissingServletRequestParameterException ex) {
+    return new ErrorDTO(ParamRequiredException.PRESENT_CODE, ex.getParameterName());
+  }
+
+  @ExceptionHandler(MissingRequestHeaderException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorDTO handleException(MissingRequestHeaderException ex) {
+    return new ErrorDTO(RequestHeaderRequiredException.PRESENT_CODE, ex.getHeaderName());
+  }
+
+  @ExceptionHandler(MissingRequestCookieException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorDTO handleException(MissingRequestCookieException ex) {
+    return new ErrorDTO("Http#CookieRequired", ex.getCookieName());
+  }
+
+  @ExceptionHandler(MissingPathVariableException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorDTO handleException(MissingPathVariableException ex) {
+    return new ErrorDTO("Http#PathVariableRequired", ex.getVariableName());
+  }
+
+  @ExceptionHandler(MissingMatrixVariableException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorDTO handleException(MissingMatrixVariableException ex) {
+    return new ErrorDTO("Http#MatrixVariableRequired", ex.getVariableName());
+  }
+
+  @ExceptionHandler(ServletRequestBindingException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorDTO handleException(ServletRequestBindingException ex) {
+    return new ErrorDTO(null, ex.getMessage());
   }
 
   private static String[] getErrors(BindingResult bindingResult) {

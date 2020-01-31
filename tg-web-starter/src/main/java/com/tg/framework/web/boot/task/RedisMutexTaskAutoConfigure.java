@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Configuration
@@ -32,17 +33,22 @@ public class RedisMutexTaskAutoConfigure {
 
   @Bean
   @ConditionalOnMissingBean
-  public RedisMutexTaskService mutexTaskService(RedisMutexTaskProperties redisMutexTaskProperties, RedisTemplate redisTemplate, ExecutorServiceFactory executorServiceFactory) {
-    RedisMutexTaskService redisMutexTaskService = new RedisMutexTaskService(redisTemplate, redisMutexTaskProperties.getKeyPrefix(), executorServiceFactory.get());
-    redisMutexTaskService.setInstanceId(resolveInstanceId(redisMutexTaskProperties.getInstanceId()));
+  public RedisMutexTaskService mutexTaskService(RedisMutexTaskProperties redisMutexTaskProperties,
+      RedisTemplate redisTemplate, ExecutorServiceFactory executorServiceFactory) {
+    RedisMutexTaskService redisMutexTaskService = new RedisMutexTaskService(redisTemplate,
+        redisMutexTaskProperties.getKeyPrefix(), executorServiceFactory.get());
+    redisMutexTaskService
+        .setInstanceId(resolveInstanceId(redisMutexTaskProperties.getInstanceId()));
     return redisMutexTaskService;
   }
 
   private String resolveInstanceId(String instanceId) {
-    return Stream.of(instanceId, consulInstanceId, applicationName).filter(StringUtils::isNotEmpty).findFirst().orElse(null);
+    return Stream.of(instanceId, consulInstanceId, applicationName).filter(StringUtils::isNotEmpty)
+        .findFirst().orElse(null);
   }
 
   @RestController
+  @RequestMapping("/api")
   static class MutexTaskController {
 
     @Resource
