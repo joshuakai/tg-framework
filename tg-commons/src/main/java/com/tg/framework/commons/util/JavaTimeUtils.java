@@ -5,6 +5,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -43,6 +44,10 @@ public class JavaTimeUtils {
 
   public static long milliseconds(LocalDateTime localDateTime) {
     return localDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+  }
+
+  public static LocalDateTime ofMilliseconds(long milliseconds) {
+    return Instant.ofEpochMilli(milliseconds).atZone(ZoneId.systemDefault()).toLocalDateTime();
   }
 
   public static SimpleDateFormat simpleDateFormat(String pattern, Locale locale, boolean lenient) {
