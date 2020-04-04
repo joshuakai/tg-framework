@@ -25,7 +25,8 @@ public class XForwardedRequestDetailsResolver implements RequestDetailsResolver 
     }
     boolean isProxyWhitelistAssigned = CollectionUtils.isNotEmpty(proxyWhitelist);
     return HttpUtils.isLocalhost(ip) || (!isProxyWhitelistAssigned && considerNoneAsTrustAll) || (
-        isProxyWhitelistAssigned && HttpUtils.isIpInWhitelist(ip, proxyWhitelist));
+        isProxyWhitelistAssigned && HttpUtils
+            .isIpInWhitelist(ip, proxyWhitelist, proxyWhitelistAcceptWildcard));
   }
 
   @Override
