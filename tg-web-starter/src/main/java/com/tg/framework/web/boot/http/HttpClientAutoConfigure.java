@@ -16,7 +16,10 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.BasicCookieStore;
@@ -40,6 +43,8 @@ import org.springframework.util.Assert;
 @ConditionalOnProperty(prefix = "tg.web.http-client", value = "enabled")
 @EnableConfigurationProperties(HttpClientProperties.class)
 public class HttpClientAutoConfigure {
+
+  private static final String HTTPS = "https";
 
   @Resource
   private HttpClientProperties httpClientProperties;
@@ -79,9 +84,11 @@ public class HttpClientAutoConfigure {
       return false;
     };
 
+    SSLConnectionSocketFactory sslSocketFactory = sslSocketFactory();
+
     return HttpClients.custom()
-        .setSSLSocketFactory(sslSocketFactory())
-        .setConnectionManager(connectionManager())
+        .setSSLSocketFactory(sslSocketFactory)
+        .setConnectionManager(connectionManager(sslSocketFactory))
         .setDefaultRequestConfig(
             RequestConfig.custom()
                 .setConnectionRequestTimeout(httpClientProperties.getConnectionRequestTimeout())
@@ -111,8 +118,11 @@ public class HttpClientAutoConfigure {
     }
   }
 
-  public PoolingHttpClientConnectionManager connectionManager() {
-    PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager();
+  public PoolingHttpClientConnectionManager connectionManager(SSLConnectionSocketFactory sslSocketFactory) {
+    Registry<ConnectionSocketFactory> sslSocketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
+        .register(HTTPS, sslSocketFactory)
+        .build();
+    PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(sslSocketFactoryRegistry);
     connectionManager.setMaxTotal(httpClientProperties.getMaxTotal());
     connectionManager.setDefaultMaxPerRoute(httpClientProperties.getDefaultMaxPerRoute());
     connectionManager.setValidateAfterInactivity(httpClientProperties.getValidateAfterInactivity());
