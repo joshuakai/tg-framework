@@ -67,6 +67,7 @@
     <spring-cloud-starter-feign.version>1.4.6.RELEASE</spring-cloud-starter-feign.version>
     <spring-cloud-starter-hystrix.version>1.4.6.RELEASE</spring-cloud-starter-hystrix.version>
     <easypoi.version>4.1.3</easypoi.version>
+    <jsoup.version>1.12.2</jsoup.version>
   </properties>
 
   <dependencyManagement>
@@ -265,6 +266,13 @@
         <groupId>cn.afterturn</groupId>
         <artifactId>easypoi-spring-boot-starter</artifactId>
         <version>${easypoi.version}</version>
+      </dependency>
+
+      <!-- https://mvnrepository.com/artifact/org.jsoup/jsoup -->
+      <dependency>
+        <groupId>org.jsoup</groupId>
+        <artifactId>jsoup</artifactId>
+        <version>${jsoup.version}</version>
       </dependency>
 
     </dependencies>

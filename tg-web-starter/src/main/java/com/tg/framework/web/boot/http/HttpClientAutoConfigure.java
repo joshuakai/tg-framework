@@ -12,6 +12,7 @@ import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolException;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.RequestConfig;
@@ -20,6 +21,7 @@ import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.BasicCookieStore;
@@ -44,14 +46,21 @@ import org.springframework.util.Assert;
 @EnableConfigurationProperties(HttpClientProperties.class)
 public class HttpClientAutoConfigure {
 
+  private static final String HTTP = "http";
   private static final String HTTPS = "https";
 
   @Resource
   private HttpClientProperties httpClientProperties;
 
+  @Bean("defaultCookieStore")
+  @ConditionalOnMissingBean(name = "defaultCookieStore")
+  public CookieStore cookieStore(){
+    return new BasicCookieStore();
+  }
+
   @Bean("defaultHttpClient")
   @ConditionalOnMissingBean(name = "defaultHttpClient")
-  public HttpClient httpClient() {
+  public HttpClient httpClient(CookieStore cookieStore) {
 
     HttpRequestRetryHandler retryHandler = (exception, executionCount, context) -> {
       if (executionCount >= httpClientProperties.getMaxRetryCount()) {
@@ -102,7 +111,7 @@ public class HttpClientAutoConfigure {
             httpClientProperties.getDisableRedirectionHeaderName()))
         .setKeepAliveStrategy(new ConfigurableConnectionKeepAliveStrategy(
             httpClientProperties.getDefaultKeepAliveDuration()))
-        .setDefaultCookieStore(new BasicCookieStore())
+        .setDefaultCookieStore(cookieStore)
         .addInterceptorLast(new RequestUserAgent(httpClientProperties.getDefaultUserAgent()))
         .build();
   }
@@ -120,6 +129,7 @@ public class HttpClientAutoConfigure {
 
   public PoolingHttpClientConnectionManager connectionManager(SSLConnectionSocketFactory sslSocketFactory) {
     Registry<ConnectionSocketFactory> sslSocketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
+        .register(HTTP, PlainConnectionSocketFactory.getSocketFactory())
         .register(HTTPS, sslSocketFactory)
         .build();
     PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(sslSocketFactoryRegistry);
