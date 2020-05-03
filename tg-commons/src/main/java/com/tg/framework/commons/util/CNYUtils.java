@@ -136,13 +136,37 @@ public class CNYUtils {
     return sum.setScale(4, BigDecimal.ROUND_HALF_UP).doubleValue();
   }
 
-  private static double convertAmount(double amount, CNYUnit unit, CNYUnit targetUnit) {
+  public static double convertAmount(double amount, CNYUnit unit, CNYUnit targetUnit) {
     if (unit == targetUnit) {
       return amount;
     }
     BigDecimal scale = BigDecimal.valueOf(unit.getScale())
         .divide(BigDecimal.valueOf(targetUnit.getScale()), 2, RoundingMode.HALF_UP);
     return BigDecimal.valueOf(amount).multiply(scale).doubleValue();
+  }
+
+  public static double convertYuanAsFen(double amount) {
+    return convertAmount(amount, CNYUnit.YUAN, CNYUnit.FEN);
+  }
+
+  public static double convertYuanAsJiao(double amount) {
+    return convertAmount(amount, CNYUnit.YUAN, CNYUnit.JIAO);
+  }
+
+  public static double convertJiaoAsFen(double amount) {
+    return convertAmount(amount, CNYUnit.JIAO, CNYUnit.FEN);
+  }
+
+  public static double convertJiaoAsYuan(double amount) {
+    return convertAmount(amount, CNYUnit.JIAO, CNYUnit.YUAN);
+  }
+
+  public static double convertFenAsJiao(double amount) {
+    return convertAmount(amount, CNYUnit.FEN, CNYUnit.JIAO);
+  }
+
+  public static double convertFenAsYuan(double amount) {
+    return convertAmount(amount, CNYUnit.FEN, CNYUnit.YUAN);
   }
 
   private static NumberFormat matchesNumberFormat(CNYUnit unit) {
