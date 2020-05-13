@@ -65,7 +65,7 @@ public class HttpUtils {
 
   private static final String WILDCARD = "*";
   private static final String PATTERN_WILDCARD = "\\*";
-  private static final String WILDCARD_REPLACER = "[0-9\\.]*";
+  private static final String WILDCARD_REPLACER = "[0-9.]*";
   private static final String IP_PATTERN_TEMPLATE = "^%s$";
 
 
