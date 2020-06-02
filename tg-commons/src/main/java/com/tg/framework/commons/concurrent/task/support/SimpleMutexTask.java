@@ -13,6 +13,7 @@ public class SimpleMutexTask implements MutexTask {
   private String title;
   private String startedBy;
   private LocalDateTime startedAt;
+  private String executeNode;
   private int totalSteps;
   private int finishedSteps;
   private boolean started;
@@ -64,6 +65,15 @@ public class SimpleMutexTask implements MutexTask {
 
   public void setStartedAt(LocalDateTime startedAt) {
     this.startedAt = startedAt;
+  }
+
+  @Override
+  public String getExecuteNode() {
+    return executeNode;
+  }
+
+  public void setExecuteNode(String executeNode) {
+    this.executeNode = executeNode;
   }
 
   @Override

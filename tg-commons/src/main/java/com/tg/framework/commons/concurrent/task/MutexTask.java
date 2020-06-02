@@ -16,6 +16,8 @@ public interface MutexTask extends Serializable {
 
   LocalDateTime getStartedAt();
 
+  String getExecuteNode();
+
   int getTotalSteps();
 
   int getFinishedSteps();

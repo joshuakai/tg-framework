@@ -10,6 +10,7 @@ public final class SimpleMutexTaskBuilder {
   private String title;
   private String startedBy;
   private LocalDateTime startedAt;
+  private String executeNode;
   private int totalSteps;
   private int finishedSteps;
   private boolean started;
@@ -47,6 +48,11 @@ public final class SimpleMutexTaskBuilder {
 
   public SimpleMutexTaskBuilder withStartedAt(LocalDateTime startedAt) {
     this.startedAt = startedAt;
+    return this;
+  }
+
+  public SimpleMutexTaskBuilder withExecuteNode(String executeNode) {
+    this.executeNode = executeNode;
     return this;
   }
 
@@ -92,6 +98,7 @@ public final class SimpleMutexTaskBuilder {
     simpleMutexTask.setTitle(title);
     simpleMutexTask.setStartedBy(startedBy);
     simpleMutexTask.setStartedAt(startedAt);
+    simpleMutexTask.setExecuteNode(executeNode);
     simpleMutexTask.setTotalSteps(totalSteps);
     simpleMutexTask.setFinishedSteps(finishedSteps);
     simpleMutexTask.setStarted(started);
