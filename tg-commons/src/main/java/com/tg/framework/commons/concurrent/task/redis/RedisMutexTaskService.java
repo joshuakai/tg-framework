@@ -345,26 +345,30 @@ public class RedisMutexTaskService implements MutexTaskService {
   }
 
   private static String resolveIpAddress() {
-    String spareIpAddress = null;
+    List<String> preferIpAddresses = new ArrayList<>();
+    List<String> spareIpAddresses = new ArrayList<>();
     try {
-      for (Enumeration<NetworkInterface> niIte = NetworkInterface.getNetworkInterfaces(); niIte.hasMoreElements(); ) {
+      for (Enumeration<NetworkInterface> niIte = NetworkInterface.getNetworkInterfaces();
+          niIte.hasMoreElements(); ) {
         NetworkInterface ni = niIte.nextElement();
-        for (Enumeration<InetAddress> iaIte = ni.getInetAddresses(); iaIte.hasMoreElements();) {
+        for (Enumeration<InetAddress> iaIte = ni.getInetAddresses(); iaIte.hasMoreElements(); ) {
           InetAddress ia = iaIte.nextElement();
           if (ia.isLoopbackAddress() || !(ia instanceof Inet4Address)) {
             continue;
           }
           if (!ia.isSiteLocalAddress()) {
-            return ia.getHostAddress();
-          } else if (spareIpAddress == null) {
-            spareIpAddress = ia.getHostAddress();
+            preferIpAddresses.add(ia.getHostAddress());
+          } else {
+            spareIpAddresses.add(ia.getHostAddress());
           }
         }
       }
     } catch (SocketException ignored) {
     }
-    if (spareIpAddress != null) {
-      return spareIpAddress;
+    List<String> ipAddresses = !preferIpAddresses.isEmpty() ? preferIpAddresses
+        : !spareIpAddresses.isEmpty() ? spareIpAddresses : null;
+    if (ipAddresses != null) {
+      return StringUtils.join(ipAddresses, ",");
     }
     try {
       return InetAddress.getLocalHost().getHostAddress();
