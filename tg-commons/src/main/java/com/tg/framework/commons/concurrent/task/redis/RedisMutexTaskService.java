@@ -13,8 +13,14 @@ import com.tg.framework.commons.concurrent.task.support.SimpleMutexTaskJobResult
 import com.tg.framework.commons.concurrent.task.support.SimpleMutexTaskJobResultBuilder;
 import com.tg.framework.commons.util.OptionalUtils;
 import java.io.Serializable;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -73,7 +79,8 @@ public class RedisMutexTaskService implements MutexTaskService {
       long historyKeepMillis)
       throws TaskMutexException {
     IdentityLock lock = new IdentityLock(System.currentTimeMillis(), instanceId);
-    RedisMutexTask task = new RedisMutexTask(key, lock, title, startedBy, historyKeepMillis);
+    RedisMutexTask task = new RedisMutexTask(key, lock, title, startedBy, resolveIpAddress(),
+        historyKeepMillis);
     if (BooleanUtils
         .isNotTrue(redisTemplate.opsForValue().setIfAbsent(formatKey(key, CURRENT_SUFFIX), task))) {
       throw new TaskMutexException(key, "Task exists.");
@@ -326,6 +333,7 @@ public class RedisMutexTaskService implements MutexTaskService {
         .withTitle(task.getTitle())
         .withStartedBy(task.getStartedBy())
         .withStartedAt(task.getStartedAt())
+        .withExecuteNode(task.getExecuteNode())
         .withTotalSteps(task.getTotalSteps())
         .withFinishedSteps(finishedSteps)
         .withStarted(started)
@@ -334,6 +342,35 @@ public class RedisMutexTaskService implements MutexTaskService {
         .withStoppedAt(task.getStoppedAt())
         .withResults(results)
         .build();
+  }
+
+  private static String resolveIpAddress() {
+    String spareIpAddress = null;
+    try {
+      for (Enumeration<NetworkInterface> niIte = NetworkInterface.getNetworkInterfaces(); niIte.hasMoreElements(); ) {
+        NetworkInterface ni = niIte.nextElement();
+        for (Enumeration<InetAddress> iaIte = ni.getInetAddresses(); iaIte.hasMoreElements();) {
+          InetAddress ia = iaIte.nextElement();
+          if (ia.isLoopbackAddress() || !(ia instanceof Inet4Address)) {
+            continue;
+          }
+          if (!ia.isSiteLocalAddress()) {
+            return ia.getHostAddress();
+          } else if (spareIpAddress == null) {
+            spareIpAddress = ia.getHostAddress();
+          }
+        }
+      }
+    } catch (SocketException ignored) {
+    }
+    if (spareIpAddress != null) {
+      return spareIpAddress;
+    }
+    try {
+      return InetAddress.getLocalHost().getHostAddress();
+    } catch (UnknownHostException e) {
+      return "Unknown";
+    }
   }
 
   private static class RedisMutexTask implements Serializable {
@@ -345,6 +382,7 @@ public class RedisMutexTaskService implements MutexTaskService {
     private String title;
     private String startedBy;
     private LocalDateTime startedAt;
+    private String executeNode;
     private int totalSteps;
     private boolean stopped;
     private boolean succeed;
@@ -355,11 +393,12 @@ public class RedisMutexTaskService implements MutexTaskService {
     }
 
     public RedisMutexTask(String key, IdentityLock lock, String title, String startedBy,
-        long historyKeepMillis) {
+        String executeNode, long historyKeepMillis) {
       this.key = key;
       this.lock = lock;
       this.title = title;
       this.startedBy = startedBy;
+      this.executeNode = executeNode;
       this.historyKeepMillis = historyKeepMillis;
     }
 
@@ -401,6 +440,14 @@ public class RedisMutexTaskService implements MutexTaskService {
 
     public void setStartedAt(LocalDateTime startedAt) {
       this.startedAt = startedAt;
+    }
+
+    public String getExecuteNode() {
+      return executeNode;
+    }
+
+    public void setExecuteNode(String executeNode) {
+      this.executeNode = executeNode;
     }
 
     public int getTotalSteps() {
