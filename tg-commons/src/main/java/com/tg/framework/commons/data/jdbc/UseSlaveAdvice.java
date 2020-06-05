@@ -11,13 +11,17 @@ public class UseSlaveAdvice implements MethodInterceptor {
 
   @Override
   public Object invoke(MethodInvocation invocation) throws Throwable {
-    DynamicDataSourceLookupKeyHolder.set(DynamicDataSourceLookupKey.SLAVE);
-    LOGGER.debug("Set current lookup key {}.", DynamicDataSourceLookupKey.SLAVE);
+    boolean changed = DynamicDataSourceLookupKeyHolder.set(DynamicDataSourceLookupKey.SLAVE);
+    if (changed) {
+      LOGGER.debug("Set current lookup key {}.", DynamicDataSourceLookupKey.SLAVE);
+    }
     try {
       return invocation.proceed();
     } finally {
-      DynamicDataSourceLookupKeyHolder.remove();
-      LOGGER.debug("Remove current lookup key.");
+      if (changed) {
+        DynamicDataSourceLookupKeyHolder.remove();
+        LOGGER.debug("Remove current lookup key.");
+      }
     }
   }
 }

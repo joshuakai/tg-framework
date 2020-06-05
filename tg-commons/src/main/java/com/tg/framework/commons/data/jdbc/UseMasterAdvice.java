@@ -11,15 +11,15 @@ public class UseMasterAdvice implements MethodInterceptor {
 
   @Override
   public Object invoke(MethodInvocation invocation) throws Throwable {
-    DynamicDataSourceLookupKeyHolder.set(DynamicDataSourceLookupKey.MASTER);
-    if (LOGGER.isDebugEnabled()) {
+    boolean changed = DynamicDataSourceLookupKeyHolder.set(DynamicDataSourceLookupKey.MASTER);
+    if (changed) {
       LOGGER.debug("Set current lookup key {}.", DynamicDataSourceLookupKey.MASTER);
     }
     try {
       return invocation.proceed();
     } finally {
-      DynamicDataSourceLookupKeyHolder.remove();
-      if (LOGGER.isDebugEnabled()) {
+      if (changed) {
+        DynamicDataSourceLookupKeyHolder.remove();
         LOGGER.debug("Remove current lookup key.");
       }
     }
