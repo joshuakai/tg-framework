@@ -21,13 +21,17 @@ public class DynamicDataSourceAspect {
     Method method = ((MethodSignature) pjp.getSignature()).getMethod();
     UseDataSource useDataSource = method.getAnnotation(UseDataSource.class);
     DynamicDataSourceLookupKey lookupKey = useDataSource.value();
-    DynamicDataSourceLookupKeyHolder.set(lookupKey);
-    LOGGER.debug("Set current lookup key {}.", lookupKey);
+    boolean changed = DynamicDataSourceLookupKeyHolder.set(lookupKey);
+    if (changed) {
+      LOGGER.debug("Set current lookup key {}.", lookupKey);
+    }
     try {
       return pjp.proceed();
     } finally {
-      DynamicDataSourceLookupKeyHolder.remove();
-      LOGGER.debug("Remove current lookup key.");
+      if (changed) {
+        DynamicDataSourceLookupKeyHolder.remove();
+        LOGGER.debug("Remove current lookup key.");
+      }
     }
   }
 
