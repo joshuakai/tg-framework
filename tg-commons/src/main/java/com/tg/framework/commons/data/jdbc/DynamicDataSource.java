@@ -11,7 +11,10 @@ public class DynamicDataSource extends AbstractRoutingDataSource {
 
   private static Logger logger = LoggerFactory.getLogger(DynamicDataSource.class);
 
-  public DynamicDataSource(DataSource master, DataSource slave) {
+  private DynamicDataSourceContext context;
+
+  public DynamicDataSource(DynamicDataSourceContext context, DataSource master, DataSource slave) {
+    this.context = context;
     Map<Object, Object> map = new HashMap<>(2);
     map.put(DynamicDataSourceLookupKey.MASTER, master);
     map.put(DynamicDataSourceLookupKey.SLAVE, slave);
@@ -21,7 +24,7 @@ public class DynamicDataSource extends AbstractRoutingDataSource {
 
   @Override
   protected Object determineCurrentLookupKey() {
-    DynamicDataSourceLookupKey lookupKey = DynamicDataSourceLookupKeyHolder.get();
+    DynamicDataSourceLookupKey lookupKey = context.get();
     logger.debug("Determine current lookup key {}.", lookupKey);
     return lookupKey;
   }

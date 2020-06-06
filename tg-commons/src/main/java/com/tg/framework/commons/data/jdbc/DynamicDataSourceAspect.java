@@ -16,20 +16,28 @@ public class DynamicDataSourceAspect {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DynamicDataSourceAspect.class);
 
+  private DynamicDataSourceContext context;
+
+  public DynamicDataSourceAspect(DynamicDataSourceContext context) {
+    this.context = context;
+  }
+
   @Around("@annotation(com.tg.framework.commons.data.jdbc.UseDataSource)")
   public Object invoke(ProceedingJoinPoint pjp) throws Throwable {
     Method method = ((MethodSignature) pjp.getSignature()).getMethod();
     UseDataSource useDataSource = method.getAnnotation(UseDataSource.class);
-    DynamicDataSourceLookupKey lookupKey = useDataSource.value();
-    boolean changed = DynamicDataSourceLookupKeyHolder.set(lookupKey);
-    if (changed) {
+    boolean changed = false;
+    if (context.get() == null) {
+      DynamicDataSourceLookupKey lookupKey = useDataSource.value();
+      context.set(lookupKey);
       LOGGER.debug("Set current lookup key {}.", lookupKey);
+      changed = true;
     }
     try {
       return pjp.proceed();
     } finally {
       if (changed) {
-        DynamicDataSourceLookupKeyHolder.remove();
+        context.remove();
         LOGGER.debug("Remove current lookup key.");
       }
     }

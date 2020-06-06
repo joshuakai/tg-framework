@@ -5,9 +5,9 @@ import org.springframework.core.Ordered;
 
 public class UseMasterAspect extends AspectJExpressionPointcutAdvisor {
 
-  public UseMasterAspect(String expression) {
+  public UseMasterAspect(String expression, DynamicDataSourceContext context) {
     setExpression(expression);
     setOrder(Ordered.HIGHEST_PRECEDENCE);
-    setAdvice(new UseMasterAdvice());
+    setAdvice(new UseMasterAdvice(context));
   }
 }

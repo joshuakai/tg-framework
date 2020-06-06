@@ -9,17 +9,26 @@ public class UseMasterAdvice implements MethodInterceptor {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(UseMasterAdvice.class);
 
+  private DynamicDataSourceContext context;
+
+  public UseMasterAdvice(DynamicDataSourceContext context) {
+    this.context = context;
+  }
+
   @Override
   public Object invoke(MethodInvocation invocation) throws Throwable {
-    boolean changed = DynamicDataSourceLookupKeyHolder.set(DynamicDataSourceLookupKey.MASTER);
-    if (changed) {
-      LOGGER.debug("Set current lookup key {}.", DynamicDataSourceLookupKey.MASTER);
+    boolean changed = false;
+    if (context.get() == null) {
+      DynamicDataSourceLookupKey lookupKey = DynamicDataSourceLookupKey.MASTER;
+      context.set(lookupKey);
+      LOGGER.debug("Set current lookup key {}.", lookupKey);
+      changed = true;
     }
     try {
       return invocation.proceed();
     } finally {
       if (changed) {
-        DynamicDataSourceLookupKeyHolder.remove();
+        context.remove();
         LOGGER.debug("Remove current lookup key.");
       }
     }

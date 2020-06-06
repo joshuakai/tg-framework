@@ -2,6 +2,7 @@ package com.tg.framework.web.boot.jdbc;
 
 import com.tg.framework.commons.data.jdbc.DynamicDataSource;
 import com.tg.framework.commons.data.jdbc.DynamicDataSourceAspect;
+import com.tg.framework.commons.data.jdbc.DynamicDataSourceContext;
 import com.tg.framework.commons.data.jdbc.UseMaster;
 import com.tg.framework.commons.data.jdbc.UseMasterAspect;
 import com.tg.framework.commons.data.jdbc.UseSlave;
@@ -28,15 +29,21 @@ public class DynamicDataSourceAutoConfigure {
   private static final String USE_SLAVE_POINTCUT = "@annotation(" + UseSlave.class.getName() + ")";
 
   @Bean
+  public DynamicDataSourceContext dynamicDataSourceContext() {
+    return new DynamicDataSourceContext();
+  }
+
+  @Bean
   public DataSource dataSource(DynamicDataSourceProperties dynamicDataSourceProperties) {
-    return new DynamicDataSource(new HikariDataSource(dynamicDataSourceProperties.getMaster()),
+    return new DynamicDataSource(dynamicDataSourceContext(),
+        new HikariDataSource(dynamicDataSourceProperties.getMaster()),
         new HikariDataSource(dynamicDataSourceProperties.getSlave()));
   }
 
   @Bean
   @ConditionalOnProperty(prefix = "tg.datasource.use-datasource", value = "enabled", matchIfMissing = true)
   public DynamicDataSourceAspect dynamicDataSourceAspect() {
-    return new DynamicDataSourceAspect();
+    return new DynamicDataSourceAspect(dynamicDataSourceContext());
   }
 
   @Bean
@@ -45,15 +52,22 @@ public class DynamicDataSourceAutoConfigure {
       DynamicDataSourceProperties dynamicDataSourceProperties) {
     return new UseMasterAspect(
         OptionalUtils.notEmpty(dynamicDataSourceProperties.getMasterPointcut())
-            .map(p -> USE_MASTER_POINTCUT + " or (" + p + ")").orElse(USE_MASTER_POINTCUT));
+            .map(p -> USE_MASTER_POINTCUT + " or (" + p + ")")
+            .orElse(USE_MASTER_POINTCUT),
+        dynamicDataSourceContext()
+    );
   }
 
   @Bean
   @ConditionalOnProperty(prefix = "tg.datasource.use-slave", value = "enabled", matchIfMissing = true)
   public AspectJExpressionPointcutAdvisor useSlaveAspect(
       DynamicDataSourceProperties dynamicDataSourceProperties) {
-    return new UseSlaveAspect(OptionalUtils.notEmpty(dynamicDataSourceProperties.getSlavePointcut())
-        .map(p -> USE_SLAVE_POINTCUT + " or (" + p + ")").orElse(USE_SLAVE_POINTCUT));
+    return new UseSlaveAspect(
+        OptionalUtils.notEmpty(dynamicDataSourceProperties.getSlavePointcut())
+            .map(p -> USE_SLAVE_POINTCUT + " or (" + p + ")")
+            .orElse(USE_SLAVE_POINTCUT),
+        dynamicDataSourceContext()
+    );
   }
 
 }
