@@ -3,11 +3,11 @@ package com.tg.framework.commons.data.jdbc;
 import org.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor;
 import org.springframework.core.Ordered;
 
-public class UseMasterAspect extends AspectJExpressionPointcutAdvisor {
+public class MasterOnlyAspect extends AspectJExpressionPointcutAdvisor {
 
-  public UseMasterAspect(String expression, DynamicDataSourceContext context) {
+  public MasterOnlyAspect(String expression, MasterOnlyContext context) {
     setExpression(expression);
     setOrder(Ordered.HIGHEST_PRECEDENCE);
-    setAdvice(new UseMasterAdvice(context));
+    setAdvice(new MasterOnlyAdvice(context));
   }
 }
