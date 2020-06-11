@@ -12,10 +12,10 @@ public abstract class AbstractEntity implements Serializable {
 
   private static final long serialVersionUID = -4310185734158672574L;
 
-  private Long id;
-
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
+  protected Long id;
+
   public Long getId() {
     return this.id;
   }
