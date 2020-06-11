@@ -15,7 +15,7 @@
     <dependency>
       <groupId>com.tg.framework</groupId>
       <artifactId>tg-commons</artifactId>
-      <version>0.9.0</version>
+      <version>${tg-framework.version}</version>
     </dependency>
     <dependency>
       <groupId>com.zaxxer</groupId>
