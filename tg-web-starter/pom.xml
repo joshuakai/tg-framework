@@ -14,8 +14,19 @@
   <dependencies>
     <dependency>
       <groupId>com.tg.framework</groupId>
+      <artifactId>tg-data-commons</artifactId>
+      <version>${tg-framework.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.tg.framework</groupId>
+      <artifactId>tg-data-jpa</artifactId>
+      <version>${tg-framework.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.tg.framework</groupId>
       <artifactId>tg-web</artifactId>
-      <version>0.9.0</version>
+      <version>${tg-framework.version}</version>
     </dependency>
     <dependency>
       <groupId>mysql</groupId>

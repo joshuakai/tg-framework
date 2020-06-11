@@ -1,11 +1,11 @@
 package com.tg.framework.web.boot.jdbc;
 
-import com.tg.framework.commons.data.jdbc.MasterOnly;
-import com.tg.framework.commons.data.jdbc.MasterOnlyAspect;
-import com.tg.framework.commons.data.jdbc.MasterOnlyContext;
-import com.tg.framework.commons.data.jdbc.MasterSlaveDataSource;
-import com.tg.framework.commons.data.jdbc.MasterSlaveJpaTransactionManager;
+import com.tg.framework.data.commons.masterslave.annotation.MasterOnly;
+import com.tg.framework.data.commons.masterslave.aop.MasterOnlyAspect;
+import com.tg.framework.data.commons.masterslave.context.MasterOnlyContext;
+import com.tg.framework.data.commons.masterslave.datasource.MasterSlaveDataSource;
 import com.tg.framework.commons.util.OptionalUtils;
+import com.tg.framework.data.jpa.boot.MasterSlaveJpaTransactionManager;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import java.util.Map;
@@ -58,6 +58,7 @@ public class MasterSlaveDataSourceAutoConfigure {
   }
 
   @Bean
+  @ConditionalOnClass(MasterSlaveJpaTransactionManager.class)
   public PlatformTransactionManager transactionManager(MasterOnlyContext context) {
     return new MasterSlaveJpaTransactionManager(context);
   }

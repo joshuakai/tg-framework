@@ -31,6 +31,8 @@
     <module>tg-parent</module>
     <module>tg-beans</module>
     <module>tg-commons</module>
+    <module>tg-data-commons</module>
+    <module>tg-data-jpa</module>
     <module>tg-web</module>
     <module>tg-web-starter</module>
     <module>tg-cloud-starter</module>
@@ -42,6 +44,8 @@
     <java.version>1.8</java.version>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
+
+    <tg-framework.version>0.9.0</tg-framework.version>
 
     <commons-lang3.version>3.8.1</commons-lang3.version>
     <commons-collections4.version>4.2</commons-collections4.version>

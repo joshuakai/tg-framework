@@ -9,31 +9,23 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>tg-cloud-starter</artifactId>
+  <artifactId>tg-data-jpa</artifactId>
+
 
   <dependencies>
     <dependency>
       <groupId>com.tg.framework</groupId>
-      <artifactId>tg-web-starter</artifactId>
+      <artifactId>tg-data-commons</artifactId>
       <version>${tg-framework.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-actuator</artifactId>
+      <groupId>javax.persistence</groupId>
+      <artifactId>javax.persistence-api</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-starter-consul-config</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-starter-consul-discovery</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-starter-oauth2</artifactId>
+      <groupId>org.springframework.data</groupId>
+      <artifactId>spring-data-jpa</artifactId>
     </dependency>
   </dependencies>
-
 
 </project>
