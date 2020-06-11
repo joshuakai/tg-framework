@@ -1,20 +1,18 @@
 package com.tg.framework.data.jpa.entity;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import javax.persistence.Column;
-import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @MappedSuperclass
-@EntityListeners(AuditingEntityListener.class)
-public abstract class AbstractAuditingEntity extends AbstractEntity {
+public abstract class AbstractNoneIdAuditingEntity implements Serializable {
 
-  private static final long serialVersionUID = -6822940944657705278L;
+  private static final long serialVersionUID = -4812326599168760361L;
 
   @Column(nullable = false)
   @CreatedDate
@@ -60,5 +58,4 @@ public abstract class AbstractAuditingEntity extends AbstractEntity {
   public void setLastModifiedBy(String lastModifiedBy) {
     this.lastModifiedBy = lastModifiedBy;
   }
-
 }
