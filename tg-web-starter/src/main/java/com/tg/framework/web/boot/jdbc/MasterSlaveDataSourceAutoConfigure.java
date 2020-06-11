@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -24,7 +23,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Configuration
 @ConditionalOnClass({DataSource.class, HikariConfig.class})
 @ConditionalOnProperty(prefix = "tg.datasource", value = "enabled", matchIfMissing = true)
-@ConditionalOnMissingBean(DataSource.class)
 @EnableConfigurationProperties(MasterSlaveDataSourceProperties.class)
 public class MasterSlaveDataSourceAutoConfigure {
 
