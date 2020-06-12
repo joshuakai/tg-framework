@@ -6,6 +6,7 @@ import com.tg.framework.web.boot.http.HttpClientAutoConfigure;
 import com.tg.framework.web.boot.http.RestTemplateAutoConfigure;
 import com.tg.framework.web.boot.http.XForwardedAutoConfigure;
 import com.tg.framework.web.boot.jdbc.MasterSlaveDataSourceAutoConfigure;
+import com.tg.framework.web.boot.jpa.JpaAutoConfigure;
 import com.tg.framework.web.boot.lock.RedisLockAutoConfigure;
 import com.tg.framework.web.boot.lock.ScheduledClusterAutoConfigure;
 import com.tg.framework.web.boot.mvc.SecurityWebMvcAutoConfigure;
@@ -18,6 +19,7 @@ import org.springframework.context.annotation.Import;
 @Configuration
 @Import({
     MasterSlaveDataSourceAutoConfigure.class,
+    JpaAutoConfigure.class,
     TransactionInterceptorAutoConfigure.class,
     CacheAutoConfigure.class,
     AuditingAutoConfigure.class,

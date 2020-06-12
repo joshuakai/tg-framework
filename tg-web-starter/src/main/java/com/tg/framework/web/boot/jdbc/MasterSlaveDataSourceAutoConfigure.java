@@ -1,10 +1,10 @@
 package com.tg.framework.web.boot.jdbc;
 
+import com.tg.framework.commons.util.OptionalUtils;
 import com.tg.framework.data.commons.masterslave.annotation.MasterOnly;
 import com.tg.framework.data.commons.masterslave.aop.MasterOnlyAspect;
 import com.tg.framework.data.commons.masterslave.context.MasterOnlyContext;
 import com.tg.framework.data.commons.masterslave.datasource.MasterSlaveDataSource;
-import com.tg.framework.commons.util.OptionalUtils;
 import com.tg.framework.data.jpa.boot.MasterSlaveJpaTransactionManager;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.springframework.aop.aspectj.AspectJExpressionPointcutAdvisor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -55,12 +56,6 @@ public class MasterSlaveDataSourceAutoConfigure {
             .orElse(MASTER_ONLY_POINTCUT),
         context
     );
-  }
-
-  @Bean
-  @ConditionalOnClass(MasterSlaveJpaTransactionManager.class)
-  public PlatformTransactionManager transactionManager(MasterOnlyContext context) {
-    return new MasterSlaveJpaTransactionManager(context);
   }
 
 }
