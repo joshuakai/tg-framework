@@ -19,9 +19,13 @@
     </dependency>
     <dependency>
       <groupId>com.tg.framework</groupId>
+      <artifactId>tg-data-commons</artifactId>
+      <version>${tg-framework.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.tg.framework</groupId>
       <artifactId>tg-data-jpa</artifactId>
       <version>${tg-framework.version}</version>
-      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>com.querydsl</groupId>
@@ -40,10 +44,6 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-pool2</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>javax.persistence</groupId>
-      <artifactId>javax.persistence-api</artifactId>
     </dependency>
     <dependency>
       <groupId>ma.glasnost.orika</groupId>

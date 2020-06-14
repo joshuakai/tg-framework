@@ -18,6 +18,18 @@
       <version>${tg-framework.version}</version>
     </dependency>
     <dependency>
+      <groupId>com.tg.framework</groupId>
+      <artifactId>tg-data-commons</artifactId>
+      <version>${tg-framework.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.tg.framework</groupId>
+      <artifactId>tg-data-jpa</artifactId>
+      <version>${tg-framework.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
       <groupId>com.zaxxer</groupId>
       <artifactId>HikariCP</artifactId>
       <optional>true</optional>
