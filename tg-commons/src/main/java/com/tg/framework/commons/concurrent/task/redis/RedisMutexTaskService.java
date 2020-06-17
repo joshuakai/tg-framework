@@ -7,7 +7,7 @@ import com.tg.framework.commons.concurrent.task.MutexTaskJob;
 import com.tg.framework.commons.concurrent.task.MutexTaskJobResult;
 import com.tg.framework.commons.concurrent.task.MutexTaskJobStatus;
 import com.tg.framework.commons.concurrent.task.MutexTaskService;
-import com.tg.framework.commons.concurrent.task.exception.TaskMutexException;
+import com.tg.framework.commons.concurrent.task.TaskMutexException;
 import com.tg.framework.commons.concurrent.task.support.SimpleMutexTaskBuilder;
 import com.tg.framework.commons.concurrent.task.support.SimpleMutexTaskJobResult;
 import com.tg.framework.commons.concurrent.task.support.SimpleMutexTaskJobResultBuilder;
@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -55,26 +56,28 @@ public class RedisMutexTaskService implements MutexTaskService {
   private static final String FINISHED_STEPS_SUFFIX_LIKE = ":finished_steps*";
 
   private ExecutorService executorService;
+  @SuppressWarnings("rawtypes")
   private RedisTemplate redisTemplate;
   private String keyPrefix;
   private String instanceId;
 
-  public RedisMutexTaskService(RedisTemplate redisTemplate, ExecutorService executorService) {
+  public RedisMutexTaskService(@SuppressWarnings("rawtypes") RedisTemplate redisTemplate,
+      ExecutorService executorService) {
     this(redisTemplate, DEFAULT_KEY_PREFIX, executorService);
   }
 
-  public RedisMutexTaskService(RedisTemplate redisTemplate, String keyPrefix,
-      ExecutorService executorService) {
-    Assert.notNull(redisTemplate, "RedisTemplate must not be null.");
-    Assert.isTrue(StringUtils.isNotBlank(keyPrefix), "keyPrefix must not be blank.");
-    Assert.notNull(executorService, "ExecutorService must not be null.");
+  public RedisMutexTaskService(@SuppressWarnings("rawtypes") RedisTemplate redisTemplate,
+      String keyPrefix, ExecutorService executorService) {
+    Assert.notNull(redisTemplate, "A redis template must be set");
+    Assert.hasText(keyPrefix, "Key prefix must not be null or empty");
+    Assert.notNull(executorService, "A executor service must be set");
     this.redisTemplate = redisTemplate;
     this.keyPrefix = keyPrefix;
     this.executorService = executorService;
   }
 
-  @SuppressWarnings({"unchecked", "ConstantConditions"})
   @Override
+  @SuppressWarnings({"unchecked", "ConstantConditions"})
   public IdentityLock tryStarting(String key, String title, String startedBy,
       long historyKeepMillis)
       throws TaskMutexException {
@@ -83,7 +86,7 @@ public class RedisMutexTaskService implements MutexTaskService {
         historyKeepMillis);
     if (BooleanUtils
         .isNotTrue(redisTemplate.opsForValue().setIfAbsent(formatKey(key, CURRENT_SUFFIX), task))) {
-      throw new TaskMutexException(key, "Task exists.");
+      throw new TaskMutexException("Task is already running", key);
     }
     redisTemplate.delete(
         Stream
@@ -99,8 +102,8 @@ public class RedisMutexTaskService implements MutexTaskService {
     return lock;
   }
 
-  @SuppressWarnings("unchecked")
   @Override
+  @SuppressWarnings("unchecked")
   public MutexTask get(String key) {
     RedisMutexTask task = (RedisMutexTask) redisTemplate.opsForValue()
         .get(formatKey(key, CURRENT_SUFFIX));
@@ -124,20 +127,11 @@ public class RedisMutexTaskService implements MutexTaskService {
     }
   }
 
-  private static void validateParams(String key, IdentityLock lock, MutexTaskContext context)
-      throws TaskMutexException {
-    if (StringUtils.isBlank(key)) {
-      throw new TaskMutexException("key must not be empty.", key);
-    }
-    if (lock == null) {
-      throw new TaskMutexException("lock must not be null.", key);
-    }
-    if (context == null) {
-      throw new TaskMutexException("MutexTaskContext must not be null.", key);
-    }
-    if (CollectionUtils.isEmpty(context.getMainJobs())) {
-      throw new TaskMutexException("MutexTaskContext.mainJobs must not be empty.", key);
-    }
+  private static void checkArgs(String key, IdentityLock lock, MutexTaskContext context) {
+    Assert.hasText(key, "A key with text must be given");
+    Assert.notNull(lock, "A identity lock must be given");
+    Assert.notNull(context, "A mutex task context must be given");
+    Assert.notEmpty(context.getMainJobs(), "A mutex task context with main jobs must be given");
   }
 
   @SuppressWarnings("unchecked")
@@ -145,12 +139,12 @@ public class RedisMutexTaskService implements MutexTaskService {
     RedisMutexTask redisMutexTask = (RedisMutexTask) redisTemplate.opsForValue()
         .get(formatKey(key, CURRENT_SUFFIX));
     if (redisMutexTask == null || !Objects.equals(redisMutexTask.getLock(), lock)) {
-      throw new TaskMutexException("Task not found.", key);
+      throw new TaskMutexException("Task is not found", key);
     }
 
     if (BooleanUtils.isNotTrue(
         redisTemplate.opsForValue().setIfAbsent(formatKey(key, CURRENT_STARTED_SUFFIX), true))) {
-      throw new TaskMutexException("Task started.", key);
+      throw new TaskMutexException("Task is already running", key);
     }
     return redisMutexTask;
   }
@@ -173,20 +167,20 @@ public class RedisMutexTaskService implements MutexTaskService {
       final List<MutexTaskJob> preparingJobs = context.getPreparingJobs();
       final List<MutexTaskJob> mainJobs = context.getMainJobs();
       final List<MutexTaskJob> finishingJobs = context.getFinishingJobs();
-      final List<CompletableFuture> preparingFeatures = new ArrayList<>();
-      final List<CompletableFuture> mainFeatures = new ArrayList<>();
-      final List<CompletableFuture> finishingFeatures = new ArrayList<>();
-      final Callable preparingCanceller = () -> {
+      final List<CompletableFuture<?>> preparingFeatures = new ArrayList<>();
+      final List<CompletableFuture<?>> mainFeatures = new ArrayList<>();
+      final List<CompletableFuture<?>> finishingFeatures = new ArrayList<>();
+      final Callable<Void> preparingCanceller = () -> {
         logger.info("Cancel task {} while preparing.", task);
         preparingFeatures.forEach(cf -> cf.cancel(true));
         return null;
       };
-      final Callable mainCanceller = () -> {
+      final Callable<Void> mainCanceller = () -> {
         logger.info("Cancel task {} while executing main.", task);
         mainFeatures.forEach(cf -> cf.cancel(true));
         return null;
       };
-      final Callable finishingCanceller = () -> {
+      final Callable<Void> finishingCanceller = () -> {
         logger.info("Cancel task {} while finishing.", task);
         finishingFeatures.forEach(cf -> cf.cancel(true));
         return null;
@@ -203,8 +197,10 @@ public class RedisMutexTaskService implements MutexTaskService {
         handleJobs(redisMutexTask, redisTemplate, resultsKey, finishingJobs, finishingFeatures,
             finishingCanceller, executorService, false, finishedStepsKey);
       }
-      int totalSteps = Stream.of(preparingFeatures, mainFeatures, finishingFeatures).map(List::size)
-          .reduce((i, s) -> i + s).orElse(0);
+      int totalSteps = Stream.of(preparingFeatures, mainFeatures, finishingFeatures)
+          .map(List::size)
+          .reduce(Integer::sum)
+          .orElse(0);
       finish(redisTemplate, currentKey, totalSteps, currentStartedKey, finishedStepsKey, resultsKey,
           previousKey, lock);
     }, executorService);
@@ -214,7 +210,7 @@ public class RedisMutexTaskService implements MutexTaskService {
   @Override
   public MutexTask start(String key, IdentityLock lock, MutexTaskContext context)
       throws TaskMutexException {
-    validateParams(key, lock, context);
+    checkArgs(key, lock, context);
     return innerStart(ensureTask(key, lock), key, lock, context);
   }
 
@@ -222,7 +218,7 @@ public class RedisMutexTaskService implements MutexTaskService {
   public CompletableFuture<MutexTask> startAsync(String key, IdentityLock lock,
       MutexTaskContext context)
       throws TaskMutexException {
-    validateParams(key, lock, context);
+    checkArgs(key, lock, context);
     final RedisMutexTask redisMutexTask = ensureTask(key, lock);
     return CompletableFuture
         .supplyAsync(() -> innerStart(redisMutexTask, key, lock, context), executorService);
@@ -237,10 +233,10 @@ public class RedisMutexTaskService implements MutexTaskService {
   }
 
   @SuppressWarnings("unchecked")
-  private static void handleJobs(RedisMutexTask task, RedisTemplate redisTemplate,
-      String resultsKey, List<MutexTaskJob> jobs, List<CompletableFuture> futures,
-      Callable canceller, ExecutorService executorService, boolean isMain,
-      String finishedStepsKey) {
+  private static void handleJobs(RedisMutexTask task,
+      @SuppressWarnings("rawtypes") RedisTemplate redisTemplate, String resultsKey,
+      List<MutexTaskJob> jobs, List<CompletableFuture<?>> futures, Callable<Void> canceller,
+      ExecutorService executorService, boolean isMain, String finishedStepsKey) {
     if (CollectionUtils.isEmpty(jobs)) {
       return;
     }
@@ -262,8 +258,13 @@ public class RedisMutexTaskService implements MutexTaskService {
               )
               .exceptionally(
                   ex -> {
-                    builder.withSucceed(false).withMessage(ex.getMessage());
-                    logger.error("Failed to execute job {} {}.", task, job, ex);
+                    if (ex instanceof CompletionException && ex.getCause() != null) {
+                      builder.withSucceed(false).withMessage(ex.getCause().getMessage());
+                      logger.error("Failed to execute job {} {}.", task, job, ex.getCause());
+                    } else {
+                      builder.withSucceed(false).withMessage(ex.getMessage());
+                      logger.error("Failed to execute job {} {}.", task, job, ex);
+                    }
                     return null;
                   }
               )
@@ -282,7 +283,8 @@ public class RedisMutexTaskService implements MutexTaskService {
   }
 
   @SuppressWarnings("unchecked")
-  private void finish(RedisTemplate redisTemplate, String currentKey, int totalSteps,
+  private void finish(@SuppressWarnings("rawtypes") RedisTemplate redisTemplate, String currentKey,
+      int totalSteps,
       String currentStartedKey, String finishedStepsKey, String resultsKey, String previousKey,
       IdentityLock lock) {
     RedisMutexTask task = (RedisMutexTask) redisTemplate.opsForValue().get(currentKey);

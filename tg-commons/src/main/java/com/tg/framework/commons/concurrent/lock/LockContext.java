@@ -1,29 +1,23 @@
 package com.tg.framework.commons.concurrent.lock;
 
-import com.tg.framework.commons.concurrent.lock.exception.LockMutexException;
-import com.tg.framework.commons.concurrent.lock.exception.LockTimeoutException;
-
 public class LockContext {
 
   private String key;
   private boolean mutex;
-  private Class<? extends LockMutexException> mutexException;
   private long timeoutMillis;
-  private Class<? extends LockTimeoutException> timeoutException;
   private long sleepMillis;
+  private String message;
 
   public LockContext() {
   }
 
-  public LockContext(String key, boolean mutex, Class<? extends LockMutexException> mutexException,
-      long timeoutMillis, Class<? extends LockTimeoutException> timeoutException,
-      long sleepMillis) {
+  public LockContext(String key, boolean mutex, long timeoutMillis, long sleepMillis,
+      String message) {
     this.key = key;
     this.mutex = mutex;
-    this.mutexException = mutexException;
     this.timeoutMillis = timeoutMillis;
-    this.timeoutException = timeoutException;
     this.sleepMillis = sleepMillis;
+    this.message = message;
   }
 
   public String getKey() {
@@ -42,30 +36,12 @@ public class LockContext {
     this.mutex = mutex;
   }
 
-  public Class<? extends LockMutexException> getMutexException() {
-    return mutexException;
-  }
-
-  public void setMutexException(
-      Class<? extends LockMutexException> mutexException) {
-    this.mutexException = mutexException;
-  }
-
   public long getTimeoutMillis() {
     return timeoutMillis;
   }
 
   public void setTimeoutMillis(long timeoutMillis) {
     this.timeoutMillis = timeoutMillis;
-  }
-
-  public Class<? extends LockTimeoutException> getTimeoutException() {
-    return timeoutException;
-  }
-
-  public void setTimeoutException(
-      Class<? extends LockTimeoutException> timeoutException) {
-    this.timeoutException = timeoutException;
   }
 
   public long getSleepMillis() {
@@ -76,15 +52,12 @@ public class LockContext {
     this.sleepMillis = sleepMillis;
   }
 
-  @Override
-  public String toString() {
-    return "LockContext{" +
-        "key='" + key + '\'' +
-        ", mutex=" + mutex +
-        ", mutexException=" + mutexException +
-        ", timeoutMillis=" + timeoutMillis +
-        ", timeoutException=" + timeoutException +
-        ", sleepMillis=" + sleepMillis +
-        '}';
+  public String getMessage() {
+    return message;
   }
+
+  public void setMessage(String message) {
+    this.message = message;
+  }
+
 }

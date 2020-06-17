@@ -1,11 +1,10 @@
 package com.tg.framework.commons.concurrent.lock.redis;
 
+import com.tg.framework.commons.concurrent.AbstractExpressionAspect;
 import com.tg.framework.commons.concurrent.lock.IdentityLock;
 import com.tg.framework.commons.concurrent.lock.LockContext;
-import com.tg.framework.commons.expression.AbstractExpressionAspect;
 import java.lang.reflect.Method;
 import java.util.Optional;
-import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -36,10 +35,10 @@ public class RedisLockAspect extends AbstractExpressionAspect {
 
   public RedisLockAspect(RedisLockService redisLockService, String keyPrefix,
       long defaultTimeoutMillis) {
-    Assert.notNull(redisLockService, "RedisLockService must not be null.");
-    Assert.isTrue(StringUtils.isNotBlank(keyPrefix), "Key prefix must not be empty.");
+    Assert.notNull(redisLockService, "A redis lock service must bet set");
+    Assert.hasText(keyPrefix, "Key prefix must not be null or empty");
     Assert.isTrue(defaultTimeoutMillis >= DEFAULT_TIMEOUT_MILLIS,
-        "Default timeout millis must be greater than -1L.");
+        "Default timeout millis must be greater than -1");
     this.redisLockService = redisLockService;
     this.keyPrefix = keyPrefix;
     this.defaultTimeoutMillis = defaultTimeoutMillis;
@@ -64,8 +63,8 @@ public class RedisLockAspect extends AbstractExpressionAspect {
     key = redisLock.useExpression() ? getExpressionValue(key, method, args, String.class) : key;
     long timeoutMillis = redisLock.timeout() == -1L ? defaultTimeoutMillis
         : redisLock.timeUnit().toMillis(redisLock.timeout());
-    return new LockContext(key, redisLock.mutex(), redisLock.mutexException(), timeoutMillis,
-        redisLock.timeoutException(), redisLock.sleepMillis());
+    return new LockContext(key, redisLock.mutex(), timeoutMillis, redisLock.sleepMillis(),
+        redisLock.message());
   }
 
   public String getKeyPrefix() {

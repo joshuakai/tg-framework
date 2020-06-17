@@ -15,7 +15,7 @@ public class RequestIpHandlerMethodArgumentResolver implements HandlerMethodArgu
   private RequestDetailsResolver requestDetailsResolver;
 
   public RequestIpHandlerMethodArgumentResolver(RequestDetailsResolver requestDetailsResolver) {
-    Assert.notNull(requestDetailsResolver, "RequestDetailsResolver must not be null.");
+    Assert.notNull(requestDetailsResolver, "A request details resolver must be set");
     this.requestDetailsResolver = requestDetailsResolver;
   }
 

@@ -1,11 +1,11 @@
 package com.tg.framework.web.mvc.resolver;
 
-import com.tg.framework.commons.security.util.SecurityUtils;
+import com.tg.framework.commons.util.SecurityUtils;
 import com.tg.framework.web.mvc.resolver.annotation.Principal;
-import java.util.Optional;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.MethodParameter;
-import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -21,16 +21,29 @@ public class PrincipalHandlerMethodArgumentResolver implements HandlerMethodArgu
   @Override
   public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
       NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
-    boolean isString = String.class.isAssignableFrom(parameter.getParameterType());
-    Optional optional =
-        isString ? SecurityUtils.getPrincipalAsString() : SecurityUtils.getPrincipal();
-    if (optional.isPresent()) {
-      return optional.get();
+    Class<?> clazz = parameter.getParameterType();
+    boolean isString = String.class.isAssignableFrom(clazz);
+    Object principal;
+    if (isString) {
+      principal = SecurityUtils.getPrincipalAsString().orElse(null);
+    } else {
+      principal = SecurityUtils.getPrincipal().orElse(null);
     }
-    Principal principal = parameter.getParameterAnnotation(Principal.class);
-    if (principal.required()) {
-      throw new AuthenticationServiceException(null);
+    if (principal == null) {
+      Principal annotation = parameter.getParameterAnnotation(Principal.class);
+      if (annotation == null) {
+        throw new InternalAuthenticationServiceException("Annotation is missing");
+      }
+      if (annotation.required()) {
+        throw new AccessDeniedException("Access is denied");
+      }
+      return isString ? StringUtils.EMPTY : null;
     }
-    return isString ? StringUtils.EMPTY : null;
+    if (!clazz.isAssignableFrom(principal.getClass())) {
+      throw new InternalAuthenticationServiceException(
+          "Principal does not match the parameter type");
+    }
+    return principal;
   }
+
 }

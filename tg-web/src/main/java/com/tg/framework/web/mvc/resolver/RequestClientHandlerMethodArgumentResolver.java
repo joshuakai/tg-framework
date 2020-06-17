@@ -1,6 +1,6 @@
 package com.tg.framework.web.mvc.resolver;
 
-import com.tg.framework.commons.http.RequestClient;
+import com.tg.framework.web.http.RequestClient;
 import com.tg.framework.web.ip.RequestDetailsResolver;
 import com.tg.framework.web.util.HttpUtils;
 import eu.bitwalker.useragentutils.UserAgent;
@@ -17,7 +17,7 @@ public class RequestClientHandlerMethodArgumentResolver implements HandlerMethod
   private RequestDetailsResolver requestDetailsResolver;
 
   public RequestClientHandlerMethodArgumentResolver(RequestDetailsResolver requestDetailsResolver) {
-    Assert.notNull(requestDetailsResolver, "RequestDetailsResolver must not be null.");
+    Assert.notNull(requestDetailsResolver, "A request details resolver must be set");
     this.requestDetailsResolver = requestDetailsResolver;
   }
 

@@ -12,7 +12,7 @@ public class RequestParameterCaptchaArgumentResolver implements CaptchaArgumentR
   }
 
   public RequestParameterCaptchaArgumentResolver(String parameterName) {
-    Assert.notNull(parameterName, "Parameter name must not be null.");
+    Assert.hasText(parameterName, "Parameter name must not be null or empty");
     this.parameterName = parameterName;
   }
 

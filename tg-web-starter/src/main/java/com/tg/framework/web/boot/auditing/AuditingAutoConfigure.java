@@ -1,5 +1,6 @@
 package com.tg.framework.web.boot.auditing;
 
+import com.tg.framework.commons.util.SecurityUtils;
 import java.util.Optional;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -11,13 +12,10 @@ import org.springframework.data.auditing.DateTimeProvider;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 
 @Configuration
-@ConditionalOnClass(Authentication.class)
 @EnableJpaAuditing
+@ConditionalOnClass(Authentication.class)
 @ConditionalOnProperty(prefix = "tg.auditing", value = "enabled", matchIfMissing = true)
 public class AuditingAutoConfigure {
 
@@ -37,13 +35,7 @@ public class AuditingAutoConfigure {
 
     @Override
     public Optional<String> getCurrentAuditor() {
-      return Optional.ofNullable(SecurityContextHolder.getContext())
-          .map(SecurityContext::getAuthentication).map(Authentication::getPrincipal).map(p -> {
-            if (p instanceof UserDetails) {
-              return ((UserDetails) p).getUsername();
-            }
-            return p.toString();
-          });
+      return SecurityUtils.getPrincipalAsString();
     }
   }
 
