@@ -12,7 +12,7 @@ public class RequestHeaderCaptchaArgumentResolver implements CaptchaArgumentReso
   }
 
   public RequestHeaderCaptchaArgumentResolver(String headerName) {
-    Assert.notNull(headerName, "Header name must not be null.");
+    Assert.hasText(headerName, "Header name must not be null or empty");
     this.headerName = headerName;
   }
 

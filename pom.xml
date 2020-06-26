@@ -31,7 +31,6 @@
     <module>tg-parent</module>
     <module>tg-beans</module>
     <module>tg-commons</module>
-    <module>tg-data-commons</module>
     <module>tg-data-jpa</module>
     <module>tg-web</module>
     <module>tg-web-starter</module>

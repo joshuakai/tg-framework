@@ -3,7 +3,6 @@ package com.tg.framework.web.ip.filter;
 import com.tg.framework.web.ip.IpAccessVoter;
 import com.tg.framework.web.ip.IpForbiddenHandler;
 import com.tg.framework.web.ip.RequestDetailsResolver;
-import com.tg.framework.web.ip.support.DefaultIpForbiddenHandler;
 import com.tg.framework.web.util.HttpUtils;
 import java.io.IOException;
 import javax.servlet.FilterChain;
@@ -21,12 +20,12 @@ public class IpProtectingFilter extends OncePerRequestFilter {
 
   private RequestDetailsResolver requestDetailsResolver;
   private IpAccessVoter ipAccessVoter;
-  private IpForbiddenHandler ipForbiddenHandler = new DefaultIpForbiddenHandler();
+  private IpForbiddenHandler ipForbiddenHandler = IpForbiddenHandler.DEFAULT;
 
   public IpProtectingFilter(RequestDetailsResolver requestDetailsResolver,
       IpAccessVoter ipAccessVoter) {
-    Assert.notNull(requestDetailsResolver, "RequestDetailsResolver must not be null.");
-    Assert.notNull(ipAccessVoter, "IpAccessVoter must not be null.");
+    Assert.notNull(requestDetailsResolver, "A request details resolver must be set");
+    Assert.notNull(ipAccessVoter, "A ip access voter must be set");
     this.requestDetailsResolver = requestDetailsResolver;
     this.ipAccessVoter = ipAccessVoter;
   }
@@ -45,7 +44,7 @@ public class IpProtectingFilter extends OncePerRequestFilter {
   }
 
   public void setIpForbiddenHandler(IpForbiddenHandler ipForbiddenHandler) {
-    Assert.notNull(ipForbiddenHandler, "IpForbiddenHandler must not be null.");
+    Assert.notNull(ipForbiddenHandler, "A ip forbidden handler must be set");
     this.ipForbiddenHandler = ipForbiddenHandler;
   }
 

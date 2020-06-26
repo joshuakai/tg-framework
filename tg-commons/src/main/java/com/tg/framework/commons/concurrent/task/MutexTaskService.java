@@ -1,7 +1,6 @@
 package com.tg.framework.commons.concurrent.task;
 
 import com.tg.framework.commons.concurrent.lock.IdentityLock;
-import com.tg.framework.commons.concurrent.task.exception.TaskMutexException;
 import java.util.concurrent.CompletableFuture;
 
 public interface MutexTaskService {

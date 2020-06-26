@@ -14,12 +14,7 @@
   <dependencies>
     <dependency>
       <groupId>com.tg.framework</groupId>
-      <artifactId>tg-data-commons</artifactId>
-      <version>${tg-framework.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.tg.framework</groupId>
-      <artifactId>tg-data-commons</artifactId>
+      <artifactId>tg-commons</artifactId>
       <version>${tg-framework.version}</version>
     </dependency>
     <dependency>

@@ -3,7 +3,6 @@ package com.tg.framework.web.captcha.filter;
 import com.tg.framework.web.captcha.CaptchaArgumentResolver;
 import com.tg.framework.web.captcha.CaptchaFailureHandler;
 import com.tg.framework.web.captcha.CaptchaProvider;
-import com.tg.framework.web.captcha.support.DefaultCaptchaFailureHandler;
 import com.tg.framework.web.util.HttpUtils;
 import java.io.IOException;
 import javax.servlet.FilterChain;
@@ -21,13 +20,13 @@ public class CaptchaFilter extends OncePerRequestFilter {
 
   private CaptchaArgumentResolver captchaArgumentResolver;
   private CaptchaProvider captchaProvider;
-  private CaptchaFailureHandler captchaFailureHandler = new DefaultCaptchaFailureHandler();
+  private CaptchaFailureHandler captchaFailureHandler = CaptchaFailureHandler.DEFAULT;
 
 
   public CaptchaFilter(CaptchaArgumentResolver captchaArgumentResolver,
       CaptchaProvider captchaProvider) {
-    Assert.notNull(captchaArgumentResolver, "CaptchaArgumentResolver must not be null.");
-    Assert.notNull(captchaProvider, "CaptchaProvider must not be null.");
+    Assert.notNull(captchaArgumentResolver, "A captcha argument resolver must be set");
+    Assert.notNull(captchaProvider, "A captcha provider must be set");
     this.captchaArgumentResolver = captchaArgumentResolver;
     this.captchaProvider = captchaProvider;
   }
@@ -45,7 +44,7 @@ public class CaptchaFilter extends OncePerRequestFilter {
   }
 
   public void setCaptchaFailureHandler(CaptchaFailureHandler captchaFailureHandler) {
-    Assert.notNull(captchaFailureHandler, "CaptchaFailureHandler must not be null.");
+    Assert.notNull(captchaFailureHandler, "A captcha failure handler must be set");
     this.captchaFailureHandler = captchaFailureHandler;
   }
 

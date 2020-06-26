@@ -118,7 +118,7 @@ public class JavaTimeUtils {
 
   public static String format(Date date, DateFormat dateFormat) {
     return Optional.ofNullable(date)
-        .map(d -> Optional.ofNullable(dateFormat).map(df -> df.format(d)).orElse(null))
+        .flatMap(d -> Optional.ofNullable(dateFormat).map(df -> df.format(d)))
         .orElse(null);
   }
 

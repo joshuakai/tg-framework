@@ -3,8 +3,6 @@ package com.tg.framework.cloud.boot.http;
 import com.tg.framework.commons.util.JSONUtils;
 import com.tg.framework.web.boot.http.HttpClientAutoConfigure;
 import org.apache.http.client.HttpClient;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
@@ -18,7 +16,6 @@ import org.springframework.security.oauth2.client.token.grant.client.ClientCrede
 
 @Configuration
 @Import(HttpClientAutoConfigure.class)
-@ConditionalOnClass({OAuth2RestTemplate.class, HttpClient.class, LoadBalanced.class})
 @ConditionalOnProperty(prefix = "tg.cloud.oauth2-rest-template", value = "enabled")
 @ConfigurationProperties(prefix = "security.oauth2.client")
 public class OAuth2RestTemplateAutoConfigure {
@@ -27,9 +24,8 @@ public class OAuth2RestTemplateAutoConfigure {
   private String clientId;
   private String clientSecret;
 
-  @Bean("oAuth2RestTemplate")
   @LoadBalanced
-  @ConditionalOnMissingBean(name = "oAuth2RestTemplate")
+  @Bean("oAuth2RestTemplate")
   public OAuth2RestTemplate oAuth2RestTemplate(HttpClient httpClient) {
     ClientCredentialsResourceDetails details = new ClientCredentialsResourceDetails();
     details.setAccessTokenUri(accessTokenUri);
