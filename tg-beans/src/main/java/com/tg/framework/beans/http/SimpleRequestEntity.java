@@ -15,6 +15,8 @@ public class SimpleRequestEntity extends SimpleHttpEntity {
   private String url;
   @Length(max = 50)
   private String contentType;
+  @Length(max = 20)
+  private String charset;
 
   public String getMethod() {
     return method;
@@ -38,5 +40,13 @@ public class SimpleRequestEntity extends SimpleHttpEntity {
 
   public void setContentType(String contentType) {
     this.contentType = contentType;
+  }
+
+  public String getCharset() {
+    return charset;
+  }
+
+  public void setCharset(String charset) {
+    this.charset = charset;
   }
 }

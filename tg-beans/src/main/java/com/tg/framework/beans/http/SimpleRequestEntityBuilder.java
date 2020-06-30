@@ -6,6 +6,7 @@ public final class SimpleRequestEntityBuilder extends
   private String method;
   private String url;
   private String contentType;
+  private String charset;
 
   private SimpleRequestEntityBuilder() {
   }
@@ -29,11 +30,17 @@ public final class SimpleRequestEntityBuilder extends
     return this;
   }
 
+  public SimpleRequestEntityBuilder charset(String charset) {
+    this.charset = charset;
+    return this;
+  }
+
   public SimpleRequestEntity build() {
     SimpleRequestEntity simpleRequestEntity = build(new SimpleRequestEntity());
     simpleRequestEntity.setMethod(method);
     simpleRequestEntity.setUrl(url);
     simpleRequestEntity.setContentType(contentType);
+    simpleRequestEntity.setCharset(charset);
     return simpleRequestEntity;
   }
 }
