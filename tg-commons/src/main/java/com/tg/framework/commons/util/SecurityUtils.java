@@ -1,7 +1,9 @@
 package com.tg.framework.commons.util;
 
 import java.security.Principal;
+import java.util.Objects;
 import java.util.Optional;
+import org.springframework.security.core.AuthenticatedPrincipal;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,10 +31,13 @@ public class SecurityUtils {
     if (principal instanceof Principal) {
       return ((Principal) principal).getName();
     }
+    if (principal instanceof AuthenticatedPrincipal) {
+      return ((AuthenticatedPrincipal) principal).getName();
+    }
     if (principal instanceof UserDetails) {
       return ((UserDetails) principal).getUsername();
     }
-    return principal.toString();
+    return Objects.toString(principal);
   }
 
   public static Optional<String> getPrincipalAsString() {
