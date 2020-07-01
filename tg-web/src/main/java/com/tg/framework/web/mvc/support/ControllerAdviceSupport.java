@@ -135,7 +135,7 @@ public abstract class ControllerAdviceSupport implements MessageSourceAware {
   }
 
   protected static ResponseEntity<DefaultError> defaultError(HttpStatus status, String message) {
-    return defaultError(status, String.valueOf(HttpStatus.BAD_REQUEST.value()), message);
+    return defaultError(status, String.valueOf(status.value()), message);
   }
 
   protected static ResponseEntity<DefaultError> defaultError(HttpStatus status, String type,
