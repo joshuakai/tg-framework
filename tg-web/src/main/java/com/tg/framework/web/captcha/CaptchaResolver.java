@@ -1,10 +1,8 @@
 package com.tg.framework.web.captcha;
 
-import javax.servlet.http.HttpServletRequest;
-
 @FunctionalInterface
-public interface CaptchaResolver {
+public interface CaptchaResolver<T> {
 
-  String resolve(HttpServletRequest request);
+  String resolve(T context);
 
 }

@@ -4,7 +4,7 @@ import com.tg.framework.web.captcha.CaptchaResolver;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.util.Assert;
 
-public class RequestParameterCaptchaResolver implements CaptchaResolver {
+public class RequestParameterCaptchaResolver implements CaptchaResolver<HttpServletRequest> {
 
   private String parameterName = "captcha";
 
@@ -12,12 +12,12 @@ public class RequestParameterCaptchaResolver implements CaptchaResolver {
   }
 
   public RequestParameterCaptchaResolver(String parameterName) {
-    Assert.hasText(parameterName, "Parameter name must not be null or empty");
+    Assert.hasText(parameterName, "A parameter name must be set");
     this.parameterName = parameterName;
   }
 
   @Override
-  public String resolve(HttpServletRequest request) {
-    return request.getParameter(parameterName);
+  public String resolve(HttpServletRequest context) {
+    return context.getParameter(parameterName);
   }
 }

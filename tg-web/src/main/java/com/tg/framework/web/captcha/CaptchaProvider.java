@@ -1,10 +1,9 @@
 package com.tg.framework.web.captcha;
 
 import com.tg.framework.commons.captcha.CaptchaVoter;
-import javax.servlet.http.HttpServletRequest;
 
-public interface CaptchaProvider {
+public interface CaptchaProvider<T> {
 
-  CaptchaVoter provide(HttpServletRequest request);
+  CaptchaVoter provide(T context);
 
 }
