@@ -1,8 +1,8 @@
 package com.tg.framework.web.captcha.filter;
 
-import com.tg.framework.web.captcha.CaptchaArgumentResolver;
 import com.tg.framework.web.captcha.CaptchaFailureHandler;
 import com.tg.framework.web.captcha.CaptchaProvider;
+import com.tg.framework.web.captcha.CaptchaResolver;
 import com.tg.framework.web.util.HttpUtils;
 import java.io.IOException;
 import javax.servlet.FilterChain;
@@ -18,23 +18,22 @@ public class CaptchaFilter extends OncePerRequestFilter {
 
   private static Logger logger = LoggerFactory.getLogger(CaptchaFilter.class);
 
-  private CaptchaArgumentResolver captchaArgumentResolver;
+  private CaptchaResolver captchaResolver;
   private CaptchaProvider captchaProvider;
   private CaptchaFailureHandler captchaFailureHandler = CaptchaFailureHandler.DEFAULT;
 
 
-  public CaptchaFilter(CaptchaArgumentResolver captchaArgumentResolver,
-      CaptchaProvider captchaProvider) {
-    Assert.notNull(captchaArgumentResolver, "A captcha argument resolver must be set");
+  public CaptchaFilter(CaptchaResolver captchaResolver, CaptchaProvider captchaProvider) {
+    Assert.notNull(captchaResolver, "A captcha resolver must be set");
     Assert.notNull(captchaProvider, "A captcha provider must be set");
-    this.captchaArgumentResolver = captchaArgumentResolver;
+    this.captchaResolver = captchaResolver;
     this.captchaProvider = captchaProvider;
   }
 
   @Override
   protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
       FilterChain filterChain) throws ServletException, IOException {
-    String captcha = captchaArgumentResolver.resolveArgument(request);
+    String captcha = captchaResolver.resolve(request);
     if (!captchaProvider.provide(request).vote(captcha)) {
       logger.warn("Bad captcha: {} {}.", captcha, HttpUtils.getUrl(request));
       if (captchaFailureHandler.onCaptchaFailure(request, response, null)) {
