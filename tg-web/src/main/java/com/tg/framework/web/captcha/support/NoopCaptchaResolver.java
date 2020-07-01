@@ -1,9 +1,8 @@
 package com.tg.framework.web.captcha.support;
 
 import com.tg.framework.web.captcha.CaptchaResolver;
-import javax.servlet.http.HttpServletRequest;
 
-public class NoopCaptchaResolver implements CaptchaResolver {
+public class NoopCaptchaResolver implements CaptchaResolver<Object> {
 
   public static NoopCaptchaResolver getInstance() {
     return NoopCaptchaArgumentResolverHolder.INSTANCE;
@@ -18,7 +17,7 @@ public class NoopCaptchaResolver implements CaptchaResolver {
   }
 
   @Override
-  public String resolve(HttpServletRequest request) {
+  public String resolve(Object context) {
     return null;
   }
 }

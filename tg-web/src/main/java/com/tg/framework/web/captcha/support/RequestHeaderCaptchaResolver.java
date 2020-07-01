@@ -4,7 +4,7 @@ import com.tg.framework.web.captcha.CaptchaResolver;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.util.Assert;
 
-public class RequestHeaderCaptchaResolver implements CaptchaResolver {
+public class RequestHeaderCaptchaResolver implements CaptchaResolver<HttpServletRequest> {
 
   private String headerName = "captcha";
 
@@ -12,12 +12,12 @@ public class RequestHeaderCaptchaResolver implements CaptchaResolver {
   }
 
   public RequestHeaderCaptchaResolver(String headerName) {
-    Assert.hasText(headerName, "Header name must not be null or empty");
+    Assert.hasText(headerName, "A header name must be set");
     this.headerName = headerName;
   }
 
   @Override
-  public String resolve(HttpServletRequest request) {
-    return request.getHeader(headerName);
+  public String resolve(HttpServletRequest context) {
+    return context.getHeader(headerName);
   }
 }

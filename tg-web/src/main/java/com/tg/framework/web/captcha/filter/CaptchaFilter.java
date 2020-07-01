@@ -18,12 +18,13 @@ public class CaptchaFilter extends OncePerRequestFilter {
 
   private static Logger logger = LoggerFactory.getLogger(CaptchaFilter.class);
 
-  private CaptchaResolver captchaResolver;
-  private CaptchaProvider captchaProvider;
+  private CaptchaResolver<HttpServletRequest> captchaResolver;
+  private CaptchaProvider<HttpServletRequest> captchaProvider;
   private CaptchaFailureHandler captchaFailureHandler = CaptchaFailureHandler.DEFAULT;
 
 
-  public CaptchaFilter(CaptchaResolver captchaResolver, CaptchaProvider captchaProvider) {
+  public CaptchaFilter(CaptchaResolver<HttpServletRequest> captchaResolver,
+      CaptchaProvider<HttpServletRequest> captchaProvider) {
     Assert.notNull(captchaResolver, "A captcha resolver must be set");
     Assert.notNull(captchaProvider, "A captcha provider must be set");
     this.captchaResolver = captchaResolver;
