@@ -40,6 +40,8 @@ public class CaptchaFilter extends OncePerRequestFilter {
       if (captchaFailureHandler.onCaptchaFailure(request, response, null)) {
         filterChain.doFilter(request, response);
       }
+    } else {
+      filterChain.doFilter(request, response);
     }
   }
 
