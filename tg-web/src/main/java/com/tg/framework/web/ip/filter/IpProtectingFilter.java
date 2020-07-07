@@ -40,6 +40,8 @@ public class IpProtectingFilter extends OncePerRequestFilter {
       if (ipForbiddenHandler.onIpForbidden(request, response, ip)) {
         filterChain.doFilter(request, response);
       }
+    } else {
+      filterChain.doFilter(request, response);
     }
   }
 
