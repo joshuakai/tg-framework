@@ -14,7 +14,6 @@ import org.springframework.util.Assert;
 @Aspect
 public class RedisLockAspect extends AbstractExpressionAspect {
 
-  private static final String KEY_PREFIX_TEMPLATE = "'%s'%s";
   private static final String DEFAULT_KEY_PREFIX = "locks:";
   private static final long DEFAULT_TIMEOUT_MILLIS = -1L;
 
@@ -61,13 +60,9 @@ public class RedisLockAspect extends AbstractExpressionAspect {
   private LockContext getLockContext(Method method, Object[] args, RedisLock redisLock) {
     String key = redisLock.key();
     if (redisLock.useExpression()) {
-      if (StringUtils.isNotBlank(keyPrefix)) {
-        key = getExpressionValue(String.format(KEY_PREFIX_TEMPLATE, keyPrefix, key), method, args,
-            String.class);
-      } else {
-        key = getExpressionValue(key, method, args, String.class);
-      }
-    } else if (StringUtils.isNotBlank(keyPrefix)) {
+      key = getExpressionValue(key, method, args, String.class);
+    }
+    if (StringUtils.isNotBlank(keyPrefix)) {
       key = keyPrefix + key;
     }
     long timeoutMillis = redisLock.timeout() == -1L ? defaultTimeoutMillis
