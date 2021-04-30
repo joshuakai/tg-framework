@@ -76,7 +76,12 @@ public class HttpUtils {
   }
 
   public static boolean isLocalhost(String ip) {
-    return LOCALHOST_IPV4.equals(ip) || LOCALHOST_IPV6.equals(ip);
+    try {
+      return LOCALHOST_IPV4.equals(ip) || LOCALHOST_IPV6.equals(ip)
+          ||InetAddress.getLocalHost().getHostAddress().equalsIgnoreCase(ip);
+    } catch (UnknownHostException e) {
+      return false;
+    }
   }
 
   public static String getLocalHostAddressPreferOutbound() {
